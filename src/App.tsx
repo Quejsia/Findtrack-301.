@@ -1,47 +1,171 @@
-import React, { useState, useEffect, useRef, useMemo } from 'react';
-import { 
-  User, 
+import React, { useState, useEffect, useRef, useMemo } from "react";
+import {
+  User,
   onAuthStateChanged,
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
-  sendEmailVerification
-} from 'firebase/auth';
-import { 
-  collection, 
-  onSnapshot, 
-  query, 
-  doc, 
+  sendEmailVerification,
+} from "firebase/auth";
+import {
+  collection,
+  onSnapshot,
+  query,
+  doc,
   getDoc,
-  setDoc, 
-  updateDoc, 
+  setDoc,
+  updateDoc,
   deleteDoc,
   serverTimestamp,
   where,
-  orderBy
-} from 'firebase/firestore';
-import { auth, db, loginWithGoogle, registerWithEmail, loginWithEmail, logOut, OperationType, handleFirestoreError } from './firebase';
+} from "firebase/firestore";
+import {
+  auth,
+  db,
+  handleFirestoreError,
+  logOut,
+  OperationType,
+} from "./firebase";
+import ChatInterface, { ChatInboxList } from "./components/ChatInterface";
+import ItemDetail from "./components/ItemDetail";
+import { Item, Claim } from "./types";
+import {
+  ShieldCheck,
+  Search,
+  Lock,
+  UserPlus,
+  ArrowRight,
+  Tag,
+  Lightbulb,
+  Key,
+  Smartphone,
+  Home,
+  Package,
+  Bell,
+  User as UserIcon,
+  MapPin,
+  CheckCircle2,
+  Info,
+  Navigation,
+  Hand,
+  Inbox,
+  PenTool,
+  Camera,
+  MessageCircle,
+  Mail,
+  Eye,
+  EyeOff,
+  Dices,
+  Save,
+  LogOut,
+  Send,
+  Zap,
+  CheckSquare,
+  X,
+  ShoppingBag,
+  MapIcon,
+  Users,
+  FileSearch,
+  MessageSquareHeart,
+  PackageCheck,
+  PlusCircle,
+  Quote,
+  Handshake,
+  Filter,
+  Clock,
+  Menu,
+  ArrowLeft, Share, Bot, RefreshCw, BadgeCheck, MessageSquare, Gavel, Shield , Scan , Settings , AlertTriangle, Star, Heart, TrendingUp, ArrowDownUp, FileText, Image as ImageIcon } from "lucide-react"
+import { uploadToCloudinary } from "./lib/cloudinary";
+
+interface ItemReport {
+  id: string;
+  userId: string;
+  title: string;
+  location: string;
+  desc?: string;
+  description?: string;
+  type: "lost" | "found";
+  image?: string;
+  imageUrl?: string;
+  createdAt: any;
+  claimed: boolean;
+}
+
+const ONBOARD_STEPS = [
+  {
+    icon: <Search className="text-white h-12 w-12" />,
+    label: "Step 1 of 4",
+    title: "Welcome to FindTrack!",
+    desc: "Your lost & found platform. Report missing items, search for found ones, and get reunited with your belongings — fast.",
+  },
+  {
+    icon: <Package className="text-white h-12 w-12" />,
+    label: "Step 2 of 4",
+    title: "Report Lost or Found Items",
+    desc: "Tap the Report tab to submit an item. Add a photo, title, and location for the best chance of recovery. The more detail, the better!",
+  },
+  {
+    icon: <CheckCircle2 className="text-white h-12 w-12" />,
+    label: "Step 3 of 4",
+    title: "Smart Match Suggestions",
+    desc: "Our smart system automatically compares your reports against others and highlights possible matches — so you can claim your item faster.",
+  },
+  {
+    icon: <MapPin className="text-white h-12 w-12" />,
+    label: "Step 4 of 4",
+    title: "Pin & Track Items",
+    desc: "Bookmark items you're watching with the pin button. Check Pinned Items in the menu for quick access anytime. You're all set — good luck!",
+  },
+];
 
 export default function App() {
+  // Navigation layout state: 'landing' | 'login' | 'signup' | 'dashboard' | 'verify-email' | 'privacy' | 'terms'
+  const [currentView, setCurrentView] = useState<
+    | "landing"
+    | "login"
+    | "signup"
+    | "dashboard"
+    | "verify-email"
+    | "privacy"
+    | "terms"
+  >(() => {
+    const path = window.location.pathname;
+    if (path === "/privacy") return "privacy";
+    if (path === "/terms") return "terms";
+    return "landing";
+  });
+
+  // Dashboard panel selector
+  const [activeTab, setActiveTab] = useState<string>("home");
+  const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
+
+  // Authentication & session state
   const [user, setUser] = useState<User | null>(null);
-  const [currentView, setCurrentView] = useState<string>('landing');
-  const [loadingAuth, setLoadingAuth] = useState(true);
-  const [authEmail, setAuthEmail] = useState('');
-  const [authPassword, setAuthPass] = useState('');
-  const [signupFirst, setSignupFirst] = useState('');
-  const [signupLast, setSignupLast] = useState('');
-  const [signupContact, setSignupContact] = useState('');
-  
+  const [loadingAuth, setLoadingAuth] = useState<boolean>(true);
+
+  // Form input validations / fields
+  const [authEmail, setAuthEmail] = useState("");
+  const [authPassword, setAuthPass] = useState("");
+  const [signupFirst, setSignupFirst] = useState("");
+  const [signupLast, setSignupLast] = useState("");
+  const [signupContact, setSignupContact] = useState("");
+
   // App alerts, loading states & real-time sync list
   const [items, setItems] = useState<ItemReport[]>([]);
-  const [testimonials, setTestimonials] = useState<any[]>([]);
-  const [toasts, setToasts] = useState<{ id: string; msg: string; type: 'success' | 'error' }[]>([]);
+  const [alerts, setAlerts] = useState<any[]>([]);
+  const [toasts, setToasts] = useState<
+    { id: string; msg: string; type: "success" | "error" }[]
+  >([]);
+  const [landingMenuOpen, setLandingMenuOpen] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [showPass, setShowPass] = useState(false);
   const [resendCooldown, setResendCooldown] = useState(0);
 
   useEffect(() => {
     if (resendCooldown > 0) {
-      const timer = setTimeout(() => setResendCooldown(resendCooldown - 1), 1000);
+      const timer = setTimeout(
+        () => setResendCooldown(resendCooldown - 1),
+        1000,
+      );
       return () => clearTimeout(timer);
     }
   }, [resendCooldown]);
@@ -54,33 +178,43 @@ export default function App() {
   const [activeChatId, setActiveChatId] = useState<string | null>(null);
 
   // Dashboard inputs
-  const [reportTitle, setReportTitle] = useState('');
-  const [reportLocation, setReportLocation] = useState('');
-  const [reportDesc, setReportDesc] = useState('');
-  const [reportEmail, setReportEmail] = useState('');
-  const [reportType, setReportType] = useState<'lost' | 'found'>('lost');
-  const [reportImage, setReportImage] = useState<string>('');
+  const [reportStep, setReportStep] = useState(1);
+  const [reportTitle, setReportTitle] = useState("");
+  const [reportLocation, setReportLocation] = useState("");
+  const [reportDesc, setReportDesc] = useState("");
+  const [reportEmail, setReportEmail] = useState("");
+  const [reportType, setReportType] = useState<"lost" | "found">("lost");
+  const [reportImage, setReportImage] = useState<string>("");
   const [reportImageFile, setReportImageFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
-  const [reportSecurityQuestion, setReportSecurityQuestion] = useState('');
-  const [reportSecurityAnswer, setReportSecurityAnswer] = useState('');
+  const [reportSecurityQuestion, setReportSecurityQuestion] = useState("");
+  const [reportSecurityAnswer, setReportSecurityAnswer] = useState("");
   const [incomingClaims, setIncomingClaims] = useState<Claim[]>([]);
 
   // Dashboard Search state
-  const [sQuery, setSQuery] = useState('');
-  const [sFilter, setSFilter] = useState('all');
-  const [sLoc, setSLoc] = useState('');
-  const [sDate, setSDate] = useState('');
+  const [sQuery, setSQuery] = useState("");
+  const [sFilter, setSFilter] = useState("all");
+  const [sLoc, setSLoc] = useState("");
+  const [sDate, setSDate] = useState("");
   const [advancedFiltersOpen, setAdvancedFiltersOpen] = useState(false);
 
   // Category browse keyword lists
-  const [categoryKeywords, setCategoryKeywords] = useState<string[] | null>(null);
+  const [categoryKeywords, setCategoryKeywords] = useState<string[] | null>(
+    null,
+  );
 
   // Profile data
-  const [profileName, setProfileName] = useState('Student');
-  const [profileEmail, setProfileEmail] = useState('');
-  const [profileContact, setProfileContact] = useState('');
-  const [profileAvatar, setProfileAvatar] = useState('https://api.dicebear.com/8.x/avataaars/svg?seed=default');
+  const [profileName, setProfileName] = useState("Student");
+  const [profileLocation, setProfileLocation] = useState("");
+  const [notifications, setNotifications] = useState<any[]>([]);
+  const markAlertRead = (id: string) => setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
+  const markAllAlertsRead = () => setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+
+  const [profileEmail, setProfileEmail] = useState("");
+  const [profileContact, setProfileContact] = useState("");
+  const [profileAvatar, setProfileAvatar] = useState(
+    "https://api.dicebear.com/8.x/avataaars/svg?seed=default",
+  );
 
   // Pinned item list IDs (local storage synchronization)
   const [pinnedIds, setPinnedIds] = useState<string[]>([]);
@@ -92,22 +226,22 @@ export default function App() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
   // Trigger custom toast notification
-  const triggerToast = (msg: string, type: 'success' | 'error' = 'success') => {
+  const triggerToast = (msg: string, type: "success" | "error" = "success") => {
     const id = Math.random().toString();
-    setToasts(prev => [...prev, { id, msg, type }]);
+    setToasts((prev) => [...prev, { id, msg, type }]);
     setTimeout(() => {
-      setToasts(prev => prev.filter(t => t.id !== id));
+      setToasts((prev) => prev.filter((t) => t.id !== id));
     }, 3300);
   };
 
   const handleBackToSafety = () => {
     if (auth.currentUser) {
       if (auth.currentUser.email && !auth.currentUser.emailVerified) {
-        setCurrentView('verify-email');
-        window.history.pushState(null, '', '/verify-email');
+        setCurrentView("verify-email");
+        window.history.pushState(null, "", "/verify-email");
       } else {
-        setCurrentView('dashboard');
-        window.history.pushState(null, '', '/');
+        setCurrentView("dashboard");
+        window.history.pushState(null, "", "/");
       }
     } else {
       try {
@@ -115,16 +249,16 @@ export default function App() {
         if (guestSession) {
           const session = JSON.parse(guestSession);
           if (session && session.email === "") {
-            setCurrentView('dashboard');
-            window.history.pushState(null, '', '/');
+            setCurrentView("dashboard");
+            window.history.pushState(null, "", "/");
             return;
           }
         }
       } catch (e) {
         console.error(e);
       }
-      setCurrentView('landing');
-      window.history.pushState(null, '', '/');
+      setCurrentView("landing");
+      window.history.pushState(null, "", "/");
     }
   };
 
@@ -138,45 +272,53 @@ export default function App() {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
       setLoadingAuth(false);
-      
+
       if (currentUser) {
         // Automatically sync initial profile credentials
         setProfileEmail(currentUser.email || "");
-        
+
         // Sync profile data from localStorage context if exists
         try {
           const lProfile = localStorage.getItem("userProfile");
           if (lProfile) {
             const parsed = JSON.parse(lProfile);
-            if (parsed.name && parsed.name !== 'Guest') {
+            if (parsed.name && parsed.name !== "Guest") {
               setProfileName(parsed.name);
             } else {
-              setProfileName(currentUser.displayName || currentUser.email?.split('@')[0] || "User");
+              setProfileName(
+                currentUser.displayName ||
+                  currentUser.email?.split("@")[0] ||
+                  "User",
+              );
             }
             if (parsed.contact) setProfileContact(parsed.contact);
-            if (parsed.avatar && !parsed.avatar.includes('guest')) {
+            if (parsed.avatar && !parsed.avatar.includes("guest")) {
               setProfileAvatar(parsed.avatar);
             }
           } else {
-            setProfileName(currentUser.displayName || currentUser.email?.split('@')[0] || "User");
+            setProfileName(
+              currentUser.displayName ||
+                currentUser.email?.split("@")[0] ||
+                "User",
+            );
           }
         } catch (e) {
           console.error(e);
         }
-        
+
         // Block unverified email users from accessing protected views (dashboard)
         const path = window.location.pathname;
-        if (path === '/privacy' || path === '/terms') {
-          setCurrentView(path === '/privacy' ? 'privacy' : 'terms');
+        if (["/privacy", "/terms", "/about", "/safety", "/help", "/contact"].includes(path)) {
+          setCurrentView(path.slice(1) as any);
         } else if (currentUser.email && !currentUser.emailVerified) {
-          setCurrentView('verify-email');
+          setCurrentView("verify-email");
         } else {
           // Force token refresh on load to prevent stale email_verified claims from breaking rules
           if (currentUser.emailVerified) {
-             currentUser.getIdToken(true).catch(console.error);
+            currentUser.getIdToken(true).catch(console.error);
           }
           // Switch view to dashboard on successful load
-          setCurrentView('dashboard');
+          setCurrentView("dashboard");
         }
       } else {
         // If guest is currently in session, direct to dashboard
@@ -188,10 +330,10 @@ export default function App() {
               setProfileName("Guest");
               setProfileEmail("");
               const path = window.location.pathname;
-              if (path === '/privacy' || path === '/terms') {
-                setCurrentView(path === '/privacy' ? 'privacy' : 'terms');
+              if (["/privacy", "/terms", "/about", "/safety", "/help", "/contact"].includes(path)) {
+                setCurrentView(path.slice(1) as any);
               } else {
-                setCurrentView('dashboard');
+                setCurrentView("dashboard");
               }
             }
           }
@@ -218,51 +360,59 @@ export default function App() {
   useEffect(() => {
     const handlePopState = () => {
       const path = window.location.pathname;
-      if (path === '/privacy') {
-        setCurrentView('privacy');
-      } else if (path === '/terms') {
-        setCurrentView('terms');
-      } else if (path === '/login') {
-        setCurrentView('login');
-      } else if (path === '/signup') {
-        setCurrentView('signup');
-      } else if (path === '/' || path === '') {
+      if (path === "/privacy") {
+        setCurrentView("privacy");
+      } else if (path === "/terms") {
+        setCurrentView("terms");
+      } else if (path === "/login") {
+        setCurrentView("login");
+      } else if (path === "/signup") {
+        setCurrentView("signup");
+      } else if (path === "/" || path === "") {
         if (auth.currentUser) {
           if (auth.currentUser.email && !auth.currentUser.emailVerified) {
-            setCurrentView('verify-email');
+            setCurrentView("verify-email");
           } else {
-            setCurrentView('dashboard');
+            setCurrentView("dashboard");
           }
         } else {
-          setCurrentView('landing');
+          setCurrentView("landing");
         }
       }
     };
-    window.addEventListener('popstate', handlePopState);
-    return () => window.removeEventListener('popstate', handlePopState);
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
   }, [user]);
 
   // 2. Real-time Firestore Sync of items / reports
   useEffect(() => {
-    const reportsCollection = collection(db, 'items'); // Rules define items matching
-    
+    const reportsCollection = collection(db, "items"); // Rules define items matching
+
     // Listen to all public lost/found entries across the board to permit comprehensive lost and found search engine matching
-    const unsubscribe = onSnapshot(query(reportsCollection), (snapshot) => {
-      const list: ItemReport[] = [];
-      snapshot.forEach(docSnap => {
-        list.push({ id: docSnap.id, ...docSnap.data() } as ItemReport);
-      });
-      // Sort in-memory descending creation date
-      list.sort((a, b) => {
-        const aTime = a.createdAt?.seconds ? a.createdAt.seconds * 1000 : new Date(a.createdAt || 0).getTime();
-        const bTime = b.createdAt?.seconds ? b.createdAt.seconds * 1000 : new Date(b.createdAt || 0).getTime();
-        return bTime - aTime;
-      });
-      setItems(list);
-      setHomeShimmer(false);
-    }, (error) => {
-      console.error("Firestore sync error:", error);
-    });
+    const unsubscribe = onSnapshot(
+      query(reportsCollection),
+      (snapshot) => {
+        const list: ItemReport[] = [];
+        snapshot.forEach((docSnap) => {
+          list.push({ id: docSnap.id, ...docSnap.data() } as ItemReport);
+        });
+        // Sort in-memory descending creation date
+        list.sort((a, b) => {
+          const aTime = a.createdAt?.seconds
+            ? a.createdAt.seconds * 1000
+            : new Date(a.createdAt || 0).getTime();
+          const bTime = b.createdAt?.seconds
+            ? b.createdAt.seconds * 1000
+            : new Date(b.createdAt || 0).getTime();
+          return bTime - aTime;
+        });
+        setItems(list);
+        setHomeShimmer(false);
+      },
+      (error) => {
+        console.error("Firestore sync error:", error);
+      },
+    );
 
     return unsubscribe;
   }, []);
@@ -273,40 +423,53 @@ export default function App() {
       setIncomingClaims([]);
       return;
     }
-    const claimsCollection = collection(db, 'claims');
-    const q = query(claimsCollection, where('finderId', '==', user.uid));
-    
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const list: Claim[] = [];
-      snapshot.forEach(docSnap => {
-        list.push({ id: docSnap.id, ...docSnap.data() } as Claim);
-      });
-      // Place pending claims at the top, then sort by newest first
-      list.sort((a, b) => {
-        if (a.status === 'pending' && b.status !== 'pending') return -1;
-        if (a.status !== 'pending' && b.status === 'pending') return 1;
-        const aTime = a.createdAt?.seconds ? a.createdAt.seconds * 1000 : new Date(a.createdAt || 0).getTime();
-        const bTime = b.createdAt?.seconds ? b.createdAt.seconds * 1000 : new Date(b.createdAt || 0).getTime();
-        return bTime - aTime;
-      });
-      setIncomingClaims(list);
-    }, (error) => {
-      console.error("Claims snapshot read failed:", error);
-    });
+    const claimsCollection = collection(db, "claims");
+    const q = query(claimsCollection, where("finderId", "==", user.uid));
+
+    const unsubscribe = onSnapshot(
+      q,
+      (snapshot) => {
+        const list: Claim[] = [];
+        snapshot.forEach((docSnap) => {
+          list.push({ id: docSnap.id, ...docSnap.data() } as Claim);
+        });
+        // Place pending claims at the top, then sort by newest first
+        list.sort((a, b) => {
+          if (a.status === "pending" && b.status !== "pending") return -1;
+          if (a.status !== "pending" && b.status === "pending") return 1;
+          const aTime = a.createdAt?.seconds
+            ? a.createdAt.seconds * 1000
+            : new Date(a.createdAt || 0).getTime();
+          const bTime = b.createdAt?.seconds
+            ? b.createdAt.seconds * 1000
+            : new Date(b.createdAt || 0).getTime();
+          return bTime - aTime;
+        });
+        setIncomingClaims(list);
+      },
+      (error) => {
+        console.error("Claims snapshot read failed:", error);
+      },
+    );
 
     return unsubscribe;
   }, [user]);
 
   // Safeguard: Block unverified users from accessing protected views (dashboard) and redirect them to verify screen
   useEffect(() => {
-    if (auth.currentUser && auth.currentUser.email && !auth.currentUser.emailVerified && currentView === 'dashboard') {
-      setCurrentView('verify-email');
+    if (
+      auth.currentUser &&
+      auth.currentUser.email &&
+      !auth.currentUser.emailVerified &&
+      currentView === "dashboard"
+    ) {
+      setCurrentView("verify-email");
     }
   }, [currentView, user]);
 
   // 3. Initiate Onboarding trigger
   useEffect(() => {
-    if (currentView === 'dashboard') {
+    if (currentView === "dashboard") {
       const isComplete = localStorage.getItem("ft_onboarded");
       if (!isComplete) {
         const timer = setTimeout(() => {
@@ -328,38 +491,46 @@ export default function App() {
 
     setLoadingAuth(true);
     try {
-      const credentials = await signInWithEmailAndPassword(auth, authEmail.trim(), authPassword);
-      localStorage.setItem('sessionUser', JSON.stringify({
-        id: credentials.user.uid,
-        email: credentials.user.email
-      }));
+      const credentials = await signInWithEmailAndPassword(
+        auth,
+        authEmail.trim(),
+        authPassword,
+      );
+      localStorage.setItem(
+        "sessionUser",
+        JSON.stringify({
+          id: credentials.user.uid,
+          email: credentials.user.email,
+        }),
+      );
       triggerToast("✅ Login successful! Redirecting...", "success");
-      setAuthEmail('');
-      setAuthPass('');
+      setAuthEmail("");
+      setAuthPass("");
       if (credentials.user.email && !credentials.user.emailVerified) {
-        setCurrentView('verify-email');
+        setCurrentView("verify-email");
       } else {
-        setCurrentView('dashboard');
+        setCurrentView("dashboard");
       }
     } catch (err: any) {
       console.error("SignIn error:", err);
-      triggerToast("❌ Invalid email or password. Please try again.", "error");
+      if (
+        err.code === "auth/invalid-credential" ||
+        err.code === "auth/user-not-found" ||
+        err.code === "auth/wrong-password"
+      ) {
+        triggerToast(
+          "❌ Invalid email or password. Please try again.",
+          "error",
+        );
+      } else {
+        triggerToast(
+          "❌ Login failed: " +
+            (err.message || err.code || "Please try again."),
+          "error",
+        );
+      }
     } finally {
       setLoadingAuth(false);
-    }
-  };
-
-  const handleSendPasswordReset = async () => {
-    if (!authEmail || !authEmail.trim()) {
-      triggerToast('Please enter the email address to send reset link.', 'info');
-      return;
-    }
-    try {
-      await sendPasswordResetEmail(auth, authEmail.trim());
-      triggerToast('Password reset email sent. Check your inbox.', 'success');
-    } catch (err: any) {
-      console.error('Password reset error:', err);
-      triggerToast('Failed to send password reset email.', 'error');
     }
   };
 
@@ -383,22 +554,29 @@ export default function App() {
 
     setLoadingAuth(true);
     try {
-      const credentials = await createUserWithEmailAndPassword(auth, authEmail.trim().toLowerCase(), authPassword);
+      const credentials = await createUserWithEmailAndPassword(
+        auth,
+        authEmail.trim().toLowerCase(),
+        authPassword,
+      );
       const fullName = `${signupFirst.trim()} ${signupLast.trim()}`;
-      
-      localStorage.setItem('sessionUser', JSON.stringify({
-        id: credentials.user.uid,
-        name: fullName,
-        email: authEmail.trim().toLowerCase()
-      }));
+
+      localStorage.setItem(
+        "sessionUser",
+        JSON.stringify({
+          id: credentials.user.uid,
+          name: fullName,
+          email: authEmail.trim().toLowerCase(),
+        }),
+      );
 
       const prof = {
         name: fullName,
         email: authEmail.trim().toLowerCase(),
         contact: signupContact.trim(),
-        avatar: profileAvatar
+        avatar: profileAvatar,
       };
-      localStorage.setItem('userProfile', JSON.stringify(prof));
+      localStorage.setItem("userProfile", JSON.stringify(prof));
 
       setProfileName(fullName);
       setProfileContact(signupContact);
@@ -411,24 +589,33 @@ export default function App() {
           handleCodeInApp: false,
         };
         await sendEmailVerification(credentials.user, actionCodeSettings);
-        triggerToast("✅ Account created! Please check your email to verify.", "success");
+        triggerToast(
+          "✅ Account created! Please check your email to verify.",
+          "success",
+        );
       } catch (err: any) {
         console.error("Verification email sending failed:", err);
-        triggerToast("❌ Account created, but email verification failed to send. Try resending.", "error");
+        triggerToast(
+          "❌ Account created, but email verification failed to send. Try resending.",
+          "error",
+        );
       }
-      
-      setSignupFirst('');
-      setSignupLast('');
-      setSignupContact('');
-      setAuthEmail('');
-      setAuthPass('');
-      setCurrentView('verify-email');
+
+      setSignupFirst("");
+      setSignupLast("");
+      setSignupContact("");
+      setAuthEmail("");
+      setAuthPass("");
+      setCurrentView("verify-email");
     } catch (err: any) {
       console.error("SignUp error:", err);
-      if (err.code === 'auth/email-already-in-use') {
+      if (err.code === "auth/email-already-in-use") {
         triggerToast("❌ Email already registered.", "error");
       } else {
-        triggerToast("❌ Signup failed. Try again.", "error");
+        triggerToast(
+          "❌ Signup failed: " + (err.message || err.code || "Try again."),
+          "error",
+        );
       }
     } finally {
       setLoadingAuth(false);
@@ -437,7 +624,7 @@ export default function App() {
 
   // Handle Logout
   const handleLogoutAction = async () => {
-    localStorage.removeItem('sessionUser');
+    localStorage.removeItem("sessionUser");
     // Keeping userProfile locally since we do not currently sync names/avatars to a users collection.
     try {
       await logOut();
@@ -446,32 +633,35 @@ export default function App() {
     setProfileEmail("");
     setProfileContact("");
     triggerToast("🚪 Logged out securely.", "success");
-    setCurrentView('landing');
-    setActiveTab('home');
+    setCurrentView("landing");
+    setActiveTab("home");
   };
 
   // Browse as guest fallback trigger
   const handleGuestBrowse = () => {
-    localStorage.removeItem('sessionUser');
+    localStorage.removeItem("sessionUser");
     const guestUser = {
-      name: 'Guest',
-      email: '',
-      contact: '',
-      avatar: 'https://api.dicebear.com/8.x/avataaars/svg?seed=guest'
+      name: "Guest",
+      email: "",
+      contact: "",
+      avatar: "https://api.dicebear.com/8.x/avataaars/svg?seed=guest",
     };
-    localStorage.setItem('userProfile', JSON.stringify(guestUser));
-    localStorage.setItem('sessionUser', JSON.stringify({ id: 'guest_' + Date.now(), email: '' }));
+    localStorage.setItem("userProfile", JSON.stringify(guestUser));
+    localStorage.setItem(
+      "sessionUser",
+      JSON.stringify({ id: "guest_" + Date.now(), email: "" }),
+    );
     setProfileName("Guest");
     setProfileEmail("");
     setProfileContact("");
     setProfileAvatar(guestUser.avatar);
-    setCurrentView('dashboard');
-    setActiveTab('home');
+    setCurrentView("dashboard");
+    setActiveTab("home");
   };
 
   // Save profile modifications
   const handleSaveProfile = () => {
-    if (profileName === 'Guest') {
+    if (profileName === "Guest") {
       setShowGuestModal(true);
       return;
     }
@@ -480,9 +670,9 @@ export default function App() {
       name: profileName,
       email: profileEmail,
       contact: profileContact,
-      avatar: profileAvatar
+      avatar: profileAvatar,
     };
-    localStorage.setItem('userProfile', JSON.stringify(updated));
+    localStorage.setItem("userProfile", JSON.stringify(updated));
     triggerToast("✅ Profile saved successfully!", "success");
   };
 
@@ -502,7 +692,7 @@ export default function App() {
 
   // Profile avatar trigger random
   const handleRandomAvatar = () => {
-    if (profileName === 'Guest') {
+    if (profileName === "Guest") {
       setShowGuestModal(true);
       return;
     }
@@ -515,7 +705,7 @@ export default function App() {
   // Submit Report to Firestore
   const handleReportSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (profileName === 'Guest') {
+    if (profileName === "Guest") {
       setShowGuestModal(true);
       return;
     }
@@ -526,7 +716,7 @@ export default function App() {
     }
 
     setIsUploading(true);
-    let finalImageUrl = reportImage || '';
+    let finalImageUrl = reportImage || "";
 
     if (reportImageFile) {
       try {
@@ -539,46 +729,47 @@ export default function App() {
       }
     }
 
-    const payloadId = 'r_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
-    
+    const payloadId =
+      "r_" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+
     // Firestore Object Schema aligned with security rules constraints
     const reportData = {
       id: payloadId,
-      userId: auth.currentUser?.uid || 'anonymous_uid',
+      userId: auth.currentUser?.uid || "anonymous_uid",
       title: reportTitle.trim(),
-      description: reportDesc.trim() || 'No description provided.',
+      description: reportDesc.trim() || "No description provided.",
       type: reportType,
-      category: 'others', // Supported standard selection
-      location: reportLocation.trim() || 'Unknown Location',
-      status: 'active',
-      contactName: profileName || 'Student',
-      contactInfo: `${profileContact || 'No contact provided'} | Email: ${reportEmail.trim() || profileEmail || 'No email provided'}`,
+      category: "others", // Supported standard selection
+      location: reportLocation.trim() || "Unknown Location",
+      status: "active",
+      contactName: profileName || "Student",
+      contactInfo: `${profileContact || "No contact provided"} | Email: ${reportEmail.trim() || profileEmail || "No email provided"}`,
       date: new Date().toISOString(),
       imageUrl: finalImageUrl,
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp(),
       claimed: false,
       securityQuestion: reportSecurityQuestion.trim(),
-      securityAnswer: reportSecurityAnswer.trim().toLowerCase()
+      securityAnswer: reportSecurityAnswer.trim().toLowerCase(),
     };
 
     try {
-      await setDoc(doc(db, 'items', payloadId), reportData);
+      await setDoc(doc(db, "items", payloadId), reportData);
       triggerToast("✅ Report submitted successfully!", "success");
-      
+
       // Reset form variables
-      setReportTitle('');
-      setReportLocation('');
-      setReportDesc('');
-      setReportEmail('');
-      setReportType('lost');
-      setReportImage('');
+      setReportTitle("");
+      setReportLocation("");
+      setReportDesc("");
+      setReportEmail("");
+      setReportType("lost");
+      setReportImage("");
       setReportImageFile(null);
-      setReportSecurityQuestion('');
-      setReportSecurityAnswer('');
+      setReportSecurityQuestion("");
+      setReportSecurityAnswer("");
 
       // Auto redirect to home feed out of form
-      setActiveTab('home');
+      setActiveTab("home");
     } catch (err) {
       console.error("Firestore creation error:", err);
       triggerToast("❌ Submission rejected by security parameters.", "error");
@@ -592,7 +783,7 @@ export default function App() {
 
   // Toggle Pin Bookmark action
   const togglePin = (itemId: string) => {
-    if (profileName === 'Guest') {
+    if (profileName === "Guest") {
       setShowGuestModal(true);
       return;
     }
@@ -611,17 +802,20 @@ export default function App() {
 
   // Flag Item as Claimed
   const claimItem = async (itemId: string) => {
-    if (profileName === 'Guest') {
+    if (profileName === "Guest") {
       setShowGuestModal(true);
       return;
     }
-    if (!confirm("Are you sure you want to mark this item as claimed/recovered?")) return;
-    
+    if (
+      !confirm("Are you sure you want to mark this item as claimed/recovered?")
+    )
+      return;
+
     try {
-      await updateDoc(doc(db, 'items', itemId), {
+      await updateDoc(doc(db, "items", itemId), {
         claimed: true,
-        status: 'resolved',
-        updatedAt: serverTimestamp()
+        status: "resolved",
+        updatedAt: serverTimestamp(),
       });
       triggerToast("✅ Item marked as claimed!", "success");
     } catch (err) {
@@ -632,17 +826,20 @@ export default function App() {
 
   // Delete Listing report
   const deleteItem = async (itemId: string) => {
-    if (profileName === 'Guest') {
+    if (profileName === "Guest") {
       setShowGuestModal(true);
       return;
     }
-    if (!confirm("Delete this report entry permanently? This cannot be undone.")) return;
-    
+    if (
+      !confirm("Delete this report entry permanently? This cannot be undone.")
+    )
+      return;
+
     try {
-      await deleteDoc(doc(db, 'items', itemId));
-      setPinnedIds(prev => prev.filter(id => id !== itemId));
+      await deleteDoc(doc(db, "items", itemId));
+      setPinnedIds((prev) => prev.filter((id) => id !== itemId));
       triggerToast("🗑️ Item deleted", "error");
-      setActiveTab('search');
+      setActiveTab("search");
     } catch (err) {
       console.error(err);
       triggerToast("❌ Deletion rejected.", "error");
@@ -650,13 +847,37 @@ export default function App() {
   };
 
   // Helper actions to approve / reject claims
+  
+  const handleSubmitClaim = async (itemId: string, finderId: string, securityQuestion: string, providedAnswer: string) => {
+    if (!auth.currentUser) return;
+    try {
+      const claimId = "claim_" + Date.now();
+      await setDoc(doc(db, "claims", claimId), {
+        itemId,
+        finderId,
+        claimerId: auth.currentUser.uid,
+        securityQuestion,
+        providedAnswer,
+        status: "pending",
+        createdAt: new Date(),
+      });
+      triggerToast("Claim submitted successfully!", "success");
+      setActiveTab("home");
+    } catch (error: any) {
+      triggerToast("Failed to submit claim", "error");
+    }
+  };
+
   const handleApproveClaim = async (claimId: string, itemId: string) => {
     try {
-      await updateDoc(doc(db, 'claims', claimId), {
-        status: 'approved',
-        updatedAt: serverTimestamp()
+      await updateDoc(doc(db, "claims", claimId), {
+        status: "approved",
+        updatedAt: serverTimestamp(),
       });
-      triggerToast("✅ Ownership claim approved! Access credentials unlocked.", "success");
+      triggerToast(
+        "✅ Ownership claim approved! Access credentials unlocked.",
+        "success",
+      );
     } catch (err) {
       console.error("Error approving claim:", err);
       triggerToast("❌ Action failed or unauthorized.", "error");
@@ -665,9 +886,9 @@ export default function App() {
 
   const handleRejectClaim = async (claimId: string) => {
     try {
-      await updateDoc(doc(db, 'claims', claimId), {
-        status: 'rejected',
-        updatedAt: serverTimestamp()
+      await updateDoc(doc(db, "claims", claimId), {
+        status: "rejected",
+        updatedAt: serverTimestamp(),
       });
       triggerToast("❌ Claim response declined.", "error");
     } catch (err) {
@@ -679,10 +900,10 @@ export default function App() {
   // Initiate direct chat about item
   const handleStartChat = async (otherUserUid: string, itemId: string) => {
     if (!user) {
-      if (profileName === 'Guest') {
+      if (profileName === "Guest") {
         setShowGuestModal(true);
       } else {
-        setCurrentView('login');
+        setCurrentView("login");
       }
       return;
     }
@@ -695,13 +916,15 @@ export default function App() {
     try {
       // Deterministic chat ID
       const chatId = [user.uid, otherUserUid, itemId].sort().join("_");
-      const chatRef = doc(db, 'chats', chatId);
+      const chatRef = doc(db, "chats", chatId);
       const chatSnap = await getDoc(chatRef);
 
       if (!chatSnap.exists()) {
-        const itemRef = doc(db, 'items', itemId);
+        const itemRef = doc(db, "items", itemId);
         const itemSnap = await getDoc(itemRef);
-        const itemTitle = itemSnap.exists() ? itemSnap.data().title : "Lost/Found Item";
+        const itemTitle = itemSnap.exists()
+          ? itemSnap.data().title
+          : "Lost/Found Item";
 
         await setDoc(chatRef, {
           chatId,
@@ -709,7 +932,7 @@ export default function App() {
           itemId,
           itemTitle,
           lastMessage: `Convo initiated about "${itemTitle}"`,
-          timestamp: serverTimestamp()
+          timestamp: serverTimestamp(),
         });
       }
 
@@ -720,99 +943,51 @@ export default function App() {
     }
   };
 
-  const liveStats = useMemo(() => {
-    const itemsRecovered = items.filter(item => item.claimed).length;
-    const activeListings = items.filter(item => !item.claimed).length;
-    const communityMembers = new Set(
-      items
-        .map(item => item.userId)
-        .filter((userId): userId is string => Boolean(userId))
-    ).size;
-
-    return {
-      itemsRecovered,
-      activeListings,
-      communityMembers
-    };
-  }, [items]);
-
-  const countForKeywords = (keywords: string[]) => {
-    const kw = keywords.map(k => k.toLowerCase());
-    return items.filter(item => {
-      const text = `${item.title} ${item.desc || item.description || ''} ${item.location}`.toLowerCase();
-      return kw.some(k => text.includes(k));
-    }).length;
-  };
-
-  const featuredTestimonial = useMemo(() => {
-    return testimonials.find((testimonial: any) => typeof testimonial.quote === 'string' && testimonial.quote.trim()) || null;
-  }, [testimonials]);
-
-  const openAuthView = (mode: 'login' | 'signup') => {
-    if (user) {
-      setCurrentView('dashboard');
-      window.history.pushState(null, '', '/');
-      return;
-    }
-
-    setCurrentView(mode);
-    window.history.pushState(null, '', mode === 'login' ? '/login' : '/signup');
-  };
-
-  const handleStartReporting = () => {
-    if (user || profileName === 'Guest') {
-      setCurrentView('dashboard');
-      window.history.pushState(null, '', '/');
-      return;
-    }
-
-    setCurrentView('signup');
-    window.history.pushState(null, '', '/signup');
-  };
-
-  const handleHowItWorks = () => {
-    document.getElementById('how-it-works')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  };
-
   // Active counter statistics dynamic
   const stats = useMemo(() => {
     return {
-      lost: items.filter(i => i.type === 'lost' && !i.claimed).length,
-      found: items.filter(i => i.type === 'found' && !i.claimed).length,
-      claimed: items.filter(i => i.claimed).length
+      lost: items.filter((i) => i.type === "lost" && !i.claimed).length,
+      found: items.filter((i) => i.type === "found" && !i.claimed).length,
+      claimed: items.filter((i) => i.claimed).length,
     };
   }, [items]);
 
   // In memory dynamic listing filter
   const filteredSearchList = useMemo(() => {
-    return items.filter(r => {
-      const keywords = `${r.title} ${r.desc || r.description || ""} ${r.location}`.toLowerCase();
-      
+    return items.filter((r) => {
+      const keywords =
+        `${r.title} ${r.desc || r.description || ""} ${r.location}`.toLowerCase();
+
       // Keyword matching
       if (sQuery.trim() && !keywords.includes(sQuery.toLowerCase())) {
         return false;
       }
-      
+
       // Category keywords browsing bounds
       if (categoryKeywords) {
-        const hasKeywordMatch = categoryKeywords.some(kw => keywords.includes(kw.toLowerCase()));
+        const hasKeywordMatch = categoryKeywords.some((kw) =>
+          keywords.includes(kw.toLowerCase()),
+        );
         if (!hasKeywordMatch) return false;
       }
 
       // Status dropdown
-      if (sFilter === 'lost') {
-        if (r.type !== 'lost' || r.claimed) return false;
-      } else if (sFilter === 'found') {
-        if (r.type !== 'found' || r.claimed) return false;
-      } else if (sFilter === 'claimed') {
+      if (sFilter === "lost") {
+        if (r.type !== "lost" || r.claimed) return false;
+      } else if (sFilter === "found") {
+        if (r.type !== "found" || r.claimed) return false;
+      } else if (sFilter === "claimed") {
         if (!r.claimed) return false;
       }
 
       // Advanced filters bounds
-      if (sLoc.trim() && !(r.location || "").toLowerCase().includes(sLoc.toLowerCase())) {
+      if (
+        sLoc.trim() &&
+        !(r.location || "").toLowerCase().includes(sLoc.toLowerCase())
+      ) {
         return false;
       }
-      
+
       if (sDate.trim()) {
         const itemDateStr = r.date || "";
         if (!itemDateStr.includes(sDate)) return false;
@@ -825,7 +1000,7 @@ export default function App() {
   // Compute matches scores for active queries
   const smartMatches = useMemo(() => {
     if (sQuery.trim().length < 3) return [];
-    
+
     const fake = {
       id: "fake_search",
       title: sQuery,
@@ -833,13 +1008,13 @@ export default function App() {
       location: "",
       type: "lost",
       createdAt: Date.now(),
-      claimed: false
+      claimed: false,
     };
 
     return items
-      .filter(r => r.type === 'found' && !r.claimed)
-      .map(r => ({ report: r, score: computeMatchScore(fake, r) }))
-      .filter(x => x.score > 0.12)
+      .filter((r) => r.type === "found" && !r.claimed)
+      .map((r) => ({ report: r, score: computeMatchScore(fake, r) }))
+      .filter((x) => x.score > 0.12)
       .sort((a, b) => b.score - a.score)
       .slice(0, 4);
   }, [items, sQuery]);
@@ -847,18 +1022,19 @@ export default function App() {
   // Complete clean JSX structure wrapping converted index.html tags
   return (
     <div className="relative min-h-screen bg-[#f0f4f8]">
-      
       {/* ── TOAST MESSAGES FLOATER ── */}
       <div className="toast-container" id="toastContainer">
-        {toasts.map(t => (
+        {toasts.map((t) => (
           <div key={t.id} className={`toast-msg ${t.type}`}>
             {t.msg}
           </div>
         ))}
       </div>
 
-      {/* ── IMMERSIVE BACKGROUND GRID (Only on auth views) ── */}
-      {(currentView === 'login' || currentView === 'signup' || currentView === 'verify-email') && (
+      {/* ── IMMERSIVE BACKGROUND GRID (Only on landing or auth views) ── */}
+      {(currentView === "login" ||
+        currentView === "signup" ||
+        currentView === "verify-email") && (
         <div className="bg-scene">
           <div className="bg-orb"></div>
           <div className="bg-orb"></div>
@@ -868,331 +1044,446 @@ export default function App() {
       )}
 
       {/* ── VIEW 1: LANDING PAGE ── */}
-      {currentView === 'landing' && (
-        <div className="min-h-screen bg-surface text-on-surface">
-          <section id="top" className="relative isolate overflow-hidden bg-surface-container-highest">
-            <div className="absolute inset-0">
-              <img
-                src="https://lh3.googleusercontent.com/aida-public/AB6AXuCDC3YRMFuO-lEwm9bKTIguR-1belAnXoHIgeigQ3q4SUYgObcsSiNUjHnpR_ZfqvyDsqJKY7pe4fPQ9fAxiXPLcUxQOJOcX6tgsnNpBIFjznIY1JDEnT0amN_j0g91NAtN4xOqL_xe6gYYA1U5PBGH18oRD2F1fn_Z1eAqQ2CYzkwKBwB-0d16PaU0F6IfiXoXHmT6Txuseum5Be0PuKe26wtdeMNMjFB0UJczwaKK0iUeWAfbVmcG-yd4WQJ83LfWGXw7GPVkDQ"
-                alt="A vibrant cityscape with lush greenery and community warmth"
-                className="h-full w-full object-cover"
-              />
-              <div className="absolute inset-0 bg-surface/20 backdrop-blur-[2px]" />
-              <div className="absolute inset-0 bg-gradient-to-t from-surface via-transparent to-transparent" />
-            </div>
-
-            <div className="relative mx-auto flex min-h-[100dvh] max-w-7xl flex-col px-4 py-6 sm:px-6 lg:px-8">
-              <header className="flex items-center justify-between rounded-full border border-white/50 bg-white/75 px-4 py-3 shadow-sm backdrop-blur-xl sm:px-6">
-                <button onClick={() => { setCurrentView('landing'); window.history.pushState(null, '', '/'); }} className="flex items-center gap-3 text-left">
-                  <div className="flex h-11 w-11 items-center justify-center rounded-full bg-primary text-on-primary shadow-lg shadow-primary/20">
-                    <Search className="h-5 w-5" />
-                  </div>
-                  <div>
-                    <div className="font-['Inter'] text-lg font-semibold tracking-tight text-primary-dim">FindTrack</div>
-                    <div className="text-[10px] font-medium uppercase tracking-[0.24em] text-on-surface-variant">Lost & found community</div>
-                  </div>
+      {currentView === "landing" && (
+        <div className="bg-[#fffbff] text-[#393927] font-sans antialiased overflow-x-hidden min-h-screen flex flex-col">
+          {/* TopNavBar */}
+          <header className="w-full top-0 z-50 bg-[#fffbff] shadow-sm sticky">
+            <div className="flex justify-between items-center h-16 px-4 md:px-8 max-w-7xl mx-auto">
+              <div className="font-sans text-2xl font-bold text-[#01725a] tracking-tight flex items-center gap-2">
+                <MapPin className="h-6 w-6 text-[#01725a]" />
+                FindTrack
+              </div>
+              <nav className="hidden md:flex items-center gap-6">
+                <button onClick={() => setCurrentView("landing")} className="text-[#01725a] border-b-2 border-[#01725a] pb-1 font-medium text-sm hover:text-[#01725a] transition-colors duration-200">Home</button>
+                <button className="text-[#666551] font-medium text-sm hover:text-[#01725a] transition-colors duration-200">How it Works</button>
+                <button className="text-[#666551] font-medium text-sm hover:text-[#01725a] transition-colors duration-200">Community</button>
+                <button className="text-[#666551] font-medium text-sm hover:text-[#01725a] transition-colors duration-200">Safety</button>
+              </nav>
+              <div className="flex items-center gap-4">
+                <button onClick={() => setCurrentView("login")} className="hidden md:block text-[#666551] font-medium text-sm hover:text-[#01725a] transition-colors duration-200 scale-95 active:scale-90">Login</button>
+                <button onClick={() => setCurrentView("signup")} className="bg-[#01725a] text-white px-4 py-2 rounded-lg font-medium text-sm hover:bg-[#00654f] transition-colors scale-95 active:scale-90">Get Started</button>
+                {/* Mobile Menu Button */}
+                <button 
+                  className="md:hidden p-2 text-[#666551] hover:text-[#01725a]"
+                  onClick={() => setLandingMenuOpen(!landingMenuOpen)}
+                >
+                  {landingMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
                 </button>
-                <nav className="hidden items-center gap-6 md:flex">
-                  <button onClick={() => { setCurrentView('landing'); window.history.pushState(null, '', '/'); }} className="text-sm font-semibold text-primary">Home</button>
-                  <button onClick={handleHowItWorks} className="text-sm font-semibold text-on-surface-variant transition hover:text-primary">How it Works</button>
-                  <button onClick={() => { setCurrentView('landing'); window.history.pushState(null, '', '/'); }} className="text-sm font-semibold text-on-surface-variant transition hover:text-primary">Community</button>
-                  <button onClick={() => { setCurrentView('privacy'); window.history.pushState(null, '', '/privacy'); }} className="text-sm font-semibold text-on-surface-variant transition hover:text-primary">Safety</button>
-                </nav>
-                <div className="flex items-center gap-3">
-                  <button onClick={() => openAuthView('login')} className="hidden rounded-full border border-primary/20 px-4 py-2 text-sm font-semibold text-primary transition hover:bg-primary/5 sm:inline-flex">
-                    Login
-                  </button>
-                  <button onClick={() => openAuthView('signup')} className="rounded-full bg-primary px-4 py-2 text-sm font-semibold text-on-primary shadow-md transition hover:bg-primary-dim">
-                    Get Started
-                  </button>
-                </div>
-              </header>
+              </div>
+            </div>
+          </header>
 
-              <div className="flex flex-1 items-center justify-center py-14 sm:py-20">
-                <div className="max-w-3xl rounded-[28px] border border-white/50 bg-white/80 p-8 text-center shadow-2xl shadow-black/15 backdrop-blur-xl sm:p-10 lg:p-14">
-                  <p className="mb-4 inline-flex items-center rounded-full border border-primary/15 bg-primary/10 px-3 py-1 text-sm font-semibold text-primary">Trusted local recovery</p>
-                  <h1 className="font-['Inter'] text-4xl font-bold leading-tight text-primary-dim sm:text-5xl lg:text-6xl">
-                    Find what's lost.<br />Restore community trust.
+          {/* Mobile Nav Dropdown */}
+          {landingMenuOpen && (
+            <div className="md:hidden absolute top-16 left-0 right-0 bg-white shadow-xl z-50 p-6 flex flex-col gap-4 border-b border-slate-100">
+              <button className="text-left font-medium text-slate-700 hover:text-[#01725a] py-2">Home</button>
+              <button className="text-left font-medium text-slate-700 hover:text-[#01725a] py-2">How it Works</button>
+              <button className="text-left font-medium text-slate-700 hover:text-[#01725a] py-2">Community</button>
+              <button className="text-left font-medium text-slate-700 hover:text-[#01725a] py-2">Safety</button>
+              <hr className="border-slate-100 my-2" />
+              <button 
+                onClick={() => {
+                  setLandingMenuOpen(false);
+                  setCurrentView("login");
+                }}
+                className="text-left font-medium text-slate-700 hover:text-[#01725a] py-2"
+              >
+                Login
+              </button>
+              <button 
+                onClick={() => {
+                  setLandingMenuOpen(false);
+                  setCurrentView("signup");
+                }}
+                className="bg-[#01725a] hover:bg-[#00654f] text-white px-6 py-3 rounded-lg font-semibold text-center transition-colors shadow-sm mt-2"
+              >
+                Get Started
+              </button>
+            </div>
+          )}
+
+          <main className="flex-1">
+            {/* Hero Section */}
+            <section className="relative min-h-[921px] flex items-center justify-center overflow-hidden">
+              <div className="absolute inset-0 z-0">
+                <img className="w-full h-full object-cover object-center" alt="Hero background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCDC3YRMFuO-lEwm9bKTIguR-1belAnXoHIgeigQ3q4SUYgObcsSiNUjHnpR_ZfqvyDsqJKY7pe4fPQ9fAxiXPLcUxQOJOcX6tgsnNpBIFjznIY1JDEnT0amN_j0g91NAtN4xOqL_xe6gYYA1U5PBGH18oRD2F1fn_Z1eAqQ2CYzkwKBwB-0d16PaU0F6IfiXoXHmT6Txuseum5Be0PuKe26wtdeMNMjFB0UJczwaKK0iUeWAfbVmcG-yd4WQJ83LfWGXw7GPVkDQ"/>
+                <div className="absolute inset-0 bg-[#fffbff]/30 backdrop-blur-[2px]"></div>
+                <div className="absolute inset-0 bg-gradient-to-t from-[#fffbff] via-transparent to-transparent"></div>
+              </div>
+              <div className="relative z-10 max-w-7xl mx-auto px-4 md:px-8 text-center mt-8 w-full">
+                <div className="bg-white/85 backdrop-blur-md border border-white/30 p-8 md:p-12 rounded-xl inline-block max-w-3xl shadow-lg w-full">
+                  <h1 className="font-sans text-4xl md:text-[48px] md:leading-[56px] font-bold text-[#00654f] mb-4">
+                    Find what's lost.<br/>Restore community trust.
                   </h1>
-                  <p className="mx-auto mt-5 max-w-2xl text-lg leading-8 text-on-surface-variant">
+                  <p className="font-sans text-lg text-[#666551] mb-8 max-w-2xl mx-auto">
                     FindTrack helps Filipinos recover lost belongings through trusted community reporting and verified recovery workflows.
                   </p>
-                  <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
-                    <button onClick={handleStartReporting} className="inline-flex items-center justify-center gap-2 rounded-full bg-tertiary-container px-6 py-3 text-sm font-semibold text-on-tertiary-container shadow-lg shadow-tertiary-container/20 transition hover:brightness-95">
-                      <PenTool className="h-4 w-4" />
+                  <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+                    <button 
+                      onClick={() => setCurrentView("signup")}
+                      className="w-full sm:w-auto bg-[#fab83f] text-[#553900] px-6 py-3 rounded-lg font-semibold text-sm shadow-md hover:bg-[#ebaa32] transition-colors flex items-center justify-center gap-2"
+                    >
+                      <PlusCircle className="w-5 h-5" />
                       Start Reporting
                     </button>
-                    <button onClick={handleHowItWorks} className="inline-flex items-center justify-center rounded-full border border-primary/20 px-6 py-3 text-sm font-semibold text-primary transition hover:bg-primary/5">
+                    <button 
+                      onClick={handleGuestBrowse}
+                      className="w-full sm:w-auto border-2 border-[#01725a] text-[#01725a] px-6 py-3 rounded-lg font-semibold text-sm hover:bg-[#01725a]/5 transition-colors"
+                    >
                       How it Works
                     </button>
                   </div>
                 </div>
               </div>
-            </div>
-          </section>
+            </section>
 
-          <section id="how-it-works" className="bg-surface-container-lowest py-20">
-            <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-              <div className="mx-auto max-w-2xl text-center">
-                <h2 className="font-['Inter'] text-3xl font-semibold tracking-tight text-primary-dim sm:text-4xl">Three Pillars of Recovery</h2>
-                <p className="mt-3 text-lg text-on-surface-variant">A seamless workflow designed to bring your items back home.</p>
+            {/* Value Propositions (Bento Grid) */}
+            <section className="py-24 bg-[#ffffff]">
+              <div className="max-w-7xl mx-auto px-4 md:px-8">
+                <div className="text-center mb-16">
+                  <h2 className="font-sans text-3xl md:text-4xl font-bold text-[#00654f] mb-2">Three Pillars of Recovery</h2>
+                  <p className="font-sans text-base text-[#666551] max-w-xl mx-auto">A seamless workflow designed to bring your items back home.</p>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  {/* Pillar 1 */}
+                  <div className="bg-[#f7f4df] rounded-xl p-6 flex flex-col items-start border border-[#bcbaa2]/30 hover:shadow-md transition-shadow">
+                    <div className="w-12 h-12 bg-[#9af4d6] text-[#005d49] rounded-full flex items-center justify-center mb-4">
+                      <FileSearch className="w-6 h-6" />
+                    </div>
+                    <h3 className="font-sans text-xl font-bold text-[#00654f] mb-2">Report</h3>
+                    <p className="font-sans text-base text-[#666551]">Quickly document lost or found items with AI-assisted details for precise matching.</p>
+                  </div>
+                  {/* Pillar 2 */}
+                  <div className="bg-[#fdfae7] rounded-xl p-6 flex flex-col items-start border border-[#bcbaa2]/30 hover:shadow-md transition-shadow">
+                    <div className="w-12 h-12 bg-[#b5eedb] text-[#235b4c] rounded-full flex items-center justify-center mb-4">
+                      <MessageSquareHeart className="w-6 h-6" />
+                    </div>
+                    <h3 className="font-sans text-xl font-bold text-[#00654f] mb-2">Connect</h3>
+                    <p className="font-sans text-base text-[#666551]">Securely message community members when a match is found, protecting your privacy.</p>
+                  </div>
+                  {/* Pillar 3 */}
+                  <div className="bg-[#f7f4df] rounded-xl p-6 flex flex-col items-start border border-[#bcbaa2]/30 hover:shadow-md transition-shadow">
+                    <div className="w-12 h-12 bg-[#fab83f] text-[#553900] rounded-full flex items-center justify-center mb-4">
+                      <Handshake className="w-6 h-6" />
+                    </div>
+                    <h3 className="font-sans text-xl font-bold text-[#00654f] mb-2">Recover</h3>
+                    <p className="font-sans text-base text-[#666551]">Follow verified hand-off protocols to ensure items return home safely and securely.</p>
+                  </div>
+                </div>
               </div>
-              <div className="mt-12 grid gap-6 lg:grid-cols-3">
-                <div className="rounded-[24px] border border-outline-variant/30 bg-surface-container p-8 shadow-sm transition hover:shadow-md">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary-container text-on-primary-container">
-                    <PenTool className="h-6 w-6" />
-                  </div>
-                  <h3 className="mt-5 font-['Inter'] text-xl font-semibold text-primary-dim">Report</h3>
-                  <p className="mt-3 text-base leading-7 text-on-surface-variant">Quickly document lost or found items with AI-assisted details for precise matching.</p>
-                </div>
-                <div className="rounded-[24px] border border-outline-variant/30 bg-surface-container-low p-8 shadow-sm transition hover:shadow-md">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-secondary-container text-on-surface">
-                    <MessageCircle className="h-6 w-6" />
-                  </div>
-                  <h3 className="mt-5 font-['Inter'] text-xl font-semibold text-primary-dim">Connect</h3>
-                  <p className="mt-3 text-base leading-7 text-on-surface-variant">Securely message community members when a match is found, protecting your privacy.</p>
-                </div>
-                <div className="rounded-[24px] border border-outline-variant/30 bg-surface-container p-8 shadow-sm transition hover:shadow-md">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-tertiary-container text-on-tertiary-container">
-                    <Hand className="h-6 w-6" />
-                  </div>
-                  <h3 className="mt-5 font-['Inter'] text-xl font-semibold text-primary-dim">Recover</h3>
-                  <p className="mt-3 text-base leading-7 text-on-surface-variant">Follow verified hand-off protocols to ensure items return home safely and securely.</p>
-                </div>
-              </div>
-            </div>
-          </section>
+            </section>
 
-          <section className="bg-surface-container py-20">
-            <div className="mx-auto grid max-w-7xl gap-10 px-4 sm:px-6 lg:grid-cols-[1.05fr_0.95fr] lg:px-8">
-              <div>
-                <h2 className="font-['Inter'] text-3xl font-semibold tracking-tight text-primary-dim sm:text-4xl">By the Community,<br />For the Community.</h2>
-                <p className="mt-5 max-w-2xl text-lg leading-8 text-on-surface-variant">Built on the foundation of Bayanihan, FindTrack empowers everyday Filipinos to look out for one another.</p>
-                <div className="mt-8 grid gap-4 sm:grid-cols-2">
-                  <div className="rounded-[24px] border border-outline-variant/30 bg-surface p-6 shadow-sm">
-                    <div className="text-4xl font-semibold tracking-tight text-primary">{liveStats.itemsRecovered.toLocaleString()}</div>
-                    <div className="mt-2 text-sm font-semibold uppercase tracking-[0.24em] text-on-surface-variant">Items Recovered</div>
-                  </div>
-                  <div className="rounded-[24px] border border-outline-variant/30 bg-surface p-6 shadow-sm">
-                    <div className="text-4xl font-semibold tracking-tight text-primary">{liveStats.activeListings.toLocaleString()}</div>
-                    <div className="mt-2 text-sm font-semibold uppercase tracking-[0.24em] text-on-surface-variant">Active Listings</div>
-                  </div>
-                </div>
-                <p className="mt-4 text-sm text-on-surface-variant">Community members currently participating: {liveStats.communityMembers.toLocaleString()}</p>
-              </div>
-
-              <div className="rounded-[28px] border border-outline-variant/30 bg-surface p-6 shadow-sm sm:p-8">
-                <div className="flex items-center justify-between">
-                  <p className="text-sm font-semibold uppercase tracking-[0.24em] text-on-surface-variant">Community voice</p>
-                  <div className="rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.24em] text-primary">Live</div>
-                </div>
-                {featuredTestimonial ? (
-                  <>
-                    <p className="mt-6 text-xl leading-8 text-on-surface">“{featuredTestimonial.quote}”</p>
-                    <div className="mt-6 flex items-center gap-3">
-                      <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary-container font-semibold text-primary-dim">
-                        {(featuredTestimonial.author || 'Community').charAt(0).toUpperCase()}
-                      </div>
+            {/* Community Section */}
+            <section className="py-24 bg-[#f7f4df]">
+              <div className="max-w-7xl mx-auto px-4 md:px-8">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
+                  <div>
+                    <h2 className="font-sans text-3xl md:text-4xl font-bold text-[#00654f] mb-4">By the Community,<br/>For the Community.</h2>
+                    <p className="font-sans text-lg text-[#666551] mb-6">Built on the foundation of Bayanihan, FindTrack empowers everyday Filipinos to look out for one another.</p>
+                    <div className="flex gap-6 mb-8">
                       <div>
-                        <div className="font-semibold text-on-surface">{featuredTestimonial.author || 'Community member'}</div>
-                        <div className="text-sm text-on-surface-variant">{featuredTestimonial.role || 'Community testimonial'}</div>
+                        <div className="font-sans text-3xl font-bold text-[#01725a]">{new Set(items.map(i => i.userId)).size}</div>
+                        <div className="font-sans text-sm font-medium text-[#666551]">Community Members</div>
+                      </div>
+                      <div className="w-px bg-[#bcbaa2]/50"></div>
+                      <div>
+                        <div className="font-sans text-3xl font-bold text-[#fab83f]">{stats.claimed}</div>
+                        <div className="font-sans text-sm font-medium text-[#666551]">Successful Recoveries</div>
                       </div>
                     </div>
-                  </>
-                ) : (
-                  <>
-                    <p className="mt-6 text-xl leading-8 text-on-surface">A testimonial will appear here once the content team adds one to the live database.</p>
-                    <p className="mt-4 text-sm leading-6 text-on-surface-variant">No placeholder quote or name is being fabricated for this homepage.</p>
-                  </>
-                )}
+                    {/* Testimonial Card (Placeholder for content team) */}
+                    <div className="bg-white rounded-xl p-6 border border-[#bcbaa2]/30 shadow-sm relative opacity-70">
+                      <Quote className="absolute top-4 right-4 text-[#bcbaa2]/30 w-10 h-10" />
+                      <p className="font-sans text-base text-[#393927] mb-4 italic relative z-10">[Content Team: Insert real community testimonial here]</p>
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-full bg-slate-200 overflow-hidden">
+                        </div>
+                        <div>
+                          <div className="font-sans text-sm text-[#393927] font-bold">[User Name]</div>
+                          <div className="font-sans text-[10px] font-medium text-[#666551]">Community Hero</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="relative h-[400px] lg:h-[500px] rounded-xl overflow-hidden shadow-lg border border-[#bcbaa2]/20">
+                    <img className="w-full h-full object-cover" alt="Community" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBxlGOvC8tUv_qZ8mbCzoTfeO2pcAAWluudEQ74nJYhDiM6dKFkJnXAMN2tK4YBhxIv0KPww3WsGnpb6KywmxGohTQ6i90nv7w2u0RVCecjGnzgkXMAWIJCDNduz3N6uzUJzOO2X6hUbk8TdWW4cPEa870HJ5Ah1QvAKbwvSknJT3Vri6FIhh8Mm_4iOGeknwaECR9sIKas-PM3QZqG2o9wpOSp-eQc4Fnpoc0yWIHqiDg4zXr3mFK3NE8g9xXChlUOf26yIrPeeg"/>
+                  </div>
+                </div>
               </div>
-            </div>
-          </section>
+            </section>
+          </main>
 
-          <footer className="border-t border-outline-variant/30 bg-surface-container-highest">
-            <div className="mx-auto grid max-w-7xl gap-8 px-4 py-12 sm:px-6 md:grid-cols-2 lg:px-8">
+          {/* Footer */}
+          <footer className="bg-[#ebe9cf] border-t border-[#bcbaa2]/30 w-full mt-auto">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 py-8 px-4 md:px-8 max-w-7xl mx-auto">
               <div>
-                <div className="font-['Inter'] text-xl font-semibold text-on-surface">FindTrack</div>
-                <p className="mt-3 max-w-sm text-sm leading-7 text-on-surface-variant">© 2026 FindTrack Philippines. Empowering communities through trust and recovery.</p>
+                <div className="font-sans text-2xl font-bold text-[#393927] mb-4 flex items-center gap-2"><MapPin className="h-6 w-6 text-[#01725a]"/>FindTrack</div>
+                <p className="font-sans text-base text-[#666551] max-w-sm mb-4">© 2026 FindTrack Philippines. Empowering communities through trust and recovery.</p>
               </div>
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div className="flex flex-col gap-3">
-                  <button onClick={() => { setCurrentView('landing'); window.history.pushState(null, '', '/'); }} className="text-left text-sm font-medium text-on-surface-variant transition hover:text-primary">About Us</button>
-                  <button onClick={() => { setCurrentView('privacy'); window.history.pushState(null, '', '/privacy'); }} className="text-left text-sm font-medium text-on-surface-variant transition hover:text-primary">Privacy Policy</button>
-                  <button onClick={() => { setCurrentView('terms'); window.history.pushState(null, '', '/terms'); }} className="text-left text-sm font-medium text-on-surface-variant transition hover:text-primary">Terms of Service</button>
-                </div>
-                <div className="flex flex-col gap-3">
-                  <button onClick={() => { setCurrentView('privacy'); window.history.pushState(null, '', '/privacy'); }} className="text-left text-sm font-medium text-on-surface-variant transition hover:text-primary">Safety Guidelines</button>
-                  <button onClick={() => { setCurrentView('landing'); window.history.pushState(null, '', '/'); }} className="text-left text-sm font-medium text-on-surface-variant transition hover:text-primary">Help Center</button>
-                  <button onClick={() => { setCurrentView('landing'); window.history.pushState(null, '', '/'); }} className="text-left text-sm font-medium text-on-surface-variant transition hover:text-primary">Contact Us</button>
-                </div>
+              <div className="grid grid-cols-2 gap-4">
+                <nav className="flex flex-col gap-3">
+                  <a onClick={() => { setCurrentView("about"); window.history.pushState(null, "", "/about"); }} className="font-sans text-sm font-medium text-[#666551] hover:text-[#01725a] hover:underline transition-all opacity-80 hover:opacity-100 cursor-pointer">About Us</a>
+                  <a onClick={() => { setCurrentView("privacy"); window.history.pushState(null, "", "/privacy"); }} className="font-sans text-sm font-medium text-[#666551] hover:text-[#01725a] hover:underline transition-all opacity-80 hover:opacity-100 cursor-pointer">Privacy Policy</a>
+                  <a onClick={() => { setCurrentView("terms"); window.history.pushState(null, "", "/terms"); }} className="font-sans text-sm font-medium text-[#666551] hover:text-[#01725a] hover:underline transition-all opacity-80 hover:opacity-100 cursor-pointer">Terms of Service</a>
+                </nav>
+                <nav className="flex flex-col gap-3">
+                  <a onClick={() => { setCurrentView("safety"); window.history.pushState(null, "", "/safety"); }} className="font-sans text-sm font-medium text-[#666551] hover:text-[#01725a] hover:underline transition-all opacity-80 hover:opacity-100 cursor-pointer">Safety Guidelines</a>
+                  <a onClick={() => { setCurrentView("help"); window.history.pushState(null, "", "/help"); }} className="font-sans text-sm font-medium text-[#666551] hover:text-[#01725a] hover:underline transition-all opacity-80 hover:opacity-100 cursor-pointer">Help Center</a>
+                  <a onClick={() => { setCurrentView("contact"); window.history.pushState(null, "", "/contact"); }} className="font-sans text-sm font-medium text-[#666551] hover:text-[#01725a] hover:underline transition-all opacity-80 hover:opacity-100 cursor-pointer">Contact Us</a>
+                </nav>
               </div>
             </div>
           </footer>
         </div>
       )}
-
       {/* ── VIEW 2: LOGIN PAGE ── */}
-      {currentView === 'login' && (
-        <div className="landing-page flex items-center justify-center">
-          <div className="auth-wrap">
-            <div className="back-link">
-              <button onClick={() => setCurrentView('landing')} className="text-slate-400 hover:text-white transition">← Back to home</button>
-            </div>
-
-            <div className="auth-logo">
-              <div className="auth-logo-icon"><Search className="text-white" /></div>
-              <h1>FindTrack</h1>
-              <p>Lost &amp; Found System</p>
-            </div>
-
-            <div className="auth-card glass-panel w-full max-w-md rounded-xl p-xl relative z-10">
-              <div className="text-center mb-xl">
-                <h1 className="font-headline-lg text-headline-lg text-primary mb-sm">FindTrack</h1>
-                <p className="font-body-lg text-body-lg text-on-surface-variant">Welcome back to the community.</p>
-              </div>
-
-              <form className="space-y-lg" onSubmit={handleLoginSubmit}>
-                <div>
-                  <label className="block font-label-md text-label-md text-on-surface mb-xs" htmlFor="email">Email Address</label>
-                  <div className="relative">
-                    <span className="material-symbols-outlined absolute left-sm top-1/2 -translate-y-1/2 text-on-surface-variant">mail</span>
-                    <input id="email" name="email" type="email" required className="w-full pl-10 pr-sm py-sm bg-surface-container-lowest border border-outline-variant rounded-lg font-body-md text-body-md text-on-surface focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-colors" placeholder="you@example.com" value={authEmail} onChange={(e) => setAuthEmail(e.target.value)} />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block font-label-md text-label-md text-on-surface mb-xs" htmlFor="password">Password</label>
-                  <div className="relative">
-                    <span className="material-symbols-outlined absolute left-sm top-1/2 -translate-y-1/2 text-on-surface-variant">lock</span>
-                    <input id="password" name="password" type={showPass ? 'text' : 'password'} required className="w-full pl-10 pr-sm py-sm bg-surface-container-lowest border border-outline-variant rounded-lg font-body-md text-body-md text-on-surface focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-colors" placeholder="••••••••" value={authPassword} onChange={(e) => setAuthPass(e.target.value)} />
-                    <button type="button" className="absolute right-sm top-1/2 -translate-y-1/2 text-on-surface-variant hover:text-primary transition-colors focus:outline-none" onClick={() => setShowPass(!showPass)}>{showPass ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}</button>
-                  </div>
-                  <div className="flex justify-end mt-xs">
-                    <button type="button" onClick={handleSendPasswordReset} className="font-label-md text-label-md text-primary hover:text-primary-dim transition-colors">Forgot Password?</button>
-                  </div>
-                </div>
-
-                <button className="w-full py-sm px-md bg-primary text-on-primary rounded-lg font-body-lg text-body-lg font-medium hover:bg-primary-dim transition-colors shadow-sm flex items-center justify-center gap-sm" type="submit" disabled={loadingAuth}>
-                  {loadingAuth ? <span>Sending…</span> : <><Lock className="h-5 w-5 inline" /> Sign In</>}
-                </button>
-              </form>
-
-              <div className="mt-xl text-center">
-                <p className="font-body-md text-body-md text-on-surface-variant">
-                  Don't have an account?{' '}
-                  <button onClick={() => setCurrentView('signup')} className="text-primary font-semibold hover:underline transition-all">Sign up</button>
-                </p>
-              </div>
-            </div>
+      {currentView === "login" && (
+        <div className="bg-surface-container min-h-screen flex items-center justify-center p-4 md:p-8 font-body-md text-on-surface">
+          {/* Decorative Background Elements */}
+          <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
+            <div className="absolute -top-40 -right-40 w-96 h-96 bg-primary-container rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-pulse"></div>
+            <div className="absolute top-40 -left-20 w-72 h-72 bg-secondary-container rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-pulse" style={{animationDelay: '2s'}}></div>
+            <div className="absolute -bottom-40 left-20 w-80 h-80 bg-tertiary-container rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse" style={{animationDelay: '4s'}}></div>
           </div>
+
+          {/* Login Card */}
+          <main className="bg-white/85 backdrop-blur-[12px] border border-white/50 shadow-[0_8px_32px_0_rgba(1,114,90,0.05)] w-full max-w-md rounded-xl p-8 relative z-10">
+            {/* Header */}
+            <div className="text-center mb-8">
+              <h1 className="font-headline-lg text-4xl text-primary mb-3 cursor-pointer" onClick={() => setCurrentView("landing")}>FindTrack</h1>
+              <p className="font-body-lg text-lg text-on-surface-variant">Welcome back to the community.</p>
+            </div>
+
+            {/* Form */}
+            <form onSubmit={handleLoginSubmit} className="space-y-6">
+              {/* Email Field */}
+              <div>
+                <label className="block font-label-md text-sm text-on-surface mb-1" htmlFor="email">Email Address</label>
+                <div className="relative">
+                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant h-5 w-5" strokeWidth={1.5} />
+                  <input 
+                    className="w-full pl-10 pr-3 py-3 bg-surface-container-lowest border border-outline-variant rounded-lg font-body-md text-on-surface focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-colors" 
+                    id="email" 
+                    name="email" 
+                    placeholder="you@example.com" 
+                    required 
+                    type="email"
+                    value={authEmail}
+                    onChange={(e) => setAuthEmail(e.target.value)}
+                  />
+                </div>
+              </div>
+
+              {/* Password Field */}
+              <div>
+                <label className="block font-label-md text-sm text-on-surface mb-1" htmlFor="password">Password</label>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant h-5 w-5" strokeWidth={1.5} />
+                  <input 
+                    className="w-full pl-10 pr-10 py-3 bg-surface-container-lowest border border-outline-variant rounded-lg font-body-md text-on-surface focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-colors" 
+                    id="password" 
+                    name="password" 
+                    placeholder="••••••••" 
+                    required 
+                    type={showPass ? "text" : "password"}
+                    value={authPassword}
+                    onChange={(e) => setAuthPass(e.target.value)}
+                  />
+                  <button 
+                    type="button" 
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant hover:text-primary transition-colors focus:outline-none" 
+                    onClick={() => setShowPass(!showPass)}
+                  >
+                    {showPass ? (
+                      <EyeOff className="h-5 w-5" strokeWidth={1.5} />
+                    ) : (
+                      <Eye className="h-5 w-5" strokeWidth={1.5} />
+                    )}
+                  </button>
+                </div>
+                <div className="flex justify-end mt-2">
+                  <button 
+                    type="button"
+                    onClick={() => setCurrentView("reset")}
+                    className="font-label-md text-sm text-primary hover:text-primary-dim transition-colors" 
+                  >
+                    Forgot Password?
+                  </button>
+                </div>
+              </div>
+
+              {/* Submit Button */}
+              <button 
+                className="w-full py-3 px-4 bg-primary text-on-primary rounded-lg font-body-lg text-lg font-medium hover:bg-primary-dim transition-colors shadow-sm flex items-center justify-center gap-3" 
+                type="submit"
+              >
+                Login
+              </button>
+            </form>
+
+            {/* Footer */}
+            <div className="mt-8 text-center">
+              <p className="font-body-md text-on-surface-variant">
+                Don't have an account?{" "}
+                <button 
+                  onClick={() => setCurrentView("signup")}
+                  className="text-primary font-semibold hover:underline transition-all"
+                >
+                  Sign up
+                </button>
+              </p>
+            </div>
+          </main>
         </div>
       )}
 
       {/* ── VIEW 3: SIGNUP PAGE ── */}
-      {currentView === 'signup' && (
-        <div className="landing-page flex items-center justify-center">
-          <div className="auth-wrap">
-            <div className="back-link">
-              <button onClick={() => setCurrentView('landing')} className="text-slate-400 hover:text-white transition">← Back to home</button>
+      {currentView === "signup" && (
+        <div className="bg-surface text-on-surface min-h-screen flex">
+          <div className="flex flex-1 flex-col lg:flex-row w-full">
+            {/* Left Side: Brand/Image */}
+            <div className="relative hidden w-full flex-1 lg:flex flex-col bg-primary justify-center items-center overflow-hidden">
+              <div className="absolute inset-0 z-0">
+                <img 
+                  className="w-full h-full object-cover opacity-40 mix-blend-overlay" 
+                  alt="Community gathering" 
+                  src="https://lh3.googleusercontent.com/aida-public/AB6AXuCvRFZSJBgEE2S4kkhaO3FQG94HOqflWeXoL7sWVnj0cOhd4whz01siH4EXJov53DfuShTq2v0BMqFvJoJkj_0tkmbaPPG8jWsm6SnnwXQ5o_2JqORb_gsB2IzZs3U31vlcGuPJ2_kSrom8AQj1y9o2Wn7pTAxfxxqxBatxF_0Qpck-1QipkaPBlFHQoBbWRXVj5iegysuvvce_AMs_OV4xTQfQbuZfw6pSuCirbU4wFv5VodyyiV-dwn93gHRSx1XEY15EVt6l3A"
+                />
+              </div>
+              <div className="absolute inset-0 bg-gradient-to-t from-primary/90 to-primary/20 z-10"></div>
+              <div className="relative z-20 flex flex-col items-center text-center px-12 max-w-2xl">
+                <div className="mb-8 p-4 bg-surface/10 rounded-2xl backdrop-blur-sm border border-surface/20">
+                  <span className="material-symbols-outlined text-on-primary text-6xl" style={{fontVariationSettings: "'FILL' 1"}}>volunteer_activism</span>
+                </div>
+                <h1 className="font-headline-lg text-4xl text-on-primary mb-6">Join the Community</h1>
+                <p className="font-body-lg text-lg text-primary-fixed-dim">
+                  FindTrack brings people together to recover lost items and build trust. Start your journey with our supportive network today.
+                </p>
+              </div>
             </div>
 
-            <div className="auth-logo">
-              <div className="auth-logo-icon"><Search className="text-white" /></div>
-              <h1>FindTrack</h1>
-              <p>Lost &amp; Found System</p>
-            </div>
-
-            <div className="auth-card">
-              <div className="card-title">Create your account</div>
-              <div className="card-sub">Be one of the first users of FindTrack</div>
-
-              <form onSubmit={handleSignupSubmit}>
-                <div className="fields-row">
-                  <div className="field">
-                    <label>First Name</label>
-                    <div className="field-wrap">
-                      <span className="field-icon"><UserIcon className="h-5 w-5 text-slate-400" /></span>
-                      <input 
-                        type="text" 
-                        placeholder="Juan" 
-                        value={signupFirst}
-                        onChange={(e) => setSignupFirst(e.target.value)}
-                        required 
-                      />
-                    </div>
-                  </div>
-                  <div className="field">
-                    <label>Last Name</label>
-                    <div className="field-wrap">
-                      <span className="field-icon"><UserIcon className="h-5 w-5 text-slate-400" /></span>
-                      <input 
-                        type="text" 
-                        placeholder="Dela Cruz" 
-                        value={signupLast}
-                        onChange={(e) => setSignupLast(e.target.value)}
-                        required 
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                <div className="field">
-                  <label>Email Address</label>
-                  <div className="field-wrap">
-                    <span className="field-icon"><Mail className="h-5 w-5 text-slate-400" /></span>
-                    <input 
-                      type="email" 
-                      placeholder="you@example.com" 
-                      value={authEmail}
-                      onChange={(e) => setAuthEmail(e.target.value)}
-                      required 
-                    />
-                  </div>
-                </div>
-
-                <div className="field">
-                  <label>Phone Number <span style={{ opacity: 0.4, fontSize: '10px', textTransform: 'none' }}>(optional)</span></label>
-                  <div className="field-wrap">
-                    <span className="field-icon"><Smartphone className="h-5 w-5 text-slate-400" /></span>
-                    <input 
-                      type="tel" 
-                      placeholder="+63 912 345 6789" 
-                      value={signupContact}
-                      onChange={(e) => setSignupContact(e.target.value)}
-                    />
-                  </div>
-                </div>
-
-                <div className="field">
-                  <label>Password</label>
-                  <div className="field-wrap">
-                    <span className="field-icon"><Lock className="h-5 w-5 text-slate-400" /></span>
-                    <input 
-                      type={showPass ? "text" : "password"} 
-                      placeholder="Min. 6 characters" 
-                      value={authPassword}
-                      onChange={(e) => setAuthPass(e.target.value)}
-                      required 
-                    />
+            {/* Right Side: Sign Up Form */}
+            <div className="flex flex-1 flex-col justify-center px-4 py-12 sm:px-6 lg:flex-none lg:px-20 xl:px-24 bg-surface">
+              <div className="mx-auto w-full max-w-sm lg:w-96">
+                <div>
+                  <h2 className="mt-8 font-headline-lg text-4xl text-on-surface">Create an account</h2>
+                  <p className="mt-2 font-body-md text-on-surface-variant">
+                    Already a member?{" "}
                     <button 
-                      type="button" 
-                      onClick={() => setShowPass(!showPass)} 
-                      className="eye-btn text-slate-400 hover:text-slate-600 transition-colors"
-                      style={{ background: 'none', border: 'none', padding: '0 12px', cursor: 'pointer' }}
+                      onClick={() => setCurrentView("login")}
+                      className="font-label-md text-sm font-semibold text-primary hover:text-primary-dim transition-colors"
                     >
-                      {showPass ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                      Login here
                     </button>
-                  </div>
+                  </p>
                 </div>
 
-                <button type="submit" className="btn-submit" disabled={loadingAuth} style={loadingAuth ? {opacity: 0.7, cursor: 'not-allowed'} : {}}>
-                  {loadingAuth ? 'Creating Account...' : <><UserPlus className="h-5 w-5 inline" /> Create Account</>}
-                </button>
-              </form>
+                <div className="mt-10">
+                  <div>
+                    <form onSubmit={handleSignupSubmit} className="space-y-6">
+                      <div className="flex flex-col sm:flex-row gap-4">
+                        <div className="w-full">
+                          <label className="block font-label-md text-sm text-on-surface mb-2" htmlFor="firstName">First Name</label>
+                          <input 
+                            id="firstName" 
+                            name="firstName" 
+                            type="text" 
+                            required 
+                            value={signupFirst}
+                            onChange={(e) => setSignupFirst(e.target.value)}
+                            className="block w-full rounded-lg border-0 py-3 px-4 text-on-surface bg-surface-container-low shadow-sm ring-1 ring-inset ring-outline-variant placeholder:text-outline focus:ring-2 focus:ring-inset focus:ring-primary font-body-md transition-shadow"
+                          />
+                        </div>
+                        <div className="w-full">
+                          <label className="block font-label-md text-sm text-on-surface mb-2" htmlFor="lastName">Last Name</label>
+                          <input 
+                            id="lastName" 
+                            name="lastName" 
+                            type="text" 
+                            required 
+                            value={signupLast}
+                            onChange={(e) => setSignupLast(e.target.value)}
+                            className="block w-full rounded-lg border-0 py-3 px-4 text-on-surface bg-surface-container-low shadow-sm ring-1 ring-inset ring-outline-variant placeholder:text-outline focus:ring-2 focus:ring-inset focus:ring-primary font-body-md transition-shadow"
+                          />
+                        </div>
+                      </div>
 
-              <div className="auth-footer">
-                Already have an account? <button onClick={() => setCurrentView('login')} className="text-[#38bdf8] font-bold hover:underline">Sign in →</button>
+                      <div>
+                        <label className="block font-label-md text-sm text-on-surface mb-2" htmlFor="email">Email address</label>
+                        <input 
+                          id="email" 
+                          name="email" 
+                          type="email" 
+                          required 
+                          value={authEmail}
+                          onChange={(e) => setAuthEmail(e.target.value)}
+                          className="block w-full rounded-lg border-0 py-3 px-4 text-on-surface bg-surface-container-low shadow-sm ring-1 ring-inset ring-outline-variant placeholder:text-outline focus:ring-2 focus:ring-inset focus:ring-primary font-body-md transition-shadow"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block font-label-md text-sm text-on-surface mb-2" htmlFor="phone">Phone Number (Optional)</label>
+                        <input 
+                          id="phone" 
+                          name="phone" 
+                          type="tel" 
+                          value={signupContact}
+                          onChange={(e) => setSignupContact(e.target.value)}
+                          className="block w-full rounded-lg border-0 py-3 px-4 text-on-surface bg-surface-container-low shadow-sm ring-1 ring-inset ring-outline-variant placeholder:text-outline focus:ring-2 focus:ring-inset focus:ring-primary font-body-md transition-shadow"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block font-label-md text-sm text-on-surface mb-2" htmlFor="password">Password</label>
+                        <div className="relative">
+                          <input 
+                            id="password" 
+                            name="password" 
+                            type={showPass ? "text" : "password"}
+                            required 
+                            value={authPassword}
+                            onChange={(e) => setAuthPass(e.target.value)}
+                            className="block w-full rounded-lg border-0 py-3 px-4 text-on-surface bg-surface-container-low shadow-sm ring-1 ring-inset ring-outline-variant placeholder:text-outline focus:ring-2 focus:ring-inset focus:ring-primary font-body-md transition-shadow"
+                          />
+                          <button 
+                            type="button" 
+                            onClick={() => setShowPass(!showPass)}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant hover:text-primary transition-colors focus:outline-none" 
+                          >
+                            {showPass ? (
+                              <EyeOff className="h-5 w-5" strokeWidth={1.5} />
+                            ) : (
+                              <Eye className="h-5 w-5" strokeWidth={1.5} />
+                            )}
+                          </button>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center">
+                        <input 
+                          id="terms" 
+                          name="terms" 
+                          type="checkbox" 
+                          required 
+                          className="h-4 w-4 rounded border-outline-variant text-primary focus:ring-primary bg-surface-container-low"
+                        />
+                        <label className="ml-3 block font-body-md text-sm text-on-surface-variant" htmlFor="terms">
+                          I agree to the <button type="button" onClick={() => setCurrentView("terms")} className="text-primary hover:underline">Terms of Service</button> and <button type="button" onClick={() => setCurrentView("privacy")} className="text-primary hover:underline">Privacy Policy</button>.
+                        </label>
+                      </div>
+
+                      <div>
+                        <button 
+                          type="submit" 
+                          disabled={loadingAuth}
+                          className="flex w-full justify-center rounded-lg bg-primary-container px-3 py-3 font-label-md text-sm font-semibold text-on-primary-container shadow-sm hover:bg-primary-fixed focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary transition-colors disabled:opacity-70"
+                        >
+                          {loadingAuth ? "Creating Account..." : "Create Account"}
+                        </button>
+                      </div>
+                    </form>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -1200,1302 +1491,2921 @@ export default function App() {
       )}
 
       {/* ── VIEW 5: VERIFY EMAIL SCREEN ── */}
-      {currentView === 'verify-email' && (
-        <div className="landing-page flex items-center justify-center">
-          <div className="auth-wrap">
-            <div className="back-link">
-              <button onClick={async () => { await logOut(); setCurrentView('landing'); }} className="text-slate-400 hover:text-white transition">← Logout &amp; return</button>
+      {currentView === "verify-email" && (
+        <div className="min-h-screen flex items-center justify-center bg-[#F9F8F4] text-slate-900 font-sans p-4">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-8 md:p-10 text-center border border-slate-100">
+            <div className="w-24 h-24 mx-auto mb-6 bg-teal-50 rounded-full flex items-center justify-center">
+              <Mail className="w-12 h-12 text-[#1A7B72]" strokeWidth={1.5} />
             </div>
 
-            <div className="auth-logo">
-              <div className="auth-logo-icon"><Search className="text-white" /></div>
-              <h1>FindTrack</h1>
-              <p>Email Verification Required</p>
-            </div>
+            <h2 className="text-2xl font-bold text-[#1A7B72] mb-4">
+              Verify your email address
+            </h2>
+            <p className="text-slate-600 mb-2">
+              We've sent a verification link to{" "}
+              <strong className="text-slate-900">
+                {auth.currentUser?.email ||
+                  profileEmail ||
+                  "your email address"}
+              </strong>
+              .
+            </p>
+            <p className="text-slate-600 mb-8">
+              Please click the link to confirm your account.
+            </p>
 
-            <div className="auth-card" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-              <div className="card-title" style={{ fontSize: '20px', fontWeight: 'bold', color: 'white', marginBottom: '4px' }}>Verify Your Email</div>
-              <div className="card-sub" style={{ fontSize: '13px', color: 'rgba(255,255,255,0.7)', lineHeight: '1.6', marginBottom: '8px' }}>
-                We've sent a verification email to <strong style={{ color: '#38bdf8' }}>{auth.currentUser?.email || profileEmail || "your email address"}</strong>. 
-                Please check your inbox (including your spam folder) and click the verification link.
-              </div>
-              
-              <div className="card-sub bg-slate-800/50 p-3 rounded-md border border-slate-700 text-left" style={{ fontSize: '12px', color: '#94a3b8', lineHeight: '1.5', marginBottom: '2px' }}>
-                <strong className="text-slate-300">💡 Hint:</strong> If the link says it's <em>"expired or already used"</em>, make sure you are clicking the <strong>most recent</strong> link if you requested multiple. Also, your email app might have auto-scanned it—meaning it's already verified. Just click "Check Verification Status" below.
-              </div>
-
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                <button 
-                  onClick={async () => {
-                    try {
-                      if (auth.currentUser) {
-                        await auth.currentUser.reload();
-                        if (auth.currentUser.emailVerified) {
-                          // Force refresh the JWT token so Firestore rules see the updated email_verified state
-                          await auth.currentUser.getIdToken(true);
-                          triggerToast("✅ Verification successful! Welcome to FindTrack.", "success");
-                          setCurrentView('dashboard');
-                        } else {
-                          triggerToast("ℹ️ Email is not verified yet. Please check your inbox.", "error");
-                        }
+            <div className="space-y-4">
+              <button
+                onClick={async () => {
+                  try {
+                    if (auth.currentUser) {
+                      await auth.currentUser.reload();
+                      if (auth.currentUser.emailVerified) {
+                        await auth.currentUser.getIdToken(true);
+                        triggerToast(
+                          "✅ Verification successful! Welcome to FindTrack.",
+                          "success",
+                        );
+                        setCurrentView("dashboard");
                       } else {
-                        triggerToast("❌ Session lost. Please log in again.", "error");
-                        setCurrentView('login');
+                        triggerToast(
+                          "ℹ️ Email is not verified yet. Please check your inbox.",
+                          "error",
+                        );
                       }
-                    } catch (e: any) {
-                      console.error(e);
-                      triggerToast("❌ " + (e.message || "Failed to check status."), "error");
+                    } else {
+                      triggerToast(
+                        "❌ Session lost. Please log in again.",
+                        "error",
+                      );
+                      setCurrentView("login");
                     }
-                  }} 
-                  className="btn-submit"
-                  style={{ width: '100%', padding: '12px', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer' }}
-                >
-                  🔄 Check Verification Status
-                </button>
+                  } catch (e: any) {
+                    console.error(e);
+                    triggerToast(
+                      "❌ " + (e.message || "Failed to check status."),
+                      "error",
+                    );
+                  }
+                }}
+                className="w-full bg-[#B2D235] hover:bg-[#A1C124] text-slate-900 py-3.5 rounded-xl font-semibold transition-colors shadow-sm"
+              >
+                Check Verification Status
+              </button>
 
-                <button 
-                  onClick={async () => {
-                    if (resendCooldown > 0) return;
-                    try {
-                      if (auth.currentUser) {
-                        const actionCodeSettings = {
-                          url: "https://find-track-6kzf.vercel.app",
-                          handleCodeInApp: false,
-                        };
-                        await sendEmailVerification(auth.currentUser, actionCodeSettings);
-                        triggerToast("✅ Verification email resent!", "success");
-                        setResendCooldown(30);
-                      } else {
-                        triggerToast("❌ Session lost. Please log in again.", "error");
-                        setCurrentView('login');
-                      }
-                    } catch (e: any) {
-                      console.error(e);
-                      if (e.message?.includes('too-many-requests')) {
-                        triggerToast("❌ Too many requests. Please wait a minute and try again.", "error");
-                        setResendCooldown(60);
-                      } else {
-                        triggerToast("❌ " + (e.message || "Failed to resend email."), "error");
-                      }
+              <button
+                onClick={async () => {
+                  if (resendCooldown > 0) return;
+                  try {
+                    if (auth.currentUser) {
+                      const actionCodeSettings = {
+                        url: "https://find-track-6kzf.vercel.app",
+                        handleCodeInApp: false,
+                      };
+                      await sendEmailVerification(
+                        auth.currentUser,
+                        actionCodeSettings,
+                      );
+                      triggerToast("✅ Verification email resent!", "success");
+                      setResendCooldown(30);
+                    } else {
+                      triggerToast(
+                        "❌ Session lost. Please log in again.",
+                        "error",
+                      );
+                      setCurrentView("login");
                     }
-                  }}
-                  disabled={resendCooldown > 0}
-                  className="btn-submit"
-                  style={{ width: '100%', padding: '10px', borderRadius: '8px', fontWeight: '500', fontSize: '13px', background: resendCooldown > 0 ? 'rgba(255, 255, 255, 0.05)' : 'rgba(255, 255, 255, 0.15)', border: '1px solid rgba(255, 255, 255, 0.2)', cursor: resendCooldown > 0 ? 'not-allowed' : 'pointer', color: resendCooldown > 0 ? 'rgba(255, 255, 255, 0.5)' : '#fff' }}
-                >
-                  {resendCooldown > 0 ? `⏳ Wait ${resendCooldown}s to Resend` : '📨 Resend Verification Email'}
-                </button>
-              </div>
+                  } catch (e: any) {
+                    console.error("Resend error:", e);
+                    if (e.message?.includes("too-many-requests")) {
+                      triggerToast(
+                        "❌ Too many requests. Please wait a minute and try again.",
+                        "error",
+                      );
+                      setResendCooldown(60);
+                    } else {
+                      triggerToast(
+                        "❌ Failed to resend. Please try again later.",
+                        "error",
+                      );
+                    }
+                  }
+                }}
+                disabled={resendCooldown > 0}
+                className={`w-full py-3.5 rounded-xl font-semibold transition-colors border-2 ${
+                  resendCooldown > 0
+                    ? "border-slate-200 text-slate-400 cursor-not-allowed bg-slate-50"
+                    : "border-[#1A7B72] text-[#1A7B72] hover:bg-[#1A7B72]/10"
+                }`}
+              >
+                {resendCooldown > 0
+                  ? `Resend Available in ${resendCooldown}s`
+                  : "Resend Email"}
+              </button>
 
-              <div className="auth-footer" style={{ marginTop: '16px', color: 'rgba(255,255,255,0.5)', fontSize: '12px', textAlign: 'center' }}>
-                Already verified? Click "Check Verification Status" above.
-              </div>
+              <button
+                onClick={async () => {
+                  await logOut();
+                  setCurrentView("landing");
+                }}
+                className="w-full py-3 text-sm font-medium text-[#1A7B72] hover:text-[#15605A] underline transition-colors mt-2"
+              >
+                Change Email Address
+              </button>
             </div>
           </div>
         </div>
       )}
 
       {/* ── VIEW 6: PRIVACY POLICY PAGE ── */}
-      {currentView === 'privacy' && (
-        <div style={{ minHeight: '100vh', background: 'radial-gradient(ellipse at bottom, #1e293b 0%, #0f172a 100%)', color: '#f8fafc', padding: '40px 16px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-          <div style={{ maxWidth: '800px', width: '100%', background: 'rgba(30, 41, 59, 0.7)', border: '1px solid rgba(255, 255, 255, 0.1)', borderRadius: '24px', padding: '36px', backdropFilter: 'blur(20px)', boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.3)' }} className="mx-auto">
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px', borderBottom: '1px solid rgba(255, 255, 255, 0.1)', paddingBottom: '20px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <span style={{ fontSize: '32px' }}>🔒</span>
+      {currentView === "privacy" && (
+        <div
+          style={{
+            minHeight: "100vh",
+            background:
+              "radial-gradient(ellipse at bottom, #1e293b 0%, #0f172a 100%)",
+            color: "#f8fafc",
+            padding: "40px 16px",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+        >
+          <div
+            style={{
+              maxWidth: "800px",
+              width: "100%",
+              background: "rgba(30, 41, 59, 0.7)",
+              border: "1px solid rgba(255, 255, 255, 0.1)",
+              borderRadius: "24px",
+              padding: "36px",
+              backdropFilter: "blur(20px)",
+              boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.3)",
+            }}
+            className="mx-auto"
+          >
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                marginBottom: "32px",
+                borderBottom: "1px solid rgba(255, 255, 255, 0.1)",
+                paddingBottom: "20px",
+              }}
+            >
+              <div
+                style={{ display: "flex", alignItems: "center", gap: "12px" }}
+              >
+                <span style={{ fontSize: "32px" }}>🔒</span>
                 <div>
-                  <h1 style={{ fontSize: '24px', fontWeight: '800', lineHeight: 1.2 }}>Privacy Policy</h1>
-                  <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.5)', marginTop: '4px' }}>FindTrack Lost &amp; Found Platform</p>
+                  <h1
+                    style={{
+                      fontSize: "24px",
+                      fontWeight: "800",
+                      lineHeight: 1.2,
+                    }}
+                  >
+                    Privacy Policy
+                  </h1>
+                  <p
+                    style={{
+                      fontSize: "13px",
+                      color: "rgba(255,255,255,0.5)",
+                      marginTop: "4px",
+                    }}
+                  >
+                    FindTrack Lost &amp; Found Platform
+                  </p>
                 </div>
               </div>
-              <button 
+              <button
                 onClick={handleBackToSafety}
-                style={{ background: 'rgba(255, 255, 255, 0.12)', color: 'white', border: 'none', borderRadius: '8px', padding: '8px 16px', fontWeight: '600', cursor: 'pointer', fontSize: '13px' }}
+                style={{
+                  background: "rgba(255, 255, 255, 0.12)",
+                  color: "white",
+                  border: "none",
+                  borderRadius: "8px",
+                  padding: "8px 16px",
+                  fontWeight: "600",
+                  cursor: "pointer",
+                  fontSize: "13px",
+                }}
                 className="hover:bg-white/20 transition-all"
               >
                 ← Go Back
               </button>
             </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', fontSize: '14px', lineHeight: '1.7', color: 'rgba(255, 255, 255, 0.85)' }}>
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                gap: "24px",
+                fontSize: "14px",
+                lineHeight: "1.7",
+                color: "rgba(255, 255, 255, 0.85)",
+              }}
+            >
               <section>
-                <h3 style={{ fontSize: '16px', fontWeight: '700', color: '#38bdf8', marginBottom: '8px' }}>1. Introduction</h3>
-                <p>Welcome to FindTrack. We are dedicated to protecting your personal information and your right to privacy. This Privacy Policy describes how we collect, use, and process your information when you use our lost and found platform.</p>
+                <h3
+                  style={{
+                    fontSize: "16px",
+                    fontWeight: "700",
+                    color: "#38bdf8",
+                    marginBottom: "8px",
+                  }}
+                >
+                  1. Introduction
+                </h3>
+                <p>
+                  Welcome to FindTrack. We are dedicated to protecting your
+                  personal information and your right to privacy. This Privacy
+                  Policy describes how we collect, use, and process your
+                  information when you use our lost and found platform.
+                </p>
               </section>
 
               <section>
-                <h3 style={{ fontSize: '16px', fontWeight: '700', color: '#38bdf8', marginBottom: '8px' }}>2. Information We Collect</h3>
-                <p>To provide our services, facilitate claiming, and enable safe communications, we collect the following personal details:</p>
-                <ul style={{ listStyleType: 'disc', paddingLeft: '20px', marginTop: '8px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                  <li><strong>Account Credentials:</strong> Full name, verified email address, and profile pictures when you register.</li>
-                  <li><strong>Contact Information:</strong> Phone numbers or social handle contact info you voluntarily provide so claimants/finders can get in touch with you.</li>
-                  <li><strong>Item Reports Data:</strong> Item characteristics, dates, text descriptions, images of lost or found belongings, and exact or approximate locations where items were misplaced or recovered.</li>
+                <h3
+                  style={{
+                    fontSize: "16px",
+                    fontWeight: "700",
+                    color: "#38bdf8",
+                    marginBottom: "8px",
+                  }}
+                >
+                  2. Information We Collect
+                </h3>
+                <p>
+                  To provide our services, facilitate claiming, and enable safe
+                  communications, we collect the following personal details:
+                </p>
+                <ul
+                  style={{
+                    listStyleType: "disc",
+                    paddingLeft: "20px",
+                    marginTop: "8px",
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: "6px",
+                  }}
+                >
+                  <li>
+                    <strong>Account Credentials:</strong> Full name, verified
+                    email address, and profile pictures when you register.
+                  </li>
+                  <li>
+                    <strong>Contact Information:</strong> Phone numbers or
+                    social handle contact info you voluntarily provide so
+                    claimants/finders can get in touch with you.
+                  </li>
+                  <li>
+                    <strong>Item Reports Data:</strong> Item characteristics,
+                    dates, text descriptions, images of lost or found
+                    belongings, and exact or approximate locations where items
+                    were misplaced or recovered.
+                  </li>
                 </ul>
               </section>
 
               <section>
-                <h3 style={{ fontSize: '16px', fontWeight: '700', color: '#38bdf8', marginBottom: '8px' }}>3. How We Use Your Information</h3>
-                <p>We process your personal information for purposes based on legitimate interests, the fulfillment of our services, and user convenience:</p>
-                <ul style={{ listStyleType: 'disc', paddingLeft: '20px', marginTop: '8px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                  <li>To facilitate user account creation, profile management, and authentication check-ins.</li>
-                  <li>To list lost/found items and coordinate ownership claims between users.</li>
-                  <li>To send real-time alerts or email matchmaker suggestions and notifications about matching items.</li>
-                  <li>To provide direct communication channels specifically for coordinating item returns.</li>
+                <h3
+                  style={{
+                    fontSize: "16px",
+                    fontWeight: "700",
+                    color: "#38bdf8",
+                    marginBottom: "8px",
+                  }}
+                >
+                  3. How We Use Your Information
+                </h3>
+                <p>
+                  We process your personal information for purposes based on
+                  legitimate interests, the fulfillment of our services, and
+                  user convenience:
+                </p>
+                <ul
+                  style={{
+                    listStyleType: "disc",
+                    paddingLeft: "20px",
+                    marginTop: "8px",
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: "6px",
+                  }}
+                >
+                  <li>
+                    To facilitate user account creation, profile management, and
+                    authentication check-ins.
+                  </li>
+                  <li>
+                    To list lost/found items and coordinate ownership claims
+                    between users.
+                  </li>
+                  <li>
+                    To send real-time alerts or email matchmaker suggestions and
+                    notifications about matching items.
+                  </li>
+                  <li>
+                    To provide direct communication channels specifically for
+                    coordinating item returns.
+                  </li>
                 </ul>
               </section>
 
               <section>
-                <h3 style={{ fontSize: '16px', fontWeight: '700', color: '#38bdf8', marginBottom: '8px' }}>4. Data Security &amp; Storage</h3>
-                <p>Your account, contact profile information, and reported item details are safely stored using secure Cloud Firebase/Firestore infrastructure. Only authorized users can update their profiles or manage active items. We implement security protocols to protect your personal information against unauthorized retrieval, alteration, or disclosure.</p>
+                <h3
+                  style={{
+                    fontSize: "16px",
+                    fontWeight: "700",
+                    color: "#38bdf8",
+                    marginBottom: "8px",
+                  }}
+                >
+                  4. Data Security &amp; Storage
+                </h3>
+                <p>
+                  Your account, contact profile information, and reported item
+                  details are safely stored using secure Cloud
+                  Firebase/Firestore infrastructure. Only authorized users can
+                  update their profiles or manage active items. We implement
+                  security protocols to protect your personal information
+                  against unauthorized retrieval, alteration, or disclosure.
+                </p>
               </section>
 
               <section>
-                <h3 style={{ fontSize: '16px', fontWeight: '700', color: '#38bdf8', marginBottom: '8px' }}>5. Your Rights &amp; Data Deletion</h3>
-                <p>You can access, modify, or delete your personal contact coordinates at any time directly through the <strong>My Profile</strong> or <strong>My Items</strong> dashboards. If you wish to completely close your account or wipe your listing data, please reach out to our team or use the direct profile purge settings.</p>
+                <h3
+                  style={{
+                    fontSize: "16px",
+                    fontWeight: "700",
+                    color: "#38bdf8",
+                    marginBottom: "8px",
+                  }}
+                >
+                  5. Your Rights &amp; Data Deletion
+                </h3>
+                <p>
+                  You can access, modify, or delete your personal contact
+                  coordinates at any time directly through the{" "}
+                  <strong>My Profile</strong> or <strong>My Items</strong>{" "}
+                  dashboards. If you wish to completely close your account or
+                  wipe your listing data, please reach out to our team or use
+                  the direct profile purge settings.
+                </p>
               </section>
             </div>
 
-            <div style={{ marginTop: '40px', borderTop: '1px solid rgba(255, 255, 255, 0.1)', paddingTop: '20px', textAlign: 'center', fontSize: '12px', color: 'rgba(255,255,255,0.4)' }}>
-              Last updated: {new Date().toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })} · FindTrack Platform Security
+            <div
+              style={{
+                marginTop: "40px",
+                borderTop: "1px solid rgba(255, 255, 255, 0.1)",
+                paddingTop: "20px",
+                textAlign: "center",
+                fontSize: "12px",
+                color: "rgba(255,255,255,0.4)",
+              }}
+            >
+              Last updated:{" "}
+              {new Date().toLocaleDateString(undefined, {
+                year: "numeric",
+                month: "long",
+                day: "numeric",
+              })}{" "}
+              · FindTrack Platform Security
             </div>
           </div>
         </div>
       )}
 
       {/* ── VIEW 7: TERMS OF SERVICE PAGE ── */}
-      {currentView === 'terms' && (
-        <div style={{ minHeight: '100vh', background: 'radial-gradient(ellipse at bottom, #1e293b 0%, #0f172a 100%)', color: '#f8fafc', padding: '40px 16px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-          <div style={{ maxWidth: '800px', width: '100%', background: 'rgba(30, 41, 59, 0.7)', border: '1px solid rgba(255, 255, 255, 0.1)', borderRadius: '24px', padding: '36px', backdropFilter: 'blur(20px)', boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.3)' }} className="mx-auto">
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px', borderBottom: '1px solid rgba(255, 255, 255, 0.1)', paddingBottom: '20px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <span style={{ fontSize: '32px' }}>⚖️</span>
+      {currentView === "terms" && (
+        <div
+          style={{
+            minHeight: "100vh",
+            background:
+              "radial-gradient(ellipse at bottom, #1e293b 0%, #0f172a 100%)",
+            color: "#f8fafc",
+            padding: "40px 16px",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+        >
+          <div
+            style={{
+              maxWidth: "800px",
+              width: "100%",
+              background: "rgba(30, 41, 59, 0.7)",
+              border: "1px solid rgba(255, 255, 255, 0.1)",
+              borderRadius: "24px",
+              padding: "36px",
+              backdropFilter: "blur(20px)",
+              boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.3)",
+            }}
+            className="mx-auto"
+          >
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                marginBottom: "32px",
+                borderBottom: "1px solid rgba(255, 255, 255, 0.1)",
+                paddingBottom: "20px",
+              }}
+            >
+              <div
+                style={{ display: "flex", alignItems: "center", gap: "12px" }}
+              >
+                <span style={{ fontSize: "32px" }}>⚖️</span>
                 <div>
-                  <h1 style={{ fontSize: '24px', fontWeight: '800', lineHeight: 1.2 }}>Terms of Service</h1>
-                  <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.5)', marginTop: '4px' }}>FindTrack Lost &amp; Found Platform</p>
+                  <h1
+                    style={{
+                      fontSize: "24px",
+                      fontWeight: "800",
+                      lineHeight: 1.2,
+                    }}
+                  >
+                    Terms of Service
+                  </h1>
+                  <p
+                    style={{
+                      fontSize: "13px",
+                      color: "rgba(255,255,255,0.5)",
+                      marginTop: "4px",
+                    }}
+                  >
+                    FindTrack Lost &amp; Found Platform
+                  </p>
                 </div>
               </div>
-              <button 
+              <button
                 onClick={handleBackToSafety}
-                style={{ background: 'rgba(255, 255, 255, 0.12)', color: 'white', border: 'none', borderRadius: '8px', padding: '8px 16px', fontWeight: '600', cursor: 'pointer', fontSize: '13px' }}
+                style={{
+                  background: "rgba(255, 255, 255, 0.12)",
+                  color: "white",
+                  border: "none",
+                  borderRadius: "8px",
+                  padding: "8px 16px",
+                  fontWeight: "600",
+                  cursor: "pointer",
+                  fontSize: "13px",
+                }}
                 className="hover:bg-white/20 transition-all"
               >
                 ← Go Back
               </button>
             </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', fontSize: '14px', lineHeight: '1.7', color: 'rgba(255, 255, 255, 0.85)' }}>
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                gap: "24px",
+                fontSize: "14px",
+                lineHeight: "1.7",
+                color: "rgba(255, 255, 255, 0.85)",
+              }}
+            >
               <section>
-                <h3 style={{ fontSize: '16px', fontWeight: '700', color: '#38bdf8', marginBottom: '8px' }}>1. Agreement to Terms</h3>
-                <p>By registering, logging in, browsing as a guest, or submitting reports on FindTrack, you accept and agree to follow these Terms of Service. If you do not agree to all of these Terms, you are prohibited from using the application.</p>
+                <h3
+                  style={{
+                    fontSize: "16px",
+                    fontWeight: "700",
+                    color: "#38bdf8",
+                    marginBottom: "8px",
+                  }}
+                >
+                  1. Agreement to Terms
+                </h3>
+                <p>
+                  By registering, logging in, browsing as a guest, or submitting
+                  reports on FindTrack, you accept and agree to follow these
+                  Terms of Service. If you do not agree to all of these Terms,
+                  you are prohibited from using the application.
+                </p>
               </section>
 
               <section>
-                <h3 style={{ fontSize: '16px', fontWeight: '700', color: '#38bdf8', marginBottom: '8px' }}>2. User Responsibilities &amp; Acceptable Use</h3>
-                <p>When posting lost or found items and interacting with other community members, you agree to:</p>
-                <ul style={{ listStyleType: 'disc', paddingLeft: '20px', marginTop: '8px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                  <li>Provide accurate, genuine, and reliable details regarding found objects, locations, and descriptions.</li>
-                  <li>Refrain from listing fraudulent claims, fake items, offensive photos, or inaccurate contact information.</li>
-                  <li>Respect other users and use the interactive real-time coordinates, chats, and claims desk only for legitimate recovery purposes.</li>
-                  <li>Never attempt to gain unauthorized access to other user profiles, databases, or restricted platform APIs.</li>
+                <h3
+                  style={{
+                    fontSize: "16px",
+                    fontWeight: "700",
+                    color: "#38bdf8",
+                    marginBottom: "8px",
+                  }}
+                >
+                  2. User Responsibilities &amp; Acceptable Use
+                </h3>
+                <p>
+                  When posting lost or found items and interacting with other
+                  community members, you agree to:
+                </p>
+                <ul
+                  style={{
+                    listStyleType: "disc",
+                    paddingLeft: "20px",
+                    marginTop: "8px",
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: "6px",
+                  }}
+                >
+                  <li>
+                    Provide accurate, genuine, and reliable details regarding
+                    found objects, locations, and descriptions.
+                  </li>
+                  <li>
+                    Refrain from listing fraudulent claims, fake items,
+                    offensive photos, or inaccurate contact information.
+                  </li>
+                  <li>
+                    Respect other users and use the interactive real-time
+                    coordinates, chats, and claims desk only for legitimate
+                    recovery purposes.
+                  </li>
+                  <li>
+                    Never attempt to gain unauthorized access to other user
+                    profiles, databases, or restricted platform APIs.
+                  </li>
                 </ul>
               </section>
 
               <section>
-                <h3 style={{ fontSize: '16px', fontWeight: '700', color: '#38bdf8', marginBottom: '8px' }}>3. Verification of Ownership &amp; Meetups</h3>
-                <p>FindTrack provides verification mechanisms (such as custom security confirmation questions) to help confirm proof of ownership prior to release. However:</p>
-                <ul style={{ listStyleType: 'disc', paddingLeft: '20px', marginTop: '8px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                  <li>Users are solely responsible for thoroughly vetting proof of ownership before handing over items.</li>
-                  <li>Physical meetups, handling of high-value items, and exchanges are at your own discretion. We encourage coordinating safe, public, well-lit spaces (such as security desk areas, campuses, or official lost and found centers).</li>
+                <h3
+                  style={{
+                    fontSize: "16px",
+                    fontWeight: "700",
+                    color: "#38bdf8",
+                    marginBottom: "8px",
+                  }}
+                >
+                  3. Verification of Ownership &amp; Meetups
+                </h3>
+                <p>
+                  FindTrack provides verification mechanisms (such as custom
+                  security confirmation questions) to help confirm proof of
+                  ownership prior to release. However:
+                </p>
+                <ul
+                  style={{
+                    listStyleType: "disc",
+                    paddingLeft: "20px",
+                    marginTop: "8px",
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: "6px",
+                  }}
+                >
+                  <li>
+                    Users are solely responsible for thoroughly vetting proof of
+                    ownership before handing over items.
+                  </li>
+                  <li>
+                    Physical meetups, handling of high-value items, and
+                    exchanges are at your own discretion. We encourage
+                    coordinating safe, public, well-lit spaces (such as security
+                    desk areas, campuses, or official lost and found centers).
+                  </li>
                 </ul>
               </section>
 
               <section>
-                <h3 style={{ fontSize: '16px', fontWeight: '700', color: '#38bdf8', marginBottom: '8px' }}>4. Disclaimer of Warrant &amp; Limitation of Liability</h3>
-                <p>FindTrack is provided "as is" and "as available". We do not guarantee that your lost items will be found, or that matches suggested by the system are 100% correct. Under no circumstances shall FindTrack, our developers, or our affiliates be liable for damages, item damage, theft, fraud, or any conflicts arising from physical item exchange coordinates.</p>
+                <h3
+                  style={{
+                    fontSize: "16px",
+                    fontWeight: "700",
+                    color: "#38bdf8",
+                    marginBottom: "8px",
+                  }}
+                >
+                  4. Disclaimer of Warrant &amp; Limitation of Liability
+                </h3>
+                <p>
+                  FindTrack is provided "as is" and "as available". We do not
+                  guarantee that your lost items will be found, or that matches
+                  suggested by the system are 100% correct. Under no
+                  circumstances shall FindTrack, our developers, or our
+                  affiliates be liable for damages, item damage, theft, fraud,
+                  or any conflicts arising from physical item exchange
+                  coordinates.
+                </p>
               </section>
 
               <section>
-                <h3 style={{ fontSize: '16px', fontWeight: '700', color: '#38bdf8', marginBottom: '8px' }}>5. Modifications to Service</h3>
-                <p>We reserves the right to modify or adjust the features, layouts, database rules, or services of FindTrack at any time. Continued use of the platform after updates indicates consent to all revised guidelines.</p>
+                <h3
+                  style={{
+                    fontSize: "16px",
+                    fontWeight: "700",
+                    color: "#38bdf8",
+                    marginBottom: "8px",
+                  }}
+                >
+                  5. Modifications to Service
+                </h3>
+                <p>
+                  We reserves the right to modify or adjust the features,
+                  layouts, database rules, or services of FindTrack at any time.
+                  Continued use of the platform after updates indicates consent
+                  to all revised guidelines.
+                </p>
               </section>
             </div>
 
-            <div style={{ marginTop: '40px', borderTop: '1px solid rgba(255, 255, 255, 0.1)', paddingTop: '20px', textAlign: 'center', fontSize: '12px', color: 'rgba(255,255,255,0.4)' }}>
-              Last updated: {new Date().toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })} · FindTrack Community Terms
+            <div
+              style={{
+                marginTop: "40px",
+                borderTop: "1px solid rgba(255, 255, 255, 0.1)",
+                paddingTop: "20px",
+                textAlign: "center",
+                fontSize: "12px",
+                color: "rgba(255,255,255,0.4)",
+              }}
+            >
+              Last updated:{" "}
+              {new Date().toLocaleDateString(undefined, {
+                year: "numeric",
+                month: "long",
+                day: "numeric",
+              })}{" "}
+              · FindTrack Community Terms
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── VIEW 8: ABOUT US PAGE ── */}
+      {currentView === "about" && (
+        <div style={{ minHeight: "100vh", background: "#f8fafc", fontFamily: "sans-serif" }}>
+          <header style={{ padding: "20px 40px", display: "flex", justifyContent: "space-between", alignItems: "center", background: "#fff", borderBottom: "1px solid #e2e8f0" }}>
+            <div style={{ fontWeight: "bold", fontSize: "24px", color: "#01725a", display: "flex", alignItems: "center", gap: "8px", cursor: "pointer" }} onClick={() => { setCurrentView("landing"); window.history.pushState(null, "", "/"); }}>
+              <MapPin className="h-6 w-6 text-[#01725a]"/>
+              FindTrack
+            </div>
+          </header>
+          <div style={{ maxWidth: "800px", margin: "40px auto", padding: "40px", background: "#fff", borderRadius: "12px", boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)" }}>
+            <h1 style={{ fontSize: "32px", fontWeight: "bold", color: "#00654f", marginBottom: "24px" }}>About Us</h1>
+            <p style={{ fontSize: "16px", color: "#475569", lineHeight: "1.6", marginBottom: "20px" }}>
+              FindTrack is a community-driven lost and found platform dedicated to helping people recover their lost items across the Philippines.
+              Our mission is to foster a culture of honesty and trust (Bayanihan) by providing a secure and accessible platform for reporting and recovering lost belongings.
+            </p>
+            <p style={{ fontSize: "16px", color: "#475569", lineHeight: "1.6", marginBottom: "20px" }}>
+              Whether you've lost something precious or found an item that needs returning, FindTrack is here to bridge the gap and make recovery easier.
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* ── VIEW 9: SAFETY GUIDELINES PAGE ── */}
+      {currentView === "safety" && (
+        <div style={{ minHeight: "100vh", background: "#f8fafc", fontFamily: "sans-serif" }}>
+          <header style={{ padding: "20px 40px", display: "flex", justifyContent: "space-between", alignItems: "center", background: "#fff", borderBottom: "1px solid #e2e8f0" }}>
+            <div style={{ fontWeight: "bold", fontSize: "24px", color: "#01725a", display: "flex", alignItems: "center", gap: "8px", cursor: "pointer" }} onClick={() => { setCurrentView("landing"); window.history.pushState(null, "", "/"); }}>
+              <MapPin className="h-6 w-6 text-[#01725a]"/>
+              FindTrack
+            </div>
+          </header>
+          <div style={{ maxWidth: "800px", margin: "40px auto", padding: "40px", background: "#fff", borderRadius: "12px", boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)" }}>
+            <h1 style={{ fontSize: "32px", fontWeight: "bold", color: "#00654f", marginBottom: "24px" }}>Safety Guidelines</h1>
+            <p style={{ fontSize: "16px", color: "#475569", lineHeight: "1.6", marginBottom: "20px" }}>
+              Your safety is our top priority. When meeting to return or retrieve a lost item, please keep the following guidelines in mind:
+            </p>
+            <ul style={{ listStyleType: "disc", paddingLeft: "24px", color: "#475569", lineHeight: "1.6", marginBottom: "20px", display: "flex", flexDirection: "column", gap: "12px" }}>
+              <li><strong>Meet in Public Places:</strong> Always choose well-lit, public locations for handovers, such as cafes, malls, or police stations.</li>
+              <li><strong>Bring a Friend:</strong> If possible, bring someone with you when meeting a stranger.</li>
+              <li><strong>Verify Ownership:</strong> Ask identifying questions about the item before handing it over (e.g., unique marks, passwords for devices).</li>
+              <li><strong>Do Not Share Personal Information:</strong> Avoid sharing your home address, financial details, or other sensitive information.</li>
+              <li><strong>Trust Your Instincts:</strong> If a situation feels unsafe, cancel the meeting and report the user if necessary.</li>
+            </ul>
+          </div>
+        </div>
+      )}
+
+      {/* ── VIEW 10: HELP CENTER PAGE ── */}
+      {currentView === "help" && (
+        <div style={{ minHeight: "100vh", background: "#f8fafc", fontFamily: "sans-serif" }}>
+          <header style={{ padding: "20px 40px", display: "flex", justifyContent: "space-between", alignItems: "center", background: "#fff", borderBottom: "1px solid #e2e8f0" }}>
+            <div style={{ fontWeight: "bold", fontSize: "24px", color: "#01725a", display: "flex", alignItems: "center", gap: "8px", cursor: "pointer" }} onClick={() => { setCurrentView("landing"); window.history.pushState(null, "", "/"); }}>
+              <MapPin className="h-6 w-6 text-[#01725a]"/>
+              FindTrack
+            </div>
+          </header>
+          <div style={{ maxWidth: "800px", margin: "40px auto", padding: "40px", background: "#fff", borderRadius: "12px", boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)" }}>
+            <h1 style={{ fontSize: "32px", fontWeight: "bold", color: "#00654f", marginBottom: "24px" }}>Help Center</h1>
+            <p style={{ fontSize: "16px", color: "#475569", lineHeight: "1.6", marginBottom: "20px" }}>
+              Need assistance with using FindTrack? You're in the right place.
+            </p>
+            <div style={{ marginBottom: "24px" }}>
+              <h2 style={{ fontSize: "20px", fontWeight: "bold", color: "#0f172a", marginBottom: "12px" }}>How to Report a Lost Item</h2>
+              <p style={{ fontSize: "16px", color: "#475569", lineHeight: "1.6" }}>
+                1. Log in to your account and go to the Dashboard.<br/>
+                2. Click on the "Report Item" button.<br/>
+                3. Fill out the details (type, description, location) and upload a photo if available.<br/>
+                4. Submit the report to alert the community.
+              </p>
+            </div>
+            <div style={{ marginBottom: "24px" }}>
+              <h2 style={{ fontSize: "20px", fontWeight: "bold", color: "#0f172a", marginBottom: "12px" }}>How to Claim a Found Item</h2>
+              <p style={{ fontSize: "16px", color: "#475569", lineHeight: "1.6" }}>
+                1. Browse the items feed on your Dashboard.<br/>
+                2. If you spot an item that belongs to you, click "Claim item" (Hand icon).<br/>
+                3. Provide proof of ownership in the message to the finder.<br/>
+                4. Coordinate a safe handover.
+              </p>
+            </div>
+            <p style={{ fontSize: "16px", color: "#475569", lineHeight: "1.6", marginTop: "40px", paddingTop: "20px", borderTop: "1px solid #e2e8f0" }}>
+              Still need help? Please reach out to our support team at: <strong>novapulsarsupport@gmail.com</strong>
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* ── VIEW 11: CONTACT US PAGE ── */}
+      {currentView === "contact" && (
+        <div style={{ minHeight: "100vh", background: "#f8fafc", fontFamily: "sans-serif" }}>
+          <header style={{ padding: "20px 40px", display: "flex", justifyContent: "space-between", alignItems: "center", background: "#fff", borderBottom: "1px solid #e2e8f0" }}>
+            <div style={{ fontWeight: "bold", fontSize: "24px", color: "#01725a", display: "flex", alignItems: "center", gap: "8px", cursor: "pointer" }} onClick={() => { setCurrentView("landing"); window.history.pushState(null, "", "/"); }}>
+              <MapPin className="h-6 w-6 text-[#01725a]"/>
+              FindTrack
+            </div>
+          </header>
+          <div style={{ maxWidth: "800px", margin: "40px auto", padding: "40px", background: "#fff", borderRadius: "12px", boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)" }}>
+            <h1 style={{ fontSize: "32px", fontWeight: "bold", color: "#00654f", marginBottom: "24px" }}>Contact Us</h1>
+            <p style={{ fontSize: "16px", color: "#475569", lineHeight: "1.6", marginBottom: "20px" }}>
+              We'd love to hear from you. Whether you have a question about our platform, need help with an item, or want to provide feedback, our team is ready to assist.
+            </p>
+            
+            <div style={{ background: "#f0fdf4", border: "1px solid #bbf7d0", padding: "24px", borderRadius: "8px", marginTop: "32px" }}>
+              <h2 style={{ fontSize: "20px", fontWeight: "bold", color: "#166534", marginBottom: "12px", display: "flex", alignItems: "center", gap: "8px" }}>
+                <Mail className="w-6 h-6" /> Email Support
+              </h2>
+              <p style={{ fontSize: "16px", color: "#166534", lineHeight: "1.6" }}>
+                You can reach our support team directly at:<br/>
+                <a href="mailto:novapulsarsupport@gmail.com" style={{ fontWeight: "bold", textDecoration: "underline", color: "#15803d", fontSize: "18px", display: "inline-block", marginTop: "8px" }}>
+                  novapulsarsupport@gmail.com
+                </a>
+              </p>
+              <p style={{ fontSize: "14px", color: "#15803d", marginTop: "12px" }}>
+                We typically respond within 24-48 hours.
+              </p>
             </div>
           </div>
         </div>
       )}
 
       {/* ── VIEW 4: MAIN DASHBOARD PORTAL ── */}
-      {currentView === 'dashboard' && (
-        <div className="min-h-screen text-slate-800">
-          
-          {/* TOP BAR BRAND MODULE */}
-          <header className="topbar">
-            <div className="topbar-inner">
+      {currentView === "dashboard" && (
+        <div className="flex h-[100dvh] bg-surface-container-lowest text-on-surface font-body-md overflow-hidden">
+          {/* SIDEBAR (Desktop) */}
+          <aside className={`fixed md:relative z-50 flex flex-col w-64 h-full bg-primary text-on-primary shadow-md transition-transform transform ${sidebarOpen ? "translate-x-0" : "-translate-x-full"} md:translate-x-0`}>
+            {/* Brand Header & Avatar */}
+            <div className="p-6 shrink-0 space-y-4">
+              <div className="flex justify-between items-start">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center font-bold text-lg overflow-hidden shrink-0 shadow-sm border border-white/10">
+                    {profileName === "Guest" ? "G" : profileName.charAt(0).toUpperCase()}
+                  </div>
+                  <div>
+                    <h1 className="font-headline-lg text-xl font-bold tracking-tight leading-none">FindTrack</h1>
+                    <p className="font-label-md text-on-primary/80 text-[10px] uppercase tracking-wider mt-1">Premium Community</p>
+                  </div>
+                </div>
+                <button className="md:hidden text-white/70 hover:text-white" onClick={() => setSidebarOpen(false)}>
+                  <X className="h-5 w-5" />
+                </button>
+              </div>
+            </div>
+
+            {/* Navigation Items */}
+            <nav className="flex-1 overflow-y-auto space-y-1.5 px-4 pt-2">
+              {[
+                { id: "home", label: "Dashboard", icon: Home },
+                { id: "search", label: "Item Listings", icon: FileSearch },
+                { id: "report", label: "Report Item", icon: PlusCircle },
+                { id: "analytics", label: "Analytics", icon: PenTool },
+                { id: "settings", label: "Settings", icon: Settings } // Using a placeholder icon for settings since we might not have Settings icon
+              ].map((item) => (
+                <button
+                  key={item.id}
+                  onClick={() => {
+                    if (profileName === "Guest" && ["report", "analytics", "settings"].includes(item.id)) {
+                      setShowGuestModal(true);
+                    } else {
+                      // Map the labels to the existing tabs if they differ
+                      setActiveTab(item.id);
+                      if (item.id === "home" || item.id === "search") setCategoryKeywords(null);
+                    }
+                    setSidebarOpen(false);
+                  }}
+                  className={`w-full flex items-center px-4 py-3 rounded-lg transition-colors group ${
+                    activeTab === item.id || (activeTab === "itemDetail" && item.id === "search") || (activeTab === "claimItem" && item.id === "search")
+                      ? "bg-primary-container text-on-primary-container font-medium shadow-sm" 
+                      : "text-on-primary hover:bg-white/10"
+                  }`}
+                >
+                  <item.icon className={`h-5 w-5 mr-3 ${activeTab === item.id || (activeTab === "itemDetail" && item.id === "search") || (activeTab === "claimItem" && item.id === "search") ? "text-on-primary-container" : "opacity-80"}`} />
+                  <span className="text-sm font-label-md">{item.label}</span>
+                </button>
+              ))}
+            </nav>
+
+            {/* Footer Items */}
+            <div className="p-4 border-t border-white/10 shrink-0 space-y-3">
               <button 
-                id="burgerBtn" 
-                onClick={() => setSidebarOpen(true)} 
-                className="burger-btn" 
-                aria-label="Menu"
+                onClick={() => {
+                  if (profileName === "Guest") setShowGuestModal(true);
+                  else setActiveTab("report");
+                }}
+                className="w-full py-2.5 bg-tertiary-container text-on-tertiary-container font-label-md font-bold rounded-lg hover:bg-tertiary-container/90 transition-colors shadow-sm flex items-center justify-center gap-2"
               >
-                ☰
+                <PlusCircle className="h-4 w-4" />
+                Report Missing
               </button>
-              
-              <div className="brand-wrap">
-                <div className="logo"><Search className="h-4 w-4 text-white" /></div>
-                <div className="brand-text">
-                  <div className="brand-title">FindTrack</div>
-                  <div className="small-muted">Lost &amp; Found System</div>
+
+              <div className="space-y-1">
+                <button 
+                  onClick={() => setActiveTab("about")}
+                  className="w-full flex items-center px-4 py-2 rounded-lg transition-colors text-on-primary/80 hover:text-white hover:bg-white/10"
+                >
+                  <Info className="h-4 w-4 mr-3" />
+                  <span className="text-xs font-label-md">Help Center</span>
+                </button>
+                <button 
+                  onClick={() => {
+                    if (profileName === "Guest") handleGuestBrowse();
+                    else logOut();
+                  }}
+                  className="w-full flex items-center px-4 py-2 rounded-lg transition-colors text-on-primary/80 hover:text-white hover:bg-white/10"
+                >
+                  <LogOut className="h-4 w-4 mr-3" />
+                  <span className="text-xs font-label-md">{profileName === "Guest" ? "Login / Sign Up" : "Logout"}</span>
+                </button>
+              </div>
+            </div>
+</aside>
+
+          {/* MAIN CONTENT AREA */}
+          <div className="flex-1 flex flex-col min-w-0 h-full">
+            {/* TOP BAR */}
+            <header className="h-16 shrink-0 flex items-center justify-between px-6 bg-surface-container-lowest border-b border-outline-variant z-40">
+              <div className="flex items-center gap-4">
+                <button 
+                  className="md:hidden text-on-surface"
+                  onClick={() => setSidebarOpen(true)}
+                >
+                  <Menu className="h-5 w-5" />
+                </button>
+                <div className="relative hidden sm:block" onClick={() => setActiveTab('search')}>
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-outline" />
+                  <input 
+                    type="text" 
+                    placeholder="Search community..."
+                    className="pl-10 pr-4 py-2 bg-surface-container rounded-full text-sm border-none focus:ring-2 focus:ring-primary outline-none w-64 pointer-events-none"
+                    readOnly
+                  />
                 </div>
               </div>
-              <div style={{ width: '40px' }}></div>
-            </div>
-
-            {/* TAB SELECTORS SECTION */}
-            <nav className="tabs">
-              <button 
-                onClick={() => { setActiveTab('home'); setCategoryKeywords(null); }} 
-                className={`tab-btn ${activeTab === 'home' ? 'active' : ''}`}
-              >
-                <Home className="h-4 w-4 inline mr-1.5" /> Home
-              </button>
-              <button 
-                onClick={() => { 
-                  if (profileName === 'Guest') { setShowGuestModal(true); } 
-                  else { setActiveTab('report'); }
-                }} 
-                className={`tab-btn ${activeTab === 'report' ? 'active' : ''}`}
-              >
-                <Package className="h-4 w-4 inline mr-1.5" /> Report
-              </button>
-              <button 
-                onClick={() => { setActiveTab('search'); setCategoryKeywords(null); }} 
-                className={`tab-btn ${activeTab === 'search' ? 'active' : ''}`}
-              >
-                <Search className="h-4 w-4 inline mr-1.5" /> Search
-              </button>
-              <button 
-                onClick={() => { 
-                  if (profileName === 'Guest') { setShowGuestModal(true); } 
-                  else { setActiveTab('notifications'); }
-                }} 
-                className={`tab-btn ${activeTab === 'notifications' ? 'active' : ''}`}
-              >
-                <Bell className="h-4 w-4 inline mr-1.5" /> Alerts
-              </button>
-              <button 
-                onClick={() => { setActiveTab('profile'); }} 
-                className={`tab-btn ${activeTab === 'profile' ? 'active' : ''}`}
-              >
-                <UserIcon className="h-4 w-4 inline mr-1.5" /> Profile
-              </button>
-            </nav>
-          </header>
-
-          {/* SIDEBAR NAVIGATION DRAWERS */}
-          {sidebarOpen && (
-            <div 
-              id="sidebarOverlay" 
-              onClick={() => setSidebarOpen(false)} 
-              className="overlay"
-            ></div>
-          )}
-          <aside 
-            id="sidebarDrawer" 
-            className={`sidebar-drawer ${sidebarOpen ? 'show' : 'hidden'}`}
-          >
-            <div className="drawer-header">
-              <strong>FindTrack Menu</strong>
-              <button id="closeDrawer" onClick={() => setSidebarOpen(false)}>✕</button>
-            </div>
-            <ul className="drawer-menu">
-              <li 
-                onClick={() => { setActiveTab('home'); setCategoryKeywords(null); setSidebarOpen(false); }} 
-                className="drawer-item"
-              >
-                <Home className="h-4 w-4 inline mr-1" /> Home
-              </li>
-              <li 
-                onClick={() => { 
-                  setSidebarOpen(false); 
-                  if (profileName === 'Guest') { setShowGuestModal(true); } 
-                  else { setActiveTab('report'); }
-                }} 
-                className="drawer-item"
-              >
-                <Package className="h-4 w-4 inline mr-1" /> Report Item
-              </li>
-              <li 
-                onClick={() => { setActiveTab('search'); setCategoryKeywords(null); setSidebarOpen(false); }} 
-                className="drawer-item"
-              >
-                <Search className="h-4 w-4 inline mr-1" /> Search
-              </li>
-              <li 
-                onClick={() => { 
-                  setSidebarOpen(false); 
-                  if (profileName === 'Guest') { setShowGuestModal(true); } 
-                  else { setActiveTab('notifications'); }
-                }} 
-                className="drawer-item"
-              >
-                <Bell className="h-4 w-4 inline mr-1" /> Alerts
-              </li>
-              <li 
-                onClick={() => { setActiveTab('profile'); setSidebarOpen(false); }} 
-                className="drawer-item"
-              >
-                <UserIcon className="h-4 w-4 inline mr-1" /> Profile
-              </li>
-              <hr />
-              <li 
-                onClick={() => { 
-                  setSidebarOpen(false); 
-                  if (profileName === 'Guest') { setShowGuestModal(true); } 
-                  else { setActiveTab('myitems'); }
-                }} 
-                className="drawer-item"
-              >
-                <Inbox className="h-4 w-4 inline mr-1" /> My Items
-              </li>
-              <li 
-                onClick={() => { 
-                  setSidebarOpen(false); 
-                  if (profileName === 'Guest') { setShowGuestModal(true); } 
-                  else { setActiveTab('pinned'); }
-                }} 
-                className="drawer-item"
-              >
-                <MapPin className="h-4 w-4 inline mr-1" /> Pinned Items
-              </li>
-              <li 
-                onClick={() => { setActiveTab('categories'); setSidebarOpen(false); }} 
-                className="drawer-item"
-              >
-                <Tag className="h-4 w-4 inline mr-1" /> Categories
-              </li>
-              <li 
-                onClick={() => { setActiveTab('analytics'); setSidebarOpen(false); }} 
-                className="drawer-item"
-              >
-                <PenTool className="h-4 w-4 inline mr-1" /> Analytics
-              </li>
-              <hr />
-              <li 
-                onClick={() => { setActiveTab('tips'); setSidebarOpen(false); }} 
-                className="drawer-item"
-              >
-                <Info className="h-4 w-4 inline mr-1" /> Recovery Tips
-              </li>
-              <li 
-                onClick={() => { setActiveTab('packaging'); setSidebarOpen(false); }} 
-                className="drawer-item"
-              >
-                <Package className="h-4 w-4 inline mr-1" /> Packaging Tips
-              </li>
-              <li 
-                onClick={() => { setActiveTab('about'); setSidebarOpen(false); }} 
-                className="drawer-item"
-              >
-                <CheckCircle2 className="h-4 w-4 inline mr-1" /> About / Help
-              </li>
-              <li 
-                onClick={() => { 
-                  setSidebarOpen(false); 
-                  window.location.href = "mailto:novapulsarsupport@gmail.com?subject=FindTrack%20Beta%20Feedback&body=Hi%20FindTrack%20Team%2C%20here%20is%20my%20feedback%3A%20";
-                }} 
-                className="drawer-item"
-              >
-                <Lightbulb className="h-4 w-4 inline mr-1" /> Feedback
-              </li>
-            </ul>
-          </aside>
-
-          {/* MAIN PANELS INJECTION DESK */}
-          <main>
-            
-            {/* PANEL: HOME */}
-            <section id="home" className={`panel ${activeTab === 'home' ? 'active' : ''}`}>
-              {/* Skeleton overlay shimmer */}
-              {homeShimmer ? (
-                <div id="homeSkeleton">
-                  <div className="skeleton skeleton-welcome"></div>
-                  <div style={{ background: 'white', borderRadius: '20px', border: '1px solid #e2e8f0', padding: '20px', marginBottom: '16px' }}>
-                    <div className="skeleton skeleton-title" style={{ width: '40%', height: '16px', margin: '0 0 16px' }}></div>
-                    <div className="skeleton skeleton-recent"></div>
-                    <div className="skeleton skeleton-recent"></div>
-                    <div className="skeleton skeleton-recent"></div>
-                  </div>
+              <div className="flex items-center gap-3">
+                <button 
+                  onClick={() => {
+                    if (profileName === "Guest") setShowGuestModal(true);
+                    else setActiveTab("report");
+                  }}
+                  className="hidden sm:flex items-center gap-2 bg-primary text-on-primary px-4 py-2 rounded-full text-sm font-medium hover:bg-primary-dim transition-colors"
+                >
+                  <PlusCircle className="h-4 w-4" />
+                  Report Item
+                </button>
+                <button 
+                  onClick={() => setActiveTab('notifications')}
+                  className="p-2 text-on-surface-variant hover:bg-surface-container rounded-full transition-colors relative"
+                >
+                  <Bell className="h-5 w-5" />
+                  {alerts.filter(a => !a.read).length > 0 && <span className="absolute top-1 right-1 w-2 h-2 bg-error rounded-full"></span>}
+                </button>
+                <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold cursor-pointer">
+                  {profileName === "Guest" ? "G" : profileName.charAt(0).toUpperCase()}
                 </div>
-              ) : (
-                <div id="homeContent">
-                  {profileName === 'Guest' && !guestBannerDismissed && (
-                    <div style={{ backgroundColor: '#fefce8', border: '1px solid #fef08a', borderRadius: '12px', padding: '16px', marginBottom: '16px', display: 'flex', flexDirection: 'column', gap: '12px', boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                        <span style={{ fontSize: '20px' }}>⚠️</span>
-                        <p style={{ color: '#854d0e', fontSize: '14px', fontWeight: '500', margin: 0 }}>
-                          You're browsing as a guest. Sign in to report or claim items.
-                        </p>
-                      </div>
-                      <div style={{ display: 'flex', gap: '8px', alignSelf: 'flex-start' }}>
-                        <button 
-                          onClick={() => {
-                            setCurrentView('login');
-                          }}
-                          style={{ padding: '8px 16px', backgroundColor: '#ca8a04', color: 'white', fontSize: '13px', fontWeight: 'bold', borderRadius: '8px', border: 'none', cursor: 'pointer' }}
-                        >
-                          Sign In
-                        </button>
-                        <button 
-                          onClick={() => setGuestBannerDismissed(true)}
-                          style={{ padding: '8px 16px', backgroundColor: '#fef08a', color: '#854d0e', fontSize: '13px', fontWeight: 'bold', borderRadius: '8px', border: 'none', cursor: 'pointer' }}
-                        >
-                          Continue as Guest
-                        </button>
-                      </div>
-                    </div>
-                  )}
-                  <div className="welcome-card">
-                    <div className="welcome-left">
-                      <p className="muted">Welcome back</p>
-                      <h1 id="welcomeUser" className="welcome-title">Hello, {profileName.split(" ")[0]}!</h1>
-                      <p className="muted" style={{ fontSize: '13px' }}>Here's your activity summary</p>
-                    </div>
-                    <div className="stats-cards">
-                      <div className="stat-card">
-                        <div className="stat-icon"><MapPin className="h-5 w-5 text-red-500" /></div>
-                        <div className="stat-label">Lost</div>
-                        <div id="countLost" className="stat-value">{stats.lost}</div>
-                      </div>
-                      <div className="stat-card">
-                        <div className="stat-icon"><Search className="h-5 w-5 text-sky-500" /></div>
-                        <div className="stat-label">Found</div>
-                        <div id="countFound" className="stat-value">{stats.found}</div>
-                      </div>
-                      <div className="stat-card">
-                        <div className="stat-icon"><CheckCircle2 className="h-5 w-5 text-green-500" /></div>
-                        <div className="stat-label">Claimed</div>
-                        <div id="countClaimed" className="stat-value">{stats.claimed}</div>
-                      </div>
-                    </div>
-                  </div>
+              </div>
+            </header>
 
-                  <div className="recent-section">
-                    <div className="recent-header">
-                      <h3><Inbox className="h-5 w-5 inline mr-1 text-sky-500" /> Recent Reports Feed</h3>
-                    </div>
-                    <div id="recentList" className="recent-list">
-                      {items.slice(0, 5).map(r => (
-                        <div key={r.id} onClick={() => { setSelectedItemId(r.id); setActiveTab('itemDetail'); }} className="recent-item">
-                          <div className="recent-thumb">
-                            {r.image || r.imageUrl ? (
-                              <img src={r.image || r.imageUrl} alt="" />
-                            ) : (
-                              r.type === 'lost' ? <MapPin className="h-6 w-6 text-red-500" /> : <Search className="h-6 w-6 text-sky-500" />
-                            )}
-                          </div>
-                          <div className="recent-info">
-                            <div className="recent-title">{r.title}</div>
-                            <div className="recent-meta">{r.location || "Location unknown"} · {r.date ? new Date(r.date).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) : "Just now"}</div>
-                          </div>
-                          <div className={`badge ${r.claimed ? 'claimed' : r.type}`}>
-                            {r.claimed ? "CLAIMED" : r.type.toUpperCase()}
-                          </div>
+            {/* MAIN PANELS INJECTION DESK */}
+
+          <main className="flex-1 overflow-y-auto bg-surface-container-low p-4 md:p-6 lg:p-8 relative">
+            {/* PANEL: HOME */}
+            <section
+              id="home"
+              className={`${activeTab === "home" ? "flex" : "hidden"} max-w-5xl mx-auto h-full flex-col`}
+            >
+              <h1 className="text-3xl md:text-4xl font-bold text-slate-900 mb-8 flex items-center gap-2">
+                Magandang araw 👋
+              </h1>
+              
+              {/* Stats row */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+                  <div className="bg-[#D3E8E5] p-5 rounded-2xl flex flex-col items-center justify-center text-center shadow-sm">
+                    <ShoppingBag className="w-8 h-8 text-[#1A7B72] mb-3" strokeWidth={1.5} />
+                    <div className="text-sm font-medium text-[#15605A] leading-tight mb-1">Items<br/>Reported:</div>
+                    <div className="text-3xl font-bold text-[#1A7B72]">{stats.lost + stats.found}</div>
+                  </div>
+                  <div className="bg-[#E2F0D9] p-5 rounded-2xl flex flex-col items-center justify-center text-center shadow-sm">
+                    <Search className="w-8 h-8 text-[#1A7B72] mb-3" strokeWidth={1.5} />
+                    <div className="text-sm font-medium text-[#15605A] leading-tight mb-1">Items<br/>Found:</div>
+                    <div className="text-3xl font-bold text-[#1A7B72]">{stats.found}</div>
+                  </div>
+                  <div className="bg-[#D3E8E5] p-5 rounded-2xl flex flex-col items-center justify-center text-center shadow-sm">
+                    <Users className="w-8 h-8 text-[#1A7B72] mb-3" strokeWidth={1.5} />
+                    <div className="text-sm font-medium text-[#15605A] leading-tight mb-1">Community<br/>Members:</div>
+                    <div className="text-3xl font-bold text-[#1A7B72]">250+</div>
+                  </div>
+                  <div className="bg-[#D3E8E5] p-5 rounded-2xl flex flex-col items-center justify-center text-center shadow-sm">
+                    <CheckSquare className="w-8 h-8 text-[#1A7B72] mb-3" strokeWidth={1.5} />
+                    <div className="text-sm font-medium text-[#15605A] leading-tight mb-1">Recoveries<br/>This Week:</div>
+                    <div className="text-3xl font-bold text-[#1A7B72]">{stats.claimed}</div>
+                  </div>
+              </div>
+
+              {/* Content row */}
+              <div className="grid md:grid-cols-2 gap-6 mb-8 flex-1 min-h-[400px]">
+                  {/* Recent Community Activity */}
+                  <div className="bg-white rounded-3xl p-6 shadow-sm border border-slate-100 flex flex-col h-full">
+                    <h2 className="text-xl font-bold text-slate-900 mb-6">Recent Community Activity</h2>
+                    <div className="space-y-4 overflow-y-auto flex-1 pr-2">
+                      {items.slice(0, 6).map((r) => (
+                        <div key={r.id} className="text-sm border-b border-slate-50 pb-4 last:border-0">
+                          <span className="font-semibold text-slate-800">{r.type === 'lost' ? 'Lost' : 'Found'} {r.title}</span> {r.location ? `in ${r.location}` : ''} - 
+                          <span className="text-slate-500 ml-1">Reported by {r.contactName?.split(' ')[0] || 'Member'} ({r.date ? new Date(r.date).toLocaleDateString() : 'recently'})</span>
                         </div>
                       ))}
-                      {items.length === 0 && (
-                        <div style={{ textAlign: 'center', padding: '24px', color: '#94a3b8', fontSize: '14px' }}>
-                          No reports yet — start by reporting an item!
-                        </div>
-                      )}
+                      {items.length === 0 && <div className="text-slate-500 text-sm">No recent activity.</div>}
                     </div>
                   </div>
-
-                  <div className="tip-banner"><Lightbulb className="h-4 w-4 inline text-amber-500 mr-1" /> Tip: Report lost items within 24 hours for the best chance of recovery!</div>
-
-                  <footer style={{ marginTop: '32px', paddingTop: '20px', borderTop: '1px solid rgba(0, 0, 0, 0.08)', display: 'flex', flexDirection: 'column', gap: '12px', alignItems: 'center', justifyContent: 'space-between', fontSize: '12px', color: '#64748b' }} className="sm:flex-row">
-                    <p>© {new Date().getFullYear()} FindTrack · Lost &amp; Found System</p>
-                    <div style={{ display: 'flex', gap: '16px' }}>
-                      <button 
-                        onClick={() => {
-                          setCurrentView('privacy');
-                          window.history.pushState(null, '', '/privacy');
-                        }} 
-                        style={{ cursor: 'pointer', background: 'none', border: 'none', padding: 0, fontWeight: '600', color: '#475569' }}
-                        className="hover:text-slate-900 transition"
-                      >
-                        Privacy Policy
-                      </button>
-                      <button 
-                        onClick={() => {
-                          setCurrentView('terms');
-                          window.history.pushState(null, '', '/terms');
-                        }} 
-                        style={{ cursor: 'pointer', background: 'none', border: 'none', padding: 0, fontWeight: '600', color: '#475569' }}
-                        className="hover:text-slate-900 transition"
-                      >
-                        Terms of Service
-                      </button>
+                  
+                  {/* Private Messages */}
+                  <div className="bg-white rounded-3xl p-6 shadow-sm border border-slate-100 flex flex-col h-full">
+                    <h2 className="text-xl font-bold text-slate-900 mb-6">Private Messages</h2>
+                    <div className="space-y-4 overflow-y-auto flex-1 pr-2">
+                      <div className="flex gap-4">
+                        <div className="w-10 h-10 rounded-full bg-teal-100 flex items-center justify-center text-teal-700 font-bold shrink-0">JS</div>
+                        <div className="bg-slate-100 rounded-2xl rounded-tl-none p-3 text-sm text-slate-700">
+                          <div className="font-bold mb-1">Juan S.</div>
+                          - Hi, I think I found your item... We actually dropped this item around your area?
+                        </div>
+                      </div>
+                      <div className="flex gap-4">
+                        <div className="w-10 h-10 rounded-full bg-teal-100 flex items-center justify-center text-teal-700 font-bold shrink-0">MD</div>
+                        <div className="bg-[#D3E8E5] rounded-2xl rounded-tl-none p-3 text-sm text-slate-700">
+                          <div className="font-bold mb-1">Maria D.</div>
+                          - Can you confirm the location... near a north store?
+                        </div>
+                      </div>
+                      <div className="flex gap-4">
+                        <div className="w-10 h-10 rounded-full bg-teal-100 flex items-center justify-center text-teal-700 font-bold shrink-0">LG</div>
+                        <div className="bg-slate-100 rounded-2xl rounded-tl-none p-3 text-sm text-slate-700">
+                          <div className="font-bold mb-1">Leo G.</div>
+                          - New match for your report... Step up now, speaker!
+                        </div>
+                      </div>
                     </div>
-                  </footer>
-                </div>
-              )}
+                  </div>
+              </div>
+
+              {/* Footer Banner */}
+              <div className="mt-auto bg-[#1A7B72] text-white text-center py-5 px-6 rounded-2xl font-medium shadow-md">
+                Every recovered item strengthens the community.
+              </div>
             </section>
-
             {/* PANEL: REPORT SUBMISSION */}
-            <section id="report" className={`panel ${activeTab === 'report' ? 'active' : ''}`}>
-              <div className="section-title"><Package className="h-5 w-5 inline mr-1 text-sky-500" /> Report Lost / Found Item</div>
-              <p className="section-subtitle">Fill in the details below to submit a report. More detail = higher chance of recovery.</p>
-              <div className="report-form-wrap">
-                <form onSubmit={handleReportSubmit} id="reportForm">
-                  <div className="form-group">
-                    <label htmlFor="r_title">Item Title *</label>
-                    <input 
-                      id="r_title" 
-                      type="text" 
-                      placeholder="e.g., Blue Nike Backpack" 
-                      value={reportTitle}
-                      onChange={(e) => setReportTitle(e.target.value)}
-                      required 
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label htmlFor="r_location">Location Where Lost/Found</label>
-                    <input 
-                      id="r_location" 
-                      type="text" 
-                      placeholder="e.g., Library 2nd Floor" 
-                      value={reportLocation}
-                      onChange={(e) => setReportLocation(e.target.value)}
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label htmlFor="r_desc">Detailed Description</label>
-                    <textarea 
-                      id="r_desc" 
-                      rows={4} 
-                      placeholder="Add details like color, brand, identifying features..."
-                      value={reportDesc}
-                      onChange={(e) => setReportDesc(e.target.value)}
-                    ></textarea>
-                  </div>
-                  <div className="form-group">
-                    <label htmlFor="r_email">Contact Email</label>
-                    <input 
-                      id="r_email" 
-                      type="email" 
-                      placeholder="e.g., mail@example.com (so people can reach you)" 
-                      value={reportEmail}
-                      onChange={(e) => setReportEmail(e.target.value)}
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label htmlFor="r_image">Upload Photo</label>
-                    <input 
-                      id="r_image" 
-                      type="file" 
-                      accept="image/*" 
-                      onChange={handleImageFileChange}
-                    />
-                    {reportImage && (
-                      <img 
-                        src={reportImage} 
-                        className="image-preview" 
-                        style={{ display: 'block' }} 
-                        alt="Preview" 
-                      />
-                    )}
-                  </div>
-                  <div className="form-group">
-                    <label htmlFor="r_type">Item Status *</label>
-                    <select 
-                      id="r_type"
-                      value={reportType}
-                      onChange={(e) => setReportType(e.target.value as 'lost' | 'found')}
-                    >
-                      <option value="lost">🔴 Lost Item — I lost this</option>
-                      <option value="found">🟢 Found Item — I found this</option>
-                    </select>
-                  </div>
+            <section
+              id="report"
+              className={`${activeTab === "report" ? "block" : "hidden"}`}
+            >
+              <div className="max-w-3xl mx-auto space-y-8">
+                <header className="mb-8">
+                  <h2 className="font-headline-lg text-3xl font-bold text-on-surface">Report an Item</h2>
+                  <p className="font-body-md text-on-surface-variant mt-2">Fill in the details below. Our smart matching system will help find the owner or the item.</p>
+                </header>
 
-                  <div className="form-group bg-slate-50 border border-slate-205 rounded-xl p-4 my-2" style={{ backgroundColor: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '16px', margin: '8px 0' }}>
-                    <label htmlFor="r_securityQuestion" className="text-slate-800 font-bold" style={{ fontWeight: 'bold', color: '#1e293b' }}><Key className="h-4 w-4 inline mr-1" /> OWNER SECRET QUESTION (OPTIONAL)</label>
-                    <div style={{ position: 'relative' }}>
-                      <input 
-                        id="r_securityQuestion" 
-                        type="text" 
-                        placeholder="e.g., What color sticker is on the back? / What's the keychain brand?" 
-                        value={reportSecurityQuestion}
-                        onChange={(e) => setReportSecurityQuestion(e.target.value)}
-                        style={{ 
-                          marginTop: '4px',
-                          paddingRight: reportSecurityQuestion.trim().length >= 4 ? '36px' : undefined,
-                          borderColor: reportSecurityQuestion.trim().length >= 4 ? '#10b981' : undefined,
-                          backgroundColor: reportSecurityQuestion.trim().length >= 4 ? '#ecfdf5' : undefined
-                        }}
-                      />
-                      {reportSecurityQuestion.trim().length >= 4 && (
-                        <div style={{ position: 'absolute', right: '12px', top: 'calc(50% + 2px)', transform: 'translateY(-50%)', color: '#10b981', fontWeight: 'bold', fontSize: '18px', pointerEvents: 'none' }}>
-                          ✓
-                        </div>
-                      )}
+                <div className="bg-surface-container-lowest rounded-2xl border border-outline-variant shadow-sm overflow-hidden">
+                  {/* Stepper Header */}
+                  <div className="flex border-b border-outline-variant bg-surface-variant/50">
+                    <div className={`flex-1 py-4 px-6 text-center text-sm font-bold border-b-2 ${reportStep >= 1 ? 'border-primary text-primary' : 'border-transparent text-outline'}`}>
+                      1. Basic Info
                     </div>
-                    <p className="text-[10px] text-slate-500 mt-1" style={{ fontSize: '10px', color: '#64748b', marginTop: '4px', lineHeight: '1.4' }}>
-                      Set a secret question only the real owner would know. Claimers must answer this correctly.
-                    </p>
+                    <div className={`flex-1 py-4 px-6 text-center text-sm font-bold border-b-2 ${reportStep >= 2 ? 'border-primary text-primary' : 'border-transparent text-outline'}`}>
+                      2. Details
+                    </div>
+                    <div className={`flex-1 py-4 px-6 text-center text-sm font-bold border-b-2 ${reportStep >= 3 ? 'border-primary text-primary' : 'border-transparent text-outline'}`}>
+                      3. Verification
+                    </div>
                   </div>
 
-                  <div className="space-y-2">
-                    <label className="block text-sm font-semibold text-slate-700">
-                      Secret Verification Answer
-                    </label>
-                    <input
-                      type="text"
-                      value={reportSecurityAnswer}
-                      onChange={(e) => setReportSecurityAnswer(e.target.value)}
-                      placeholder="Example: blue sticker"
-                      className="w-full rounded-md border border-slate-300 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-teal-500"
-                    />
-                    <p className="text-xs text-slate-500">
-                      This answer will be hidden and used for automatic ownership verification.
-                    </p>
-                  </div>
+                  <form
+                    onSubmit={async (e) => {
+                      e.preventDefault();
+                      if (reportStep < 3) {
+                        setReportStep(reportStep + 1);
+                        return;
+                      }
+                      await handleReportSubmit(e);
+                      setReportStep(1);
+                    }}
+                    className="p-6 md:p-8 space-y-6"
+                  >
+                    {/* STEP 1: Basic Info */}
+                    <div className={`space-y-6 ${reportStep === 1 ? 'block' : 'hidden'}`}>
+                      <div className="space-y-3">
+                        <label className="block font-label-md font-bold text-on-surface">I am reporting a...</label>
+                        <div className="grid grid-cols-2 gap-4">
+                          <label className={`cursor-pointer border rounded-xl p-4 flex flex-col items-center gap-2 transition-all ${reportType === "lost" ? "border-error text-error bg-error/5 ring-2 ring-error/20" : "border-outline-variant text-on-surface-variant hover:bg-surface-variant"}`}>
+                            <input type="radio" name="reportType" value="lost" checked={reportType === "lost"} onChange={() => setReportType("lost")} className="sr-only" />
+                            <Search className="h-6 w-6" />
+                            <span className="font-bold">Lost Item</span>
+                          </label>
+                          <label className={`cursor-pointer border rounded-xl p-4 flex flex-col items-center gap-2 transition-all ${reportType === "found" ? "border-primary text-primary bg-primary/5 ring-2 ring-primary/20" : "border-outline-variant text-on-surface-variant hover:bg-surface-variant"}`}>
+                            <input type="radio" name="reportType" value="found" checked={reportType === "found"} onChange={() => setReportType("found")} className="sr-only" />
+                            <PackageCheck className="h-6 w-6" />
+                            <span className="font-bold">Found Item</span>
+                          </label>
+                        </div>
+                      </div>
 
-                  <button className="primary-btn flex items-center justify-center gap-1.5" type="submit" disabled={isUploading}>
-                    {isUploading ? 'Uploading & Submitting...' : <><Send className="h-4 w-4" /> Submit Report</>}
-                  </button>
-                </form>
+                      <div className="space-y-2">
+                        <label className="block font-label-md font-bold text-on-surface">Item Title</label>
+                        <input type="text" required value={reportTitle} onChange={(e) => setReportTitle(e.target.value)} placeholder="e.g. Blue Hydroflask" className="w-full bg-surface-variant border-none rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary outline-none" />
+                      </div>
+
+                      <div className="space-y-2">
+                        <label className="block font-label-md font-bold text-on-surface">Location {reportType === "lost" ? "Lost" : "Found"}</label>
+                        <div className="relative">
+                          <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-outline" />
+                          <input type="text" required value={reportLocation} onChange={(e) => setReportLocation(e.target.value)} placeholder="e.g. Library 2nd Floor" className="w-full bg-surface-variant border-none rounded-xl pl-12 pr-4 py-3 focus:ring-2 focus:ring-primary outline-none" />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* STEP 2: Details */}
+                    <div className={`space-y-6 ${reportStep === 2 ? 'block' : 'hidden'}`}>
+                      <div className="space-y-2">
+                        <label className="block font-label-md font-bold text-on-surface">Description</label>
+                        <textarea required value={reportDesc} onChange={(e) => setReportDesc(e.target.value)} rows={4} placeholder="Describe the item in detail (color, brand, unique marks...)" className="w-full bg-surface-variant border-none rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary outline-none resize-none"></textarea>
+                      </div>
+
+                      <div className="space-y-2">
+                        <label className="block font-label-md font-bold text-on-surface">Upload Image (Optional)</label>
+                        <div className="border-2 border-dashed border-outline-variant rounded-xl p-8 text-center hover:bg-surface-variant transition-colors cursor-pointer relative">
+                          <input type="file" accept="image/*" onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) {
+                              setReportImageFile(file);
+                              const reader = new FileReader();
+                              reader.onload = (ev) => setReportImage(ev.target?.result as string);
+                              reader.readAsDataURL(file);
+                            }
+                          }} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
+                          {reportImage ? (
+                            <div className="flex flex-col items-center">
+                              <img src={reportImage} alt="Preview" className="h-32 object-contain rounded-lg mb-4 shadow-sm" />
+                              <span className="text-sm font-medium text-primary">Change Image</span>
+                            </div>
+                          ) : (
+                            <div className="flex flex-col items-center">
+                              <Camera className="h-10 w-10 text-outline mb-3" />
+                              <span className="text-sm font-medium text-on-surface">Click to upload or drag and drop</span>
+                              <span className="text-xs text-on-surface-variant mt-1">PNG, JPG up to 5MB</span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* STEP 3: Verification */}
+                    <div className={`space-y-6 ${reportStep === 3 ? 'block' : 'hidden'}`}>
+                      <div className="p-4 bg-primary-container text-on-primary-container rounded-xl text-sm mb-6">
+                        <div className="flex items-start gap-3">
+                          <ShieldCheck className="h-5 w-5 shrink-0 mt-0.5" />
+                          <div>
+                            <p className="font-bold mb-1">Protecting Ownership</p>
+                            <p>To ensure this item is returned to its rightful owner, set a secret question that only the real owner would know.</p>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="space-y-2">
+                        <label className="block font-label-md font-bold text-on-surface">Secret Verification Question</label>
+                        <input type="text" required value={reportSecurityQuestion} onChange={(e) => setReportSecurityQuestion(e.target.value)} placeholder="e.g. What is the wallpaper on the lock screen?" className="w-full bg-surface-variant border-none rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary outline-none" />
+                      </div>
+
+                      <div className="space-y-2">
+                        <label className="block font-label-md font-bold text-on-surface">Secret Answer</label>
+                        <input type="text" required value={reportSecurityAnswer} onChange={(e) => setReportSecurityAnswer(e.target.value)} placeholder="e.g. A picture of a dog" className="w-full bg-surface-variant border-none rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary outline-none" />
+                        <p className="text-xs text-on-surface-variant mt-1">This answer will be hidden and used for verification.</p>
+                      </div>
+                    </div>
+
+                    {/* Footer Actions */}
+                    <div className="pt-6 border-t border-outline-variant flex justify-between items-center mt-8">
+                      {reportStep > 1 ? (
+                        <button type="button" onClick={() => setReportStep(reportStep - 1)} className="px-6 py-2.5 rounded-full font-label-md font-bold text-on-surface border border-outline-variant hover:bg-surface-variant transition-colors">
+                          Back
+                        </button>
+                      ) : <div></div>}
+                      
+                      <button type="submit" disabled={isUploading} className="px-6 py-2.5 rounded-full font-label-md font-bold bg-primary text-on-primary hover:bg-primary-dim transition-colors flex items-center gap-2 shadow-sm disabled:opacity-70">
+                        {isUploading ? "Uploading..." : reportStep < 3 ? "Continue" : (
+                          <><Send className="h-4 w-4" /> Submit Report</>
+                        )}
+                      </button>
+                    </div>
+                  </form>
+                </div>
               </div>
             </section>
 
             {/* PANEL: SEARCH REGISTRY */}
-            <section id="search" className={`panel ${activeTab === 'search' ? 'active' : ''}`}>
-              <div className="section-title"><Search className="h-5 w-5 inline mr-1 text-sky-500" /> Search Database</div>
-              
-              <div className="search-container">
-                <div className="search-bar">
-                  <div className="search-input-wrapper">
-                    <span className="search-icon"><Search className="h-5 w-5" /></span>
-                    <input 
-                      id="s_query" 
-                      placeholder="Search by title, description or location..."
-                      value={sQuery}
-                      onChange={(e) => setSQuery(e.target.value)}
-                    />
+            <section
+              id="search"
+              className={`${activeTab === "search" ? "block" : "hidden"} `}
+            >
+              <div className="p-4 md:p-8">
+                {/* Search Header & Filters (Bento Layout) */}
+                <div className="grid grid-cols-1 md:grid-cols-12 gap-4 md:gap-6 mb-8">
+                  {/* Large Search Hero */}
+                  <div className="md:col-span-8 bg-surface-container-high rounded-xl p-6 md:p-8 relative overflow-hidden group">
+                    <div className="absolute inset-0 opacity-10 bg-cover bg-center"></div>
+                    <div className="relative z-10">
+                      <h2 className="font-headline-lg text-3xl font-bold text-primary mb-2">Find Lost Items</h2>
+                      <p className="font-body-lg text-on-surface-variant mb-6">Search through our community database to find what you're looking for.</p>
+                      <div className="relative flex items-center w-full shadow-sm rounded-lg overflow-hidden border border-outline-variant focus-within:border-primary transition-colors bg-surface">
+                        <div className="pl-4 text-on-surface-variant">
+                          <Search className="h-5 w-5" />
+                        </div>
+                        <input 
+                          className="w-full px-4 py-4 bg-transparent border-none focus:ring-0 font-body-lg text-on-surface placeholder:text-on-surface-variant/50 outline-none" 
+                          placeholder="Search by keywords, brands, or descriptions..." 
+                          type="text"
+                          value={sQuery}
+                          onChange={(e) => setSQuery(e.target.value)}
+                        />
+                      </div>
+                    </div>
                   </div>
-                  <select 
-                    id="s_filter"
-                    value={sFilter}
-                    onChange={(e) => setSFilter(e.target.value)}
-                  >
-                    <option value="all">All Statuses</option>
-                    <option value="lost">Lost Only</option>
-                    <option value="found">Found Only</option>
-                    <option value="claimed">Claimed</option>
-                  </select>
+
+                  {/* Quick Filters */}
+                  <div className="md:col-span-4 flex flex-col gap-4">
+                    <div className="bg-surface-container rounded-xl p-4 flex-1 border border-outline-variant/30 flex flex-col justify-center hover:shadow-md transition-shadow">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <h3 className="font-label-md text-xs text-on-surface-variant uppercase tracking-wider mb-1">Status</h3>
+                          <select 
+                            value={sFilter}
+                            onChange={(e) => setSFilter(e.target.value)}
+                            className="bg-transparent border-none p-0 font-headline-md text-lg text-primary focus:ring-0 cursor-pointer outline-none font-bold"
+                          >
+                            <option value="all">All Items</option>
+                            <option value="lost">Lost Only</option>
+                            <option value="found">Found Only</option>
+                            <option value="claimed">Resolved</option>
+                          </select>
+                        </div>
+                        <div className="w-10 h-10 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center">
+                          <Filter className="h-5 w-5" />
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="bg-tertiary-container/20 rounded-xl p-4 flex-1 border border-tertiary-container/30 flex flex-col justify-center hover:shadow-md transition-shadow">
+                      <div className="flex items-center justify-between">
+                        <div className="w-full pr-2">
+                          <h3 className="font-label-md text-xs text-tertiary uppercase tracking-wider mb-1">Location</h3>
+                          <input 
+                            value={sLoc}
+                            onChange={(e) => setSLoc(e.target.value)}
+                            placeholder="Type location..."
+                            className="bg-transparent border-none p-0 w-full font-headline-md text-lg text-on-surface leading-tight focus:ring-0 outline-none placeholder:text-on-surface/50 font-bold"
+                          />
+                        </div>
+                        <div className="w-10 h-10 shrink-0 rounded-full bg-tertiary-container text-on-tertiary-container flex items-center justify-center">
+                          <MapPin className="h-5 w-5" />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Dynamic Categories highlight info bar */}
+                {categoryKeywords && (
+                  <div className="mb-8 bg-primary-container/30 border border-primary-container/50 text-on-primary-container py-3 px-4 rounded-xl flex items-center justify-between">
+                    <span className="font-body-md">Filtered by Category: <strong className="capitalize">{categoryKeywords[0]}</strong></span>
+                    <button
+                      onClick={() => setCategoryKeywords(null)}
+                      className="font-label-md text-sm font-bold text-primary hover:text-primary-dim underline"
+                    >
+                      Clear Category Filter
+                    </button>
+                  </div>
+                )}
+
+                {/* SMART SUGGESTION MATCH BANNER COGNITIVE extraction */}
+                {smartMatches.length > 0 && (
+                  <div className="mb-8 bg-surface-container-low rounded-xl p-6 border border-primary-container shadow-sm">
+                    <div className="flex items-center gap-2 text-primary font-headline-md font-bold mb-4">
+                      <Bot className="h-6 w-6" />
+                      Smart Suggestions — Possible matches
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                      {smartMatches.map(({ report, score }) => {
+                        const pct = Math.round(score * 100);
+                        return (
+                          <div
+                            key={report.id}
+                            onClick={() => {
+                              setSelectedItemId(report.id);
+                              setActiveTab("itemDetail");
+                            }}
+                            className="bg-surface-container-lowest p-4 rounded-lg border border-outline-variant hover:border-primary cursor-pointer hover:shadow-md transition-all group"
+                          >
+                            <div className="font-headline-md text-base font-semibold text-on-surface mb-1 group-hover:text-primary transition-colors line-clamp-1">{report.title}</div>
+                            <div className="flex items-center text-sm text-on-surface-variant mb-2">
+                              <MapPin className="h-3.5 w-3.5 mr-1" />{" "}
+                              <span className="truncate">{report.location || "Unknown"}</span>
+                            </div>
+                            <div className="flex items-center text-xs font-bold text-primary">
+                              <CheckCircle2 className="h-3.5 w-3.5 mr-1" />{" "}
+                              {pct}% AI Match Confidence
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {/* Results Grid */}
+                <div className="mb-6 flex justify-between items-end">
+                  <h2 className="font-headline-md text-2xl font-bold text-on-surface">
+                    Search Results <span className="text-on-surface-variant font-body-md font-normal ml-2 text-lg">({filteredSearchList.length} found)</span>
+                  </h2>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 pb-8">
+                  {filteredSearchList.map((r) => {
+                    const pinned = pinnedIds.includes(r.id);
+                    return (
+                      <div
+                        key={r.id}
+                        onClick={() => {
+                          setSelectedItemId(r.id);
+                          setActiveTab("itemDetail");
+                        }}
+                        className="bg-surface-container-lowest rounded-xl overflow-hidden border border-outline-variant shadow-sm hover:shadow-md transition-all group flex flex-col cursor-pointer"
+                      >
+                        <div className="h-48 relative overflow-hidden bg-surface-variant flex items-center justify-center">
+                          {r.image || r.imageUrl ? (
+                            <img
+                              src={r.image || r.imageUrl}
+                              alt={r.title}
+                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                              referrerPolicy="no-referrer"
+                            />
+                          ) : (
+                            <div className="opacity-30 text-outline">
+                              <Camera className="h-12 w-12" />
+                            </div>
+                          )}
+                          <div className={`absolute top-3 left-3 px-3 py-1 rounded-full font-label-md text-xs font-semibold tracking-wide uppercase flex items-center gap-1 shadow-sm ${
+                            r.claimed ? 'bg-primary-container text-on-primary-container' : 
+                            r.type === 'found' ? 'bg-secondary-container text-on-secondary-container' : 'bg-error-container text-on-error-container'
+                          }`}>
+                            {r.claimed ? <CheckCircle2 className="h-[14px] w-[14px]" /> : r.type === "found" ? <CheckCircle2 className="h-[14px] w-[14px]" /> : <Search className="h-[14px] w-[14px]" />}
+                            {r.claimed ? "CLAIMED" : r.type === "found" ? "Found" : "Lost"}
+                          </div>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              togglePin(r.id);
+                            }}
+                            className={`absolute top-3 right-3 w-8 h-8 rounded-full flex items-center justify-center transition-colors ${pinned ? "bg-tertiary text-on-tertiary shadow-md" : "bg-surface/80 backdrop-blur-sm text-on-surface-variant hover:text-primary"}`}
+                          >
+                            <MapPin className="h-[18px] w-[18px]" fill={pinned ? "currentColor" : "none"} />
+                          </button>
+                        </div>
+                        <div className="p-4 flex-1 flex flex-col">
+                          <div className="flex justify-between items-start mb-2">
+                            <h3 className="font-headline-md text-base text-on-surface font-semibold line-clamp-1 group-hover:text-primary transition-colors">{r.title}</h3>
+                          </div>
+                          <p className="font-body-md text-on-surface-variant line-clamp-2 mb-4 text-sm">
+                            {r.desc || r.description || "No description provided."}
+                          </p>
+                          <div className="mt-auto space-y-2">
+                            <div className="flex items-center text-xs text-on-surface-variant">
+                              <MapPin className="h-[14px] w-[14px] mr-1 text-primary shrink-0" />
+                              <span className="truncate">{r.location || "Unknown location"}</span>
+                            </div>
+                            <div className="flex items-center text-xs text-on-surface-variant">
+                              <Clock className="h-[14px] w-[14px] mr-1 text-primary shrink-0" />
+                              <span>{r.date
+                                ? new Date(r.date).toLocaleDateString("en-US", {
+                                    year: "numeric",
+                                    month: "short",
+                                    day: "numeric",
+                                  })
+                                : r.createdAt ? new Date(r.createdAt.seconds ? r.createdAt.seconds * 1000 : r.createdAt).toLocaleDateString() : "Recent"}</span>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="px-4 py-3 border-t border-outline-variant bg-surface-container-lowest">
+                          <button className={`w-full py-2 rounded font-label-md text-sm transition-colors text-center block shadow-sm ${
+                            r.type === 'found' ? 'bg-primary text-on-primary hover:bg-primary-dim' : 'border border-primary text-primary hover:bg-primary-container/20'
+                          }`}>
+                            View Details
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {filteredSearchList.length === 0 && (
+                  <div className="py-16 flex flex-col items-center justify-center text-center border-2 border-dashed border-outline-variant rounded-2xl bg-surface-container-lowest">
+                    <div className="w-16 h-16 bg-primary-container/30 rounded-full flex items-center justify-center mb-4 border border-primary-container">
+                      <Search className="h-8 w-8 text-primary" />
+                    </div>
+                    <h3 className="font-headline-md text-lg font-bold text-on-surface mb-2">No items found</h3>
+                    <p className="font-body-md text-on-surface-variant">Try adjusting your search filters or keywords.</p>
+                  </div>
+                )}
+              </div>
+            </section>
+{/* PANEL: ITEM DETAIL VIEW */}
+            <section
+              id="itemDetail"
+              className={`${activeTab === "itemDetail" ? "block" : "hidden"} bg-background h-full w-full overflow-y-auto`}
+            >
+              {(() => {
+                const r = items.find((x) => x.id === selectedItemId);
+                if (!r)
+                  return (
+                    <div className="flex flex-col items-center justify-center h-full text-on-surface-variant">
+                      <Package className="h-12 w-12 mb-4 opacity-50" />
+                      <p>Please choose an item from search.</p>
+                    </div>
+                  );
+
+                return (
+                  <div className="max-w-7xl mx-auto space-y-6 sm:space-y-8 pb-12">
+                    {/* Page Header */}
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-surface-variant pb-6">
+                      <div>
+                        <button
+                          onClick={() => setActiveTab("search")}
+                          className="inline-flex items-center gap-2 text-primary hover:text-primary-dim text-[12px] font-label-md mb-2 transition-colors"
+                        >
+                          <ArrowLeft className="h-4 w-4" />
+                          Back to Results
+                        </button>
+                        <div className="flex items-center gap-3 mt-1">
+                          <span className={`px-3 py-1 text-[10px] font-bold tracking-wider rounded-full uppercase ${r.type === "lost" ? "bg-error-container text-on-error-container" : "bg-secondary-container text-on-secondary-container"}`}>
+                            {r.type === "lost" ? "LOST" : "FOUND"}
+                          </span>
+                          <span className="text-on-surface-variant text-[12px] font-label-md border-l border-outline-variant pl-3">
+                            Ref #{r.id.substring(0, 8).toUpperCase()}
+                          </span>
+                        </div>
+                        <h2 className="text-2xl sm:text-[32px] sm:leading-[40px] font-headline-lg font-bold text-on-surface mt-3">
+                          {r.title}
+                        </h2>
+                      </div>
+                      <button className="w-10 h-10 flex items-center justify-center rounded-full bg-surface-container hover:bg-surface-container-high transition-colors text-primary shadow-sm border border-outline-variant">
+                        <Share className="h-5 w-5" />
+                      </button>
+                    </div>
+
+                    {/* Content Grid */}
+                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+                      {/* Left Column (Image & AI) */}
+                      <div className="lg:col-span-7 space-y-6">
+                        {/* Image Card */}
+                        <div className="bg-surface rounded-xl shadow-sm border border-surface-container-highest overflow-hidden relative aspect-video sm:aspect-[4/3] group">
+                          {r.image || r.imageUrl ? (
+                            <img
+                              src={r.image || r.imageUrl}
+                              alt={r.title}
+                              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                              referrerPolicy="no-referrer"
+                            />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center bg-surface-variant text-outline">
+                              <Camera className="h-16 w-16 opacity-30" />
+                            </div>
+                          )}
+                          {/* Carousel Dots Overlay */}
+                          <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-2 z-10">
+                            <div className="w-2 h-2 rounded-full bg-white shadow-sm"></div>
+                            <div className="w-2 h-2 rounded-full bg-white/50 hover:bg-white/80 cursor-pointer shadow-sm"></div>
+                            <div className="w-2 h-2 rounded-full bg-white/50 hover:bg-white/80 cursor-pointer shadow-sm"></div>
+                          </div>
+                        </div>
+
+                        {/* Gemini AI Matchmaker Card */}
+                        <div className="bg-surface-container-low rounded-xl p-4 sm:p-6 border border-primary-container relative overflow-hidden shadow-sm">
+                          <div className="absolute inset-0 opacity-20 pointer-events-none"></div>
+                          <div className="relative z-10 flex gap-4 items-start">
+                            <div className="flex-shrink-0 w-12 h-12 rounded-lg bg-primary-container flex items-center justify-center text-on-primary-container shadow-inner">
+                              <Bot className="h-7 w-7" />
+                            </div>
+                            <div className="flex-1">
+                              <div className="flex items-center justify-between mb-1">
+                                <h3 className="text-[16px] font-headline-md font-semibold text-primary">
+                                  Gemini AI Matchmaker
+                                </h3>
+                                <button className="text-on-surface-variant hover:text-primary transition-colors">
+                                  <RefreshCw className="h-5 w-5" />
+                                </button>
+                              </div>
+                              <p className="text-[14px] font-body-md text-on-surface-variant leading-relaxed mb-3">
+                                Our AI is actively cross-referencing this report against recent {r.type === 'lost' ? 'Found' : 'Lost'} listings in the area.
+                              </p>
+                              <div className="flex items-center gap-2 text-primary text-[12px] font-bold animate-pulse">
+                                <Search className="h-4 w-4" /> Scanning local databases...
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Right Column (Details & Contact) */}
+                      <div className="lg:col-span-5 space-y-6">
+                        {/* Item Details Card */}
+                        <div className="bg-surface rounded-xl shadow-sm border border-surface-container-highest p-4 sm:p-6 lg:p-6 space-y-6">
+                          <h3 className="text-[24px] font-headline-md font-semibold text-on-surface border-b border-surface-variant pb-3">
+                            Item Details
+                          </h3>
+                          <div className="space-y-4">
+                            <div className="flex items-start gap-3">
+                              <Tag className="h-5 w-5 text-primary mt-0.5" />
+                              <div>
+                                <p className="text-[12px] font-label-md text-on-surface-variant mb-0.5">
+                                  Category
+                                </p>
+                                <p className="text-[14px] font-body-md text-on-surface font-medium capitalize">
+                                  {(r as any).category || "General"}
+                                </p>
+                              </div>
+                            </div>
+                            <div className="flex items-start gap-3">
+                              <Clock className="h-5 w-5 text-primary mt-0.5" />
+                              <div>
+                                <p className="text-[12px] font-label-md text-on-surface-variant mb-0.5">
+                                  Date Logged
+                                </p>
+                                <p className="text-[14px] font-body-md text-on-surface font-medium">
+                                  {r.createdAt ? new Date(r.createdAt.seconds ? r.createdAt.seconds * 1000 : r.createdAt).toLocaleDateString() : 'Recent'}
+                                </p>
+                              </div>
+                            </div>
+                            <div className="flex items-start gap-3">
+                              <MapPin className="h-5 w-5 text-primary mt-0.5" />
+                              <div>
+                                <p className="text-[12px] font-label-md text-on-surface-variant mb-0.5">
+                                  Location
+                                </p>
+                                <p className="text-[14px] font-body-md text-on-surface font-medium">
+                                  {r.location}
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                          <div className="pt-4 border-t border-surface-variant">
+                            <p className="text-[12px] font-label-md text-on-surface-variant mb-2">
+                              Description
+                            </p>
+                            <p className="text-[14px] font-body-md text-on-surface bg-surface-container rounded-lg p-3 border border-outline-variant/30 leading-relaxed whitespace-pre-wrap">
+                              {r.desc || r.description || "No description provided."}
+                            </p>
+                          </div>
+                        </div>
+
+                        {/* Contact Credentials Card */}
+                        <div className="bg-surface rounded-xl shadow-sm border border-surface-container-highest p-4 sm:p-6 lg:p-6 space-y-6">
+                          <h3 className="text-[24px] font-headline-md font-semibold text-on-surface border-b border-surface-variant pb-3">
+                            Contact Credentials
+                          </h3>
+                          <div className="flex items-center gap-4 bg-surface-container p-3 rounded-lg border border-outline-variant/30">
+                            <div className="w-12 h-12 rounded-full bg-secondary-container flex items-center justify-center text-on-secondary-container text-[24px] font-bold">
+                              {r.contactName ? r.contactName.charAt(0).toUpperCase() : "U"}
+                            </div>
+                            <div className="flex-1 overflow-hidden">
+                              <p className="text-[12px] font-label-md text-on-surface-variant">
+                                Reporter
+                              </p>
+                              <div className="flex items-center gap-1.5">
+                                <p className="text-[14px] font-headline-md font-semibold text-on-surface truncate">
+                                  {r.contactName || "Verified Reporter"}
+                                </p>
+                                <BadgeCheck className="h-4 w-4 text-primary shrink-0" />
+                              </div>
+                              <p className="text-[14px] font-body-md text-on-surface-variant mt-0.5 select-none filter blur-[4px] opacity-70">
+                                hidden.email@example.com
+                              </p>
+                            </div>
+                          </div>
+
+                          <div className="space-y-3 pt-2">
+                            <button 
+                              onClick={() => {
+                                if (profileName === 'Guest') {
+                                  setShowGuestModal(true);
+                                } else {
+                                  handleStartChat(r.userId, r.id);
+                                }
+                              }}
+                              className="w-full py-3 bg-primary text-on-primary text-[12px] font-label-md font-bold rounded-lg hover:bg-primary-dim transition-colors shadow-sm flex items-center justify-center gap-2"
+                            >
+                              <MessageSquare className="h-4 w-4" />
+                              Contact Chat Room
+                            </button>
+                            <button 
+                              onClick={() => {
+                                if (profileName === 'Guest') {
+                                  setShowGuestModal(true);
+                                } else {
+                                  setActiveTab("claimItem");
+                                }
+                              }}
+                              className="w-full py-3 bg-transparent border-2 border-secondary text-secondary hover:bg-secondary-container hover:text-on-secondary-container text-[12px] font-label-md font-bold rounded-lg transition-colors flex items-center justify-center gap-2"
+                            >
+                              <Gavel className="h-4 w-4" />
+                              Log Ownership Claim
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })()}
+            </section>
+
+            {/* PANEL: CLAIM ITEM VIEW */}
+            <section
+              id="claimItem"
+              className={`${activeTab === "claimItem" ? "block" : "hidden"} bg-surface h-full w-full overflow-y-auto relative`}
+            >
+              {(() => {
+                const r = items.find((x) => x.id === selectedItemId);
+                if (!r)
+                  return (
+                    <div className="flex flex-col items-center justify-center h-full text-on-surface-variant relative z-10">
+                      <Package className="h-12 w-12 mb-4 opacity-50" />
+                      <p>Please choose an item from search to claim.</p>
+                    </div>
+                  );
+
+                return (
+                  <>
+                    <div className="absolute top-0 right-0 w-96 h-96 bg-primary-container/20 rounded-full blur-[100px] pointer-events-none"></div>
+                    <div className="max-w-6xl mx-auto relative z-10 space-y-6 sm:space-y-8 pb-12">
+                      {/* Page Header */}
+                      <header className="mb-6 sm:mb-8">
+                        <h1 className="text-[32px] leading-[40px] font-headline-lg font-bold text-on-surface mb-2">Log Ownership Claim</h1>
+                        <div className="flex items-center gap-2 text-primary">
+                          <Shield className="h-5 w-5" fill="currentColor" />
+                          <span className="text-[14px] font-body-md font-medium tracking-wide">Prove-It Verification Layer</span>
+                        </div>
+                      </header>
+
+                      {/* Layout Grid */}
+                      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+                        {/* Main Form Area (Left Column) */}
+                        <div className="lg:col-span-8 space-y-6 sm:space-y-8">
+                          {/* Status Chip */}
+                          <div>
+                            <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-primary-container text-on-primary-container rounded-full text-[12px] font-label-md shadow-sm border border-primary-fixed/50">
+                              <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span>
+                              Current Claim Item
+                            </span>
+                          </div>
+
+                          {/* Item Thumbnail Card */}
+                          <div className="flex flex-col sm:flex-row gap-4 p-4 bg-surface-container-lowest rounded-xl shadow-sm border border-outline-variant/40 hover:shadow-md transition-shadow duration-300">
+                            {r.image || r.imageUrl ? (
+                              <img
+                                src={r.image || r.imageUrl}
+                                alt={r.title}
+                                className="w-full sm:w-40 h-40 object-cover rounded-lg border border-outline-variant/20 flex-shrink-0"
+                                referrerPolicy="no-referrer"
+                              />
+                            ) : (
+                              <div className="w-full sm:w-40 h-40 flex items-center justify-center bg-surface-variant rounded-lg border border-outline-variant/20 flex-shrink-0 text-outline">
+                                <Camera className="h-10 w-10 opacity-30" />
+                              </div>
+                            )}
+                            <div className="flex flex-col justify-center space-y-3 flex-1">
+                              <h2 className="text-[24px] font-headline-md font-semibold text-on-surface">{r.title}</h2>
+                              <div className="space-y-1.5 text-on-surface-variant text-[14px] font-body-md">
+                                <div className="flex items-center gap-2">
+                                  <MapPin className="h-4 w-4 text-primary-dim shrink-0" />
+                                  <span className="truncate">Found at: <strong className="text-on-surface font-medium">{r.location}</strong></span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <Clock className="h-4 w-4 text-primary-dim shrink-0" />
+                                  <span>Date Logged: <strong className="text-on-surface font-medium">{r.createdAt ? new Date(r.createdAt.seconds ? r.createdAt.seconds * 1000 : r.createdAt).toLocaleDateString() : 'Recent'}</strong></span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <Tag className="h-4 w-4 text-primary-dim shrink-0" />
+                                  <span>Item ID: <strong className="text-on-surface font-medium uppercase text-xs">FT-{r.id.substring(0,6)}</strong></span>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Verification Challenge Box */}
+                          <div className="bg-surface-container-low p-6 rounded-xl border-l-4 border-primary shadow-sm relative overflow-hidden">
+                            <Info className="absolute -right-4 -bottom-4 h-[120px] w-[120px] text-primary/5 select-none pointer-events-none" />
+                            <div className="relative z-10">
+                              <h3 className="text-[12px] font-label-md text-primary tracking-widest uppercase mb-3 flex items-center gap-2">
+                                <ShieldCheck className="h-4 w-4" />
+                                Verification Question
+                              </h3>
+                              <p className="text-[16px] font-body-lg text-on-surface italic bg-surface-container-highest/50 p-4 rounded-lg border border-outline-variant/20">
+                                "{r.securityQuestion || 'Describe this item in enough detail to prove ownership (e.g. scratches, contents, background).'}"
+                              </p>
+                            </div>
+                          </div>
+
+                          {/* User Input Form */}
+                          <form onSubmit={(e) => {
+                            e.preventDefault();
+                            const form = e.target as HTMLFormElement;
+                            const answer = (form.elements.namedItem('claimAnswer') as HTMLTextAreaElement).value;
+                            handleSubmitClaim(r.id, r.userId, r.securityQuestion || 'Describe this item in enough detail to prove ownership (e.g. scratches, contents, background).', answer);
+                          }} className="space-y-4">
+                            <div>
+                              <label htmlFor="claimAnswer" className="block text-[12px] font-label-md font-medium text-on-surface mb-2">Your Answer</label>
+                              <textarea
+                                id="claimAnswer"
+                                name="claimAnswer"
+                                required
+                                rows={5}
+                                placeholder="Please provide specific details to prove ownership..."
+                                className="w-full bg-surface-container-lowest border border-outline-variant rounded-xl p-4 text-[14px] font-body-md text-on-surface placeholder:text-outline focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all outline-none resize-y shadow-inner"
+                              ></textarea>
+                            </div>
+
+                            {/* Helper Text */}
+                            <div className="flex items-start gap-3 p-3 bg-secondary-fixed/30 rounded-lg border border-secondary-fixed-dim/50">
+                              <Info className="h-5 w-5 text-secondary-dim shrink-0 mt-0.5" />
+                              <p className="text-[14px] font-body-md text-on-secondary-container leading-relaxed">
+                                The finder will inspect this proof and action your contact credentials request. <span className="font-medium text-error-dim">False claims may result in account suspension.</span>
+                              </p>
+                            </div>
+
+                            {/* Actions */}
+                            <div className="flex items-center justify-end gap-4 pt-6 border-t border-outline-variant/30 mt-8">
+                              <button
+                                type="button"
+                                onClick={() => setActiveTab("itemDetail")}
+                                className="px-6 py-2.5 text-[12px] font-label-md text-on-surface-variant hover:text-on-surface hover:bg-surface-container rounded-lg transition-colors"
+                              >
+                                Cancel
+                              </button>
+                              <button
+                                type="submit"
+                                className="flex items-center gap-2 bg-primary text-on-primary px-8 py-2.5 rounded-lg text-[12px] font-label-md hover:bg-primary-dim hover:shadow-md transition-all active:scale-95 group"
+                              >
+                                Submit Claim
+                                <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                              </button>
+                            </div>
+                          </form>
+                        </div>
+
+                        {/* Contextual Helper (Right Column) */}
+                        <div className="lg:col-span-4 mt-6 lg:mt-0">
+                          <div className="bg-surface-container-highest rounded-xl p-6 border border-tertiary-fixed/40 shadow-sm relative overflow-hidden group">
+                            {/* Top Accent Bar */}
+                            <div className="absolute top-0 left-0 w-full h-1.5 bg-tertiary-fixed"></div>
+                            <div className="flex items-center gap-3 mb-4 mt-2">
+                              <div className="w-10 h-10 rounded-full bg-tertiary-container flex items-center justify-center text-on-tertiary-container">
+                                <Lightbulb className="h-5 w-5" fill="currentColor" />
+                              </div>
+                              <h3 className="text-[18px] font-headline-md font-semibold text-on-surface">Tips for a Strong Claim</h3>
+                            </div>
+                            <ul className="space-y-4 mt-6">
+                              <li className="flex items-start gap-3">
+                                <CheckCircle2 className="h-5 w-5 text-tertiary-dim mt-0.5 shrink-0" />
+                                <div>
+                                  <strong className="block text-[12px] font-label-md text-on-surface">Be Specific</strong>
+                                  <span className="text-[14px] font-body-md text-on-surface-variant">Mention unique marks, exact brand names, or highly specific contents.</span>
+                                </div>
+                              </li>
+                              <li className="flex items-start gap-3">
+                                <CheckCircle2 className="h-5 w-5 text-tertiary-dim mt-0.5 shrink-0" />
+                                <div>
+                                  <strong className="block text-[12px] font-label-md text-on-surface">Provide Context</strong>
+                                  <span className="text-[14px] font-body-md text-on-surface-variant">If relevant to the question, describe exactly where or when the item was lost.</span>
+                                </div>
+                              </li>
+                              <li className="flex items-start gap-3">
+                                <CheckCircle2 className="h-5 w-5 text-tertiary-dim mt-0.5 shrink-0" />
+                                <div>
+                                  <strong className="block text-[12px] font-label-md text-on-surface">Be Patient</strong>
+                                  <span className="text-[14px] font-body-md text-on-surface-variant">Finders are community volunteers; review times may vary based on their availability.</span>
+                                </div>
+                              </li>
+                            </ul>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </>
+                );
+              })()}
+            </section>
+{/* PANEL: NOTIFICATIONS & ALERTS */}
+            <section
+              id="notifications"
+              className={`${activeTab === "notifications" ? "block" : "hidden"} flex-1 flex flex-col min-w-0`}
+            >
+              <div className="pt-8 px-4 md:px-8 pb-32 max-w-5xl mx-auto w-full">
+                <div className="mb-8 flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
+                  <div>
+                    <h2 className="font-headline-lg text-3xl font-bold text-on-background mb-2">Alerts & Notifications</h2>
+                    <p className="font-body-md text-on-surface-variant">Stay updated on your reported items and community activity.</p>
+                  </div>
+                  <div className="hidden sm:flex gap-2">
+                    <button 
+                      onClick={() => markAllAlertsRead()}
+                      className="px-4 py-2 rounded-full border border-outline-variant font-label-md text-sm text-on-surface-variant hover:bg-surface-variant transition-colors"
+                    >
+                      Mark all read
+                    </button>
+                    <button className="px-4 py-2 rounded-full border border-outline-variant font-label-md text-sm text-on-surface-variant hover:bg-surface-variant transition-colors flex items-center gap-1">
+                      <Filter className="h-4 w-4" />
+                      Filter
+                    </button>
+                  </div>
+                </div>
+
+                {/* Bento Grid Layout for Alerts */}
+                <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
+                  {/* High Priority Alert - Spans full width on mobile, 8 cols on desktop */}
+                  <div className="md:col-span-8 bg-surface-container-lowest rounded-xl p-6 shadow-[0_2px_12px_rgba(0,0,0,0.04)] border border-outline-variant/30 hover:shadow-md transition-shadow relative overflow-hidden group cursor-pointer">
+                    <div className="absolute top-0 left-0 w-1 h-full bg-error-container"></div>
+                    <div className="flex gap-4">
+                      <div className="w-12 h-12 rounded-full bg-error-container/20 flex items-center justify-center flex-shrink-0 text-error-container">
+                        <AlertTriangle className="h-6 w-6" />
+                      </div>
+                      <div className="flex-1">
+                        <div className="flex justify-between items-start mb-1">
+                          <h3 className="font-headline-md text-lg text-on-background">Community Safety Alert</h3>
+                          <span className="font-label-md text-xs text-on-surface-variant whitespace-nowrap ml-2">Just now</span>
+                        </div>
+                        <p className="font-body-md text-on-surface mb-3">Increase in reported lost keys in the Downtown Business District. Please ensure your belongings are secure.</p>
+                        <div className="flex items-center gap-2">
+                          <span className="inline-flex items-center px-2 py-1 rounded-md bg-surface-variant text-on-surface-variant font-label-md text-[10px] uppercase tracking-wider">Announcement</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Quick Stat / Summary Card */}
+                  <div className="md:col-span-4 bg-primary text-on-primary rounded-xl p-6 shadow-sm flex flex-col justify-between relative overflow-hidden">
+                    <div className="absolute -right-4 -top-4 opacity-10">
+                      <Bell className="w-[120px] h-[120px]" />
+                    </div>
+                    <div>
+                      <h3 className="font-headline-md text-lg text-on-primary mb-1">Unread Alerts</h3>
+                      <p className="font-body-md text-primary-fixed-dim opacity-90">You have new activity</p>
+                    </div>
+                    <div className="mt-4 flex items-baseline gap-2">
+                      <span className="font-headline-lg text-5xl font-bold leading-none">{notifications.filter(n => !n.read).length}</span>
+                      <span className="font-body-md opacity-90">Pending reviews</span>
+                    </div>
+                  </div>
+
+                  {notifications.map((notif) => {
+                    const isUnread = !notif.read;
+                    const isMatch = notif.message.toLowerCase().includes("match");
+                    const isClaim = notif.message.toLowerCase().includes("claim");
+                    
+                    return (
+                      <div 
+                        key={notif.id}
+                        onClick={() => markAlertRead(notif.id)}
+                        className={`md:col-span-6 bg-surface-container-lowest rounded-xl p-6 shadow-sm border border-outline-variant/30 hover:shadow-md transition-shadow relative cursor-pointer ${!isUnread ? "opacity-80" : ""}`}
+                      >
+                        {isUnread && <div className="absolute top-4 right-4 w-2 h-2 rounded-full bg-primary"></div>}
+                        <div className="flex gap-4">
+                          <div className={`w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0 ${
+                            isMatch ? "bg-primary-container text-on-primary-container" : 
+                            isClaim ? "bg-secondary-container text-on-secondary-container" : 
+                            "bg-surface-variant text-on-surface-variant"
+                          }`}>
+                            {isMatch ? <Search className="h-6 w-6" /> : isClaim ? <CheckCircle2 className="h-6 w-6" /> : <MessageSquare className="h-6 w-6" />}
+                          </div>
+                          <div className="flex-1">
+                            <div className="flex justify-between items-start mb-1">
+                              <h3 className="font-headline-md text-lg text-on-background">
+                                {isMatch ? "Potential Match Found!" : isClaim ? "Item Claimed" : "New Message"}
+                              </h3>
+                              <span className="font-label-md text-xs text-on-surface-variant">
+                                {notif.timestamp ? new Date(notif.timestamp.seconds ? notif.timestamp.seconds * 1000 : notif.timestamp).toLocaleDateString() : 'Recently'}
+                              </span>
+                            </div>
+                            <p className="font-body-md text-sm text-on-surface mb-3 line-clamp-2">{notif.message}</p>
+                            
+                            {isMatch && (
+                              <div className="bg-surface-container rounded-lg p-3 flex items-center gap-3 mt-2">
+                                <div className="w-10 h-10 rounded bg-surface-variant flex items-center justify-center">
+                                  <ImageIcon className="h-5 w-5 text-outline" />
+                                </div>
+                                <div>
+                                  <p className="font-label-md text-xs font-bold text-on-surface">Review Match</p>
+                                  <p className="font-label-md text-[10px] text-on-surface-variant">Tap to view details</p>
+                                </div>
+                                <button className="ml-auto text-primary hover:bg-surface-variant p-2 rounded-full transition-colors">
+                                  <ArrowRight className="h-4 w-4" />
+                                </button>
+                              </div>
+                            )}
+                            
+                            {isClaim && (
+                              <div className="flex items-center gap-2 mt-2">
+                                <span className="inline-flex items-center px-3 py-1 rounded-full bg-secondary-fixed-dim text-on-secondary-fixed font-label-md text-[11px]">
+                                  <CheckCircle2 className="h-3 w-3 mr-1" /> Closed
+                                </span>
+                                <button className="text-secondary hover:underline font-label-md text-sm">View details</button>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                  
+                  {notifications.length === 0 && (
+                    <div className="col-span-full py-16 text-center border-2 border-dashed border-outline-variant rounded-2xl bg-surface-container-lowest">
+                      <div className="w-16 h-16 bg-surface-container rounded-full flex items-center justify-center mx-auto mb-4 border border-outline-variant">
+                        <Bell className="h-8 w-8 text-outline" />
+                      </div>
+                      <h3 className="font-headline-md text-lg font-bold text-on-surface mb-2">You're all caught up</h3>
+                      <p className="font-body-md text-on-surface-variant">There are no new notifications or alerts at this time.</p>
+                    </div>
+                  )}
+                </div>
+                
+                {notifications.length > 0 && (
+                  <div className="mt-8 flex justify-center">
+                    <button className="px-6 py-2 rounded-full bg-surface-container text-on-surface border border-outline-variant hover:bg-surface-variant transition-colors font-label-md text-sm shadow-sm">
+                      Load Older Alerts
+                    </button>
+                  </div>
+                )}
+              </div>
+            </section>
+
+{/* PANEL: PROFILE */}
+            <section
+              id="profile"
+              className={`${activeTab === "profile" ? "block" : "hidden"} flex-1 flex flex-col min-w-0`}
+            >
+              <div className="pt-8 px-4 md:px-8 pb-32 max-w-7xl mx-auto w-full space-y-8">
+                {/* Mobile Menu Toggle header would be here, but we are inside the main canvas */}
+                <h2 className="font-headline-sm text-3xl font-bold text-on-surface mb-8 hidden md:block">Profile Overview</h2>
+                
+                {/* Bento Grid Layout */}
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                  {/* Profile Header Card (Hero) */}
+                  <div className="col-span-1 lg:col-span-12 bg-surface-container-lowest rounded-xl shadow-sm border border-surface-variant overflow-hidden relative">
+                    <div className="absolute inset-0 bg-gradient-to-br from-primary-container/20 to-transparent pointer-events-none"></div>
+                    <div className="p-6 md:p-8 flex flex-col md:flex-row items-center md:items-start gap-8 relative z-10">
+                      {/* Avatar Container with 'Level' Ring */}
+                      <div className="relative group cursor-pointer shrink-0">
+                        <div className="w-32 h-32 md:w-40 md:h-40 rounded-full border-4 border-tertiary-container shadow-md overflow-hidden relative bg-surface-variant flex items-center justify-center text-4xl font-bold text-on-surface-variant">
+                          {profileName.charAt(0).toUpperCase()}
+                          <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                            <Camera className="h-8 w-8 text-white" />
+                          </div>
+                        </div>
+                        {/* Badge */}
+                        <div className="absolute -bottom-2 -right-2 bg-tertiary text-on-tertiary px-3 py-1 rounded-full shadow-md flex items-center gap-1 border-2 border-surface-container-lowest">
+                          <Star className="h-4 w-4" fill="currentColor" />
+                          <span className="font-label-md text-[10px] uppercase font-bold tracking-wider">Level {Math.max(1, Math.floor(items.filter(i => i.userId === auth.currentUser?.uid).length / 5))}</span>
+                        </div>
+                      </div>
+                      
+                      {/* User Info */}
+                      <div className="flex-1 text-center md:text-left mt-4 md:mt-0 w-full">
+                        <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
+                          <div>
+                            <h1 className="font-headline-lg text-4xl text-on-surface">{profileName}</h1>
+                            <div className="flex flex-wrap items-center justify-center md:justify-start gap-2 mt-2">
+                              <span className="bg-primary-container text-on-primary-container px-3 py-1 rounded-full font-label-md text-sm font-semibold inline-flex items-center gap-1">
+                                <Heart className="h-4 w-4" fill="currentColor" />
+                                Community Member
+                              </span>
+                              <span className="text-on-surface-variant font-body-md flex items-center gap-1">
+                                <MapPin className="h-4 w-4" />
+                                {profileLocation || "Location not set"}
+                              </span>
+                            </div>
+                            <p className="mt-4 font-body-md text-on-surface-variant max-w-2xl">
+                              "Dedicated to keeping our community connected."
+                            </p>
+                          </div>
+                          <button className="bg-surface-container-high border border-outline-variant text-on-surface hover:bg-surface-variant px-4 py-2 rounded-lg font-label-md text-sm transition-colors flex items-center justify-center gap-2 shadow-sm shrink-0 w-full md:w-auto">
+                            <Settings className="h-[18px] w-[18px]" />
+                            Edit Profile
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Stats Grid */}
+                  <div className="col-span-1 lg:col-span-4 flex flex-col gap-6">
+                    <div className="bg-surface-container-lowest rounded-xl shadow-sm border border-surface-variant p-6 flex-1 hover:shadow-md transition-shadow">
+                      <div className="flex items-center gap-3 mb-4 text-primary">
+                        <div className="bg-primary-container p-2 rounded-lg">
+                          <Package className="h-5 w-5 text-on-primary-container" />
+                        </div>
+                        <h3 className="font-headline-md text-lg font-semibold">Impact Stats</h3>
+                      </div>
+                      <div className="grid grid-cols-2 gap-4 mt-6">
+                        <div className="bg-surface-container rounded-lg p-4 text-center">
+                          <span className="block font-headline-lg text-primary text-3xl mb-1">{items.filter(i => i.userId === auth.currentUser?.uid).length}</span>
+                          <span className="font-label-md text-on-surface-variant uppercase tracking-wide text-[10px]">Items Reported</span>
+                        </div>
+                        <div className="bg-surface-container rounded-lg p-4 text-center">
+                          <span className="block font-headline-lg text-secondary text-3xl mb-1">{items.filter(i => i.userId === auth.currentUser?.uid && i.claimed).length}</span>
+                          <span className="font-label-md text-on-surface-variant uppercase tracking-wide text-[10px]">Reunited</span>
+                        </div>
+                        <div className="bg-surface-container rounded-lg p-4 text-center col-span-2 flex items-center justify-center gap-3">
+                          <div>
+                            <span className="block font-headline-lg text-tertiary text-2xl mb-1">Top {Math.max(1, 100 - items.filter(i => i.userId === auth.currentUser?.uid).length * 5)}%</span>
+                            <span className="font-label-md text-on-surface-variant uppercase tracking-wide text-[10px]">Local Finders</span>
+                          </div>
+                          <TrendingUp className="h-8 w-8 text-tertiary opacity-50" />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Personal Information Form */}
+                  <div className="col-span-1 lg:col-span-8 bg-surface-container-lowest rounded-xl shadow-sm border border-surface-variant p-6 md:p-8">
+                    <h3 className="font-headline-md text-xl text-on-surface mb-6 border-b border-surface-variant pb-4">Personal Information</h3>
+                    <form className="space-y-6" onSubmit={(e) => { e.preventDefault(); triggerToast("Profile updated successfully", "success"); }}>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        {/* Input Group */}
+                        <div>
+                          <label className="block font-label-md text-sm text-on-surface-variant mb-2" htmlFor="profName">Display Name</label>
+                          <div className="relative">
+                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                              <UserIcon className="h-5 w-5 text-outline" />
+                            </div>
+                            <input 
+                              className="pl-10 w-full bg-surface-container-lowest border border-outline rounded-lg py-2.5 text-on-surface focus:ring-2 focus:ring-primary focus:border-primary transition-shadow font-body-md" 
+                              id="profName" 
+                              type="text" 
+                              value={profileName}
+                              onChange={(e) => setProfileName(e.target.value)}
+                            />
+                          </div>
+                        </div>
+                        
+                        <div className="md:col-span-2">
+                          <label className="block font-label-md text-sm text-on-surface-variant mb-2" htmlFor="profEmail">Email Address</label>
+                          <div className="relative">
+                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                              <Mail className="h-5 w-5 text-outline" />
+                            </div>
+                            <input 
+                              className="pl-10 w-full bg-surface-container-lowest border border-outline rounded-lg py-2.5 text-on-surface opacity-70 cursor-not-allowed font-body-md" 
+                              id="profEmail" 
+                              type="email" 
+                              value={profileEmail || "No email"}
+                              disabled
+                            />
+                          </div>
+                          {auth.currentUser?.emailVerified && (
+                            <p className="text-xs text-on-surface-variant mt-1 ml-1 flex items-center gap-1">
+                              <CheckCircle2 className="h-3.5 w-3.5 text-primary" />
+                              Email verified
+                            </p>
+                          )}
+                        </div>
+                        
+                        <div>
+                          <label className="block font-label-md text-sm text-on-surface-variant mb-2" htmlFor="profPhone">Phone Number</label>
+                          <div className="relative">
+                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                              <span className="text-outline font-body-md">+</span>
+                            </div>
+                            <input 
+                              className="pl-8 w-full bg-surface-container-lowest border border-outline rounded-lg py-2.5 text-on-surface focus:ring-2 focus:ring-primary focus:border-primary transition-shadow font-body-md" 
+                              id="profPhone" 
+                              type="tel" 
+                              value={profileContact}
+                              onChange={(e) => setProfileContact(e.target.value)}
+                            />
+                          </div>
+                        </div>
+                        
+                        <div>
+                          <label className="block font-label-md text-sm text-on-surface-variant mb-2" htmlFor="profLoc">Primary Location</label>
+                          <div className="relative">
+                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                              <MapPin className="h-5 w-5 text-outline" />
+                            </div>
+                            <input 
+                              className="pl-10 w-full bg-surface-container-lowest border border-outline rounded-lg py-2.5 text-on-surface focus:ring-2 focus:ring-primary focus:border-primary transition-shadow font-body-md" 
+                              id="profLoc" 
+                              type="text" 
+                              value={profileLocation}
+                              onChange={(e) => setProfileLocation(e.target.value)}
+                            />
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="flex justify-end pt-4">
+                        <button 
+                          className="bg-primary hover:bg-primary-dim text-on-primary font-label-md text-sm py-2.5 px-6 rounded-lg shadow-sm transition-colors" 
+                          type="submit"
+                        >
+                          Save Changes
+                        </button>
+                      </div>
+                    </form>
+                  </div>
+
+                  {/* Settings & Preferences */}
+                  <div className="col-span-1 lg:col-span-12 bg-surface-container-lowest rounded-xl shadow-sm border border-surface-variant overflow-hidden">
+                    <div className="grid grid-cols-1 md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-surface-variant">
+                      {/* Notifications */}
+                      <div className="p-6 md:p-8">
+                        <div className="flex items-center gap-3 mb-6 text-on-surface">
+                          <div className="bg-secondary-container p-2 rounded-lg">
+                            <Bell className="h-5 w-5 text-on-secondary-container" />
+                          </div>
+                          <h3 className="font-headline-md text-lg font-semibold">Notification Preferences</h3>
+                        </div>
+                        <div className="space-y-5">
+                          <label className="flex items-center justify-between cursor-pointer group">
+                            <div>
+                              <span className="font-body-md text-on-surface font-medium block">New matches for my items</span>
+                              <span className="font-body-md text-xs text-on-surface-variant">Get notified when a found item matches your report.</span>
+                            </div>
+                            <div className="relative">
+                              <input defaultChecked className="sr-only peer" type="checkbox" />
+                              <div className="w-11 h-6 bg-surface-variant peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-primary rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                            </div>
+                          </label>
+                          <label className="flex items-center justify-between cursor-pointer group">
+                            <div>
+                              <span className="font-body-md text-on-surface font-medium block">Community Alerts</span>
+                              <span className="font-body-md text-xs text-on-surface-variant">Important alerts in your primary location.</span>
+                            </div>
+                            <div className="relative">
+                              <input defaultChecked className="sr-only peer" type="checkbox" />
+                              <div className="w-11 h-6 bg-surface-variant peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-primary rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                            </div>
+                          </label>
+                        </div>
+                      </div>
+                      
+                      {/* Security */}
+                      <div className="p-6 md:p-8">
+                        <div className="flex items-center gap-3 mb-6 text-on-surface">
+                          <div className="bg-surface-variant p-2 rounded-lg">
+                            <Lock className="h-5 w-5 text-on-surface-variant" />
+                          </div>
+                          <h3 className="font-headline-md text-lg font-semibold">Security</h3>
+                        </div>
+                        <div className="space-y-4">
+                          <button className="w-full flex items-center justify-between p-4 rounded-lg border border-outline-variant hover:bg-surface-variant transition-colors group">
+                            <div className="flex items-center gap-3 text-left">
+                              <Key className="h-5 w-5 text-on-surface-variant" />
+                              <div>
+                                <span className="block font-body-md font-medium text-on-surface">Change Password</span>
+                                <span className="block text-xs text-on-surface-variant mt-0.5">Update your security credentials</span>
+                              </div>
+                            </div>
+                            <ArrowRight className="h-5 w-5 text-on-surface-variant group-hover:text-primary transition-colors" />
+                          </button>
+                          
+                          <div className="pt-4 mt-4 border-t border-surface-variant">
+                            <button 
+                              onClick={logOut}
+                              className="text-error hover:text-error-dim font-label-md text-sm flex items-center gap-2 transition-colors w-full p-2"
+                            >
+                              <LogOut className="h-5 w-5" />
+                              Sign Out Everywhere
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </section>
+{/* PANEL: MY ITEMS */}
+            <section
+              id="myitems"
+              className={`${activeTab === "myitems" ? "block" : "hidden"} `}
+            >
+              <div className="p-4 md:p-8">
+                {/* Dashboard Header */}
+                <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 space-y-4 md:space-y-0">
+                  <div>
+                    <h2 className="font-headline-lg text-3xl font-bold text-on-background mb-1">My Items</h2>
+                    <p className="font-body-lg text-on-surface-variant">Manage and track your reported lost or found items.</p>
+                  </div>
                   <button 
-                    onClick={() => setAdvancedFiltersOpen(!advancedFiltersOpen)} 
-                    className="filter-btn"
+                    onClick={() => setActiveTab("report")}
+                    className="flex items-center gap-2 px-4 py-2 font-label-md font-bold bg-primary text-on-primary rounded-lg shadow-sm hover:bg-primary-dim transition-colors"
                   >
-                    Filters ▾
+                    <PlusCircle className="h-4 w-4" /> Report New
                   </button>
                 </div>
 
-                <div id="advancedFilters" className={`advanced-filters ${!advancedFiltersOpen ? 'hidden' : ''}`}>
-                  <input 
-                    id="filterLocation" 
-                    placeholder="Filter by location"
-                    value={sLoc}
-                    onChange={(e) => setSLoc(e.target.value)}
-                  />
-                  <input 
-                    id="filterDate" 
-                    type="date"
-                    value={sDate}
-                    onChange={(e) => setSDate(e.target.value)}
-                  />
+                {/* Tabs */}
+                <div className="flex space-x-8 border-b border-outline-variant mb-8 overflow-x-auto pb-px">
+                  <button className="font-label-md text-sm text-primary border-b-2 border-primary pb-3 px-1 whitespace-nowrap">
+                    Active ({items.filter(i => i.userId === auth.currentUser?.uid && !i.claimed).length})
+                  </button>
+                  <button className="font-label-md text-sm text-on-surface-variant hover:text-primary transition-colors pb-3 px-1 whitespace-nowrap">
+                    Resolved ({items.filter(i => i.userId === auth.currentUser?.uid && i.claimed).length})
+                  </button>
+                </div>
+
+                {/* Bento Grid List */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+                  {items
+                    .filter((item) => item.userId === auth.currentUser?.uid)
+                    .map((r) => {
+                      return (
+                        <article key={r.id} className="bg-surface-container-lowest rounded-[16px] p-4 md:p-6 shadow-[0_4px_24px_rgba(1,114,90,0.08)] hover:shadow-[0_8px_32px_rgba(1,114,90,0.12)] hover:-translate-y-0.5 transition-all duration-200 flex flex-col h-full border border-surface-variant group">
+                          <div className="flex justify-between items-start mb-4">
+                            <div className="flex items-center space-x-2">
+                              {r.claimed ? (
+                                <span className="bg-secondary-container text-on-secondary-container px-2 py-1 rounded-full font-label-md text-[10px] uppercase tracking-wider flex items-center space-x-1">
+                                  <CheckCircle2 className="h-[14px] w-[14px]" />
+                                  <span>Match Found</span>
+                                </span>
+                              ) : r.type === "found" ? (
+                                <span className="bg-primary-container text-on-primary-container px-2 py-1 rounded-full font-label-md text-[10px] uppercase tracking-wider flex items-center space-x-1">
+                                  <Hand className="h-[14px] w-[14px]" />
+                                  <span>Found</span>
+                                </span>
+                              ) : (
+                                <span className="bg-tertiary-container text-on-tertiary-container px-2 py-1 rounded-full font-label-md text-[10px] uppercase tracking-wider flex items-center space-x-1">
+                                  <Search className="h-[14px] w-[14px] animate-pulse" />
+                                  <span>Searching</span>
+                                </span>
+                              )}
+                              <span className="text-on-surface-variant font-label-md text-xs">
+                                {r.type === 'found' ? 'Found' : 'Lost'} • {r.createdAt ? new Date(r.createdAt.seconds ? r.createdAt.seconds * 1000 : r.createdAt).toLocaleDateString() : 'Recent'}
+                              </span>
+                            </div>
+                            <button 
+                              onClick={() => deleteItem(r.id)}
+                              className="text-on-surface-variant hover:text-error transition-colors"
+                            >
+                              <X className="h-5 w-5" />
+                            </button>
+                          </div>
+                          
+                          <div 
+                            className="flex space-x-4 mb-4 flex-1 cursor-pointer"
+                            onClick={() => {
+                              setSelectedItemId(r.id);
+                              setActiveTab("itemDetail");
+                            }}
+                          >
+                            <div className="w-24 h-24 rounded-lg overflow-hidden flex-shrink-0 bg-surface-container flex items-center justify-center text-outline-variant">
+                              {r.image || r.imageUrl ? (
+                                <img src={r.image || r.imageUrl} alt="" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" referrerPolicy="no-referrer" />
+                              ) : (
+                                <ImageIcon className="h-10 w-10 opacity-30" />
+                              )}
+                            </div>
+                            <div>
+                              <h3 className="font-headline-md text-lg font-bold text-on-surface mb-1 leading-tight group-hover:text-primary transition-colors line-clamp-2">
+                                {r.title}
+                              </h3>
+                              <div className="flex items-center space-x-1 mt-2 text-primary">
+                                <MapPin className="h-4 w-4 shrink-0" />
+                                <span className="font-label-md text-[11px] truncate">{r.location}</span>
+                              </div>
+                            </div>
+                          </div>
+                          
+                          <div className="pt-4 border-t border-outline-variant flex space-x-3 mt-auto">
+                            {r.claimed ? (
+                              <>
+                                <button className="flex-1 bg-primary text-on-primary py-2 rounded-lg font-label-md text-sm hover:bg-primary-dim transition-colors flex items-center justify-center space-x-2">
+                                  <MessageSquare className="h-[18px] w-[18px]" />
+                                  <span>Message Finder</span>
+                                </button>
+                              </>
+                            ) : (
+                              <>
+                                <button 
+                                  onClick={() => {
+                                    setSelectedItemId(r.id);
+                                    setActiveTab("itemDetail");
+                                  }}
+                                  className="flex-1 border border-primary text-primary py-2 rounded-lg font-label-md text-sm hover:bg-surface-container transition-colors flex items-center justify-center space-x-2"
+                                >
+                                  <Eye className="h-[18px] w-[18px]" />
+                                  <span>View Details</span>
+                                </button>
+                              </>
+                            )}
+                          </div>
+                        </article>
+                      );
+                    })}
+                  
+                  {items.filter((item) => item.userId === auth.currentUser?.uid).length === 0 && (
+                    <div className="col-span-full py-16 text-center border-2 border-dashed border-outline-variant rounded-2xl bg-surface-container-lowest">
+                      <Inbox className="h-12 w-12 text-outline mx-auto mb-4" />
+                      <h3 className="font-headline-md text-lg font-bold text-on-surface mb-2">No items yet</h3>
+                      <p className="font-body-md text-on-surface-variant mb-6">You haven't reported any lost or found items.</p>
+                      <button 
+                        onClick={() => setActiveTab("report")}
+                        className="inline-flex items-center gap-2 px-6 py-2.5 font-label-md font-bold bg-primary text-on-primary rounded-lg shadow-sm hover:bg-primary-dim transition-colors"
+                      >
+                        <PlusCircle className="h-4 w-4" /> Report an Item
+                      </button>
+                    </div>
+                  )}
                 </div>
               </div>
-
-              {/* Dynamic Categories highlight info bar */}
-              {categoryKeywords && (
-                <div className="mb-4 bg-indigo-50 border border-indigo-200 text-indigo-700 py-2 px-4 rounded-xl flex items-center justify-between text-xs">
-                  <span>Filtered: Category Mode Active</span>
-                  <button onClick={() => setCategoryKeywords(null)} className="font-bold underline">Show all files</button>
+            </section>
+{/* PANEL: PINNED ITEMS */}
+            <section
+              id="pinned"
+              className={`${activeTab === "pinned" ? "block" : "hidden"} flex-1 flex flex-col min-w-0`}
+            >
+              <div className="pt-8 px-4 md:px-8 pb-32">
+                <div className="mb-8 flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
+                  <div>
+                    <h2 className="font-headline-lg text-3xl font-bold text-on-background mb-2">Pinned Items</h2>
+                    <p className="font-body-lg text-on-surface-variant max-w-2xl">Keep track of important community reports. Items you pin will appear here for quick access until they are resolved or you unpin them.</p>
+                  </div>
+                  <div className="flex gap-2">
+                    <button className="px-4 py-2 bg-surface-container rounded-lg font-label-md text-sm text-on-surface flex items-center gap-2 hover:bg-surface-container-high transition-colors border border-outline-variant">
+                      <Filter className="h-[18px] w-[18px]" />
+                      Filter
+                    </button>
+                    <button className="px-4 py-2 bg-surface-container rounded-lg font-label-md text-sm text-on-surface flex items-center gap-2 hover:bg-surface-container-high transition-colors border border-outline-variant">
+                      <ArrowDownUp className="h-[18px] w-[18px]" />
+                      Sort
+                    </button>
+                  </div>
                 </div>
-              )}
 
-              {/* SMART SUGGESTION MATCH BANNER COGNITIVE extraction */}
-              {smartMatches.length > 0 && (
-                <div id="matchBanner" className="match-banner show">
-                  <div className="match-banner-title">🤖 Smart suggestions — Possible matches for your query</div>
-                  <div className="match-cards">
-                    {smartMatches.map(({ report, score }) => {
-                      const pct = Math.round(score * 100);
+                {/* Bento Grid for Pinned Items */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {items
+                    .filter((item) => pinnedIds.includes(item.id))
+                    .map((r, i) => {
+                      const isLarge = i % 5 === 0;
                       return (
-                        <div key={report.id} onClick={() => { setSelectedItemId(report.id); setActiveTab('itemDetail'); }} className="match-chip">
-                          <div className="match-chip-title">{report.title}</div>
-                          <div className="match-chip-meta"><MapPin className="h-3 w-3 inline text-slate-400 mr-1" /> {report.location || "Unknown"}</div>
-                          <div className="match-score"><CheckCircle2 className="h-3 w-3 inline mr-1 text-green-500" /> {pct}% match</div>
+                        <div 
+                          key={r.id} 
+                          className={`${isLarge ? "md:col-span-2 lg:col-span-2 row-span-2" : "col-span-1 row-span-1"} bg-surface-container-lowest rounded-xl shadow-[0_4px_20px_-4px_rgba(1,114,90,0.08)] border border-outline-variant/30 overflow-hidden flex flex-col group relative transition-transform hover:-translate-y-1 duration-300 cursor-pointer`}
+                          onClick={() => {
+                            setSelectedItemId(r.id);
+                            setActiveTab("itemDetail");
+                          }}
+                        >
+                          <div className="absolute top-4 right-4 z-10 flex gap-2">
+                            <span className={`${r.claimed ? 'bg-secondary-container text-on-secondary-container' : r.type === 'found' ? 'bg-primary-container text-on-primary-container' : 'bg-tertiary-container text-on-tertiary-container'} px-3 py-1 rounded-full font-label-md text-[10px] font-bold tracking-wider uppercase shadow-sm`}>
+                              {r.claimed ? "Resolved" : r.type === "found" ? "Found" : "Lost"}
+                            </span>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                togglePin(r.id);
+                              }}
+                              className="bg-surface-container-lowest/80 backdrop-blur p-2 rounded-full text-primary hover:text-error transition-colors shadow-sm group/btn"
+                              title="Unpin Item"
+                            >
+                              <MapPin className="h-4 w-4 fill-current group-hover/btn:hidden" />
+                              <X className="h-4 w-4 hidden group-hover/btn:block text-error" />
+                            </button>
+                          </div>
+                          
+                          <div className={`${isLarge ? "h-64" : "h-48"} relative w-full overflow-hidden bg-surface-variant flex items-center justify-center`}>
+                            {r.image || r.imageUrl ? (
+                              <>
+                                <img
+                                  src={r.image || r.imageUrl}
+                                  alt={r.title}
+                                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                                  referrerPolicy="no-referrer"
+                                />
+                                {isLarge && <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>}
+                              </>
+                            ) : (
+                              <div className="w-full h-full border-2 border-dashed border-outline-variant flex flex-col items-center justify-center text-outline-variant p-4 m-4 rounded-lg bg-surface-container-lowest">
+                                <ImageIcon className="h-10 w-10 mb-2 opacity-50" />
+                                <span className="font-label-md text-xs text-center opacity-70">No Image Available</span>
+                              </div>
+                            )}
+                            
+                            {isLarge && (r.image || r.imageUrl) && (
+                              <div className="absolute bottom-4 left-4 right-4 text-white">
+                                <div className="flex items-center gap-2 mb-1 text-sm opacity-90">
+                                  <MapPin className="h-[16px] w-[16px]" />
+                                  <span>{r.location || "Unknown"}</span>
+                                </div>
+                                <h3 className="font-headline-md text-2xl font-bold leading-tight line-clamp-1">{r.title}</h3>
+                              </div>
+                            )}
+                          </div>
+                          
+                          <div className="p-5 flex-1 flex flex-col">
+                            {(!isLarge || (!r.image && !r.imageUrl)) && (
+                              <h3 className="font-headline-sm text-xl font-bold text-on-surface mb-1 line-clamp-1 group-hover:text-primary transition-colors">{r.title}</h3>
+                            )}
+                            
+                            {(!isLarge || (!r.image && !r.imageUrl)) && (
+                              <div className="flex items-center gap-1 text-on-surface-variant text-sm mb-3">
+                                <MapPin className="h-[14px] w-[14px] text-primary" />
+                                <span className="truncate">{r.location || "Unknown"}</span>
+                              </div>
+                            )}
+                            
+                            <p className="font-body-md text-on-surface-variant line-clamp-3 mb-4 text-sm">
+                              {r.desc || r.description || "No description provided."}
+                            </p>
+                            
+                            <div className="mt-auto pt-4 border-t border-surface-variant flex justify-between items-center">
+                              {isLarge ? (
+                                <div className="flex items-center gap-2">
+                                  <div className="w-8 h-8 rounded-full bg-surface-container-high border border-outline-variant flex items-center justify-center text-xs font-bold text-on-surface">
+                                    {r.contactName ? r.contactName.charAt(0).toUpperCase() : "U"}
+                                  </div>
+                                  <span className="font-label-md text-xs text-on-surface">Reported by {r.contactName || "User"}</span>
+                                </div>
+                              ) : (
+                                <span className="font-label-md text-xs text-outline flex items-center gap-1">
+                                  <Clock className="h-3 w-3" />
+                                  Pinned {r.createdAt ? new Date(r.createdAt.seconds ? r.createdAt.seconds * 1000 : r.createdAt).toLocaleDateString() : 'Recently'}
+                                </span>
+                              )}
+                              
+                              <button className="text-primary font-label-md text-sm hover:underline flex items-center gap-1">
+                                View Details {isLarge && <ArrowRight className="h-4 w-4" />}
+                              </button>
+                            </div>
+                          </div>
                         </div>
                       );
                     })}
-                  </div>
-                </div>
-              )}
-
-              {/* SEARCH REGISTRY CARDS GRID */}
-              <div id="searchResults" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                {filteredSearchList.map(r => {
-                  const pinned = pinnedIds.includes(r.id);
-                  return (
-                    <article key={r.id} onClick={() => { setSelectedItemId(r.id); setActiveTab('itemDetail'); }} className="rounded-xl bg-white border border-slate-100 p-4 hover:shadow-md transition cursor-pointer flex flex-col">
-                      <div className="flex gap-3">
-                        <div className="w-28 h-20 rounded-md bg-slate-50 overflow-hidden flex-shrink-0 flex items-center justify-center">
-                          {r.image || r.imageUrl ? (
-                            <img src={r.image || r.imageUrl} alt={r.title} className="object-cover w-full h-full" referrerPolicy="no-referrer" />
-                          ) : (
-                            <div className="text-slate-300"><Camera className="h-8 w-8" /></div>
-                          )}
-                        </div>
-                        <div className="flex-1">
-                          <div className="flex justify-between items-start">
-                            <h4 className="font-semibold text-sm text-slate-900">{r.title}</h4>
-                            <div className={`text-xs font-mono px-2 py-0.5 rounded-full ${r.claimed ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-100 text-slate-700'}`}>{r.claimed ? 'CLAIMED' : r.type.toUpperCase()}</div>
-                          </div>
-                          <p className="text-xs text-slate-500 mt-2 line-clamp-2">{r.desc || r.description || "No description provided."}</p>
-                          <div className="mt-3 flex items-center justify-between text-xs text-slate-400">
-                            <div>
-                              <div>{r.location || 'Unknown location'}</div>
-                              <div>{r.date ? new Date(r.date).toLocaleDateString() : 'Just now'}</div>
-                            </div>
-                            <div className="flex items-center gap-2">
-                              <button onClick={(e) => { e.stopPropagation(); togglePin(r.id); }} className="bg-surface-container-lowest/80 backdrop-blur p-2 rounded-full text-primary hover:text-error transition-colors shadow-sm" title={pinned ? 'Unpin' : 'Pin'}>
-                                {pinned ? <MapPin className="h-4 w-4" fill="currentColor" /> : <MapPin className="h-4 w-4 text-slate-400" />}
-                              </button>
-                              <button onClick={(e) => { e.stopPropagation(); handleStartChat(r.userId || '', r.id); }} className="bg-primary text-on-primary px-3 py-1 rounded-lg text-xs font-medium">Message</button>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </article>
-                  );
-                })}
-              </div>
-
-              {filteredSearchList.length === 0 && (
-                <div id="noResults" className="empty flex flex-col items-center justify-center text-center">
-                  <div className="w-16 h-16 bg-sky-50 rounded-full flex items-center justify-center mb-4 border border-sky-100 shadow-sm mt-4">
-                     <Search className="h-8 w-8 text-sky-400" />
-                  </div>
-                  No items found matching the current criteria.
-                </div>
-              )}
-            </section>
-
-            {/* PANEL: ITEM DETAIL VIEW */}
-            <section id="itemDetail" className={`panel ${activeTab === 'itemDetail' ? 'active' : ''}`}>
-              <button onClick={() => setActiveTab('search')} className="back-btn">← Back to Search</button>
-              
-              <div id="detailContent">
-                {(() => {
-                  const r = items.find(x => x.id === selectedItemId);
-                  if (!r) return <p className="p-6 text-slate-400 font-sans text-xs">Please choose an item from search.</p>;
                   
-                  const mappedItem: Item = {
-                    id: r.id,
-                    userId: r.userId,
-                    type: r.type,
-                    title: r.title,
-                    description: r.desc || r.description || "No description provided.",
-                    category: (r as any).category || 'others',
-                    location: r.location,
-                    status: r.claimed ? 'resolved' : 'active',
-                    imageUrl: r.image || r.imageUrl || '',
-                    contactName: r.contactName || 'Representative',
-                    contactInfo: r.contactInfo || 'No contact info provided',
-                    date: r.date || new Date().toISOString(),
-                    createdAt: r.createdAt ? (r.createdAt.seconds ? new Date(r.createdAt.seconds * 1000).toISOString() : String(r.createdAt)) : new Date().toISOString(),
-                    updatedAt: r.createdAt ? (r.createdAt.seconds ? new Date(r.createdAt.seconds * 1000).toISOString() : String(r.createdAt)) : new Date().toISOString(),
-                  };
-
-                  const oppositeItemsMapped = items.filter(x => x.type !== r.type).map(x => ({
-                    id: x.id,
-                    userId: x.userId,
-                    type: x.type,
-                    title: x.title,
-                    description: x.desc || x.description || '',
-                    category: (x as any).category || 'others',
-                    location: x.location,
-                    status: x.claimed ? 'resolved' : 'active',
-                    imageUrl: x.image || x.imageUrl || '',
-                    contactName: x.contactName || 'Representative',
-                    contactInfo: x.contactInfo || 'No contact info provided',
-                    date: x.date || new Date().toISOString(),
-                    createdAt: x.createdAt ? (x.createdAt.seconds ? new Date(x.createdAt.seconds * 1000).toISOString() : String(x.createdAt)) : new Date().toISOString(),
-                    updatedAt: x.createdAt ? (x.createdAt.seconds ? new Date(x.createdAt.seconds * 1000).toISOString() : String(x.createdAt)) : new Date().toISOString(),
-                  } as any));
-
-                  return (
-                    <ItemDetail
-                      item={mappedItem}
-                      onClose={() => setActiveTab('search')}
-                      allOppositeItems={oppositeItemsMapped}
-                      onResolveItem={async () => {
-                        await claimItem(r.id);
-                      }}
-                      onDeleteItem={async () => {
-                        await deleteItem(r.id);
-                      }}
-                      currentUserUid={user?.uid}
-                      onStartChat={handleStartChat}
-                    />
-                  );
-                })()}
+                  {items.filter((item) => pinnedIds.includes(item.id)).length === 0 && (
+                    <div className="col-span-full py-16 text-center border-2 border-dashed border-outline-variant rounded-2xl bg-surface-container-lowest">
+                      <div className="w-16 h-16 bg-surface-container rounded-full flex items-center justify-center mx-auto mb-4 border border-outline-variant">
+                        <MapPin className="h-8 w-8 text-outline" />
+                      </div>
+                      <h3 className="font-headline-md text-lg font-bold text-on-surface mb-2">No pinned items</h3>
+                      <p className="font-body-md text-on-surface-variant mb-6">You haven't bookmarked any items yet.</p>
+                      <button 
+                        onClick={() => setActiveTab("search")}
+                        className="inline-flex items-center gap-2 px-6 py-2.5 font-label-md font-bold bg-primary text-on-primary rounded-lg shadow-sm hover:bg-primary-dim transition-colors"
+                      >
+                        <Search className="h-4 w-4" /> Browse Items
+                      </button>
+                    </div>
+                  )}
+                </div>
               </div>
             </section>
-
-            {/* PANEL: NOTIFICATIONS & ALERTS */}
-            <section id="notifications" className={`panel ${activeTab === 'notifications' ? 'active' : ''}`}>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                
-                {/* Real-time Chats Inbox Column */}
-                <div className="md:col-span-2 space-y-6">
-                  
-                  {/* 🛡️ "PROVE IT" LANDING CLAIMS FOR OWNER ITEMS (Item 3) */}
-                  <div className="p-5 bg-slate-50/50 border border-slate-200/60 rounded-3xl space-y-4" id="finder-claims-review-panel">
-                    <div className="flex flex-col gap-1.5 items-start sm:flex-row sm:items-center sm:justify-between">
-                      <span className="text-sm font-bold text-slate-800 font-sans flex items-center gap-1.5 flex-wrap"><Key className="h-4 w-4 inline mr-1 text-sky-500" /> Incoming Ownership Claims ({incomingClaims.filter(c => c.status === 'pending').length} pending)</span>
-                      <span className="font-mono text-[10px] px-2 py-0.5 bg-indigo-50 border border-indigo-100 text-indigo-700 font-bold uppercase rounded-full inline-block whitespace-nowrap shrink-0">Prove-it Verification Layer</span>
-                    </div>
-
-                    {incomingClaims.length === 0 ? (
-                      <div className="text-center py-10 bg-white border border-slate-200 border-dashed rounded-3xl flex flex-col items-center justify-center text-slate-450 p-6 shadow-sm">
-                        <div className="h-10 w-10 bg-indigo-50 border border-indigo-100 rounded-full flex items-center justify-center text-indigo-500 mb-2">
-                          <ShieldCheck className="h-5 w-5" />
-                        </div>
-                        <p className="font-sans text-xs font-extrabold text-slate-700">No claims registered yet.</p>
-                        <p className="font-sans text-[10.5px] text-slate-400 max-w-xs mt-1 leading-relaxed">
-                          Your active listings verification answers from claiming searchers will update here automatically in real-time.
-                        </p>
-                      </div>
-                    ) : (
-                      <div className="space-y-3.5">
-                        {incomingClaims.map((claim) => {
-                          const isPending = claim.status === 'pending';
-                          
-                          return (
-                            <div 
-                              key={claim.id} 
-                              className={`bg-white border rounded-2xl p-4 shadow-sm relative transition hover:shadow-md ${
-                                claim.status === 'approved' ? 'border-emerald-200 bg-emerald-50/5' :
-                                claim.status === 'rejected' ? 'border-rose-200 bg-rose-50/5' :
-                                'border-slate-200/80 hover:border-indigo-200'
-                              }`}
-                              id={`claim-review-card-${claim.id}`}
-                            >
-                              <div className="flex flex-col gap-2 items-start justify-between sm:flex-row sm:items-center w-full mb-2">
-                                <div className="space-y-0.5">
-                                  <h4 className="font-sans text-xs font-bold text-slate-900 flex items-center gap-1.5">
-                                    <span>Claim on:</span>
-                                    <span className="text-indigo-600 font-extrabold">{claim.itemTitle}</span>
-                                  </h4>
-                                  <span className="font-mono text-[9px] text-slate-400 block mt-0.5">
-                                    Claimer: <strong className="text-slate-600 font-bold">{claim.claimerName}</strong> ({claim.claimerEmail || 'anonymous_email'})
-                                  </span>
-                                </div>
-
-                                <span className={`inline-flex items-center gap-1 text-[9px] font-mono font-bold px-2 py-0.5 rounded-full uppercase shrink-0 ${
-                                  claim.status === 'approved' ? 'bg-emerald-100 text-emerald-800' :
-                                  claim.status === 'rejected' ? 'bg-rose-100 text-rose-800' :
-                                  'bg-amber-105 text-amber-805'
-                                }`}>
-                                  {claim.status}
-                                </span>
-                              </div>
-
-                              <div className="space-y-2 bg-slate-50 border border-slate-205/60 rounded-xl p-3 text-xs mt-2.5">
-                                <div>
-                                  <p className="font-mono text-[8.5px] text-slate-400 uppercase tracking-widest font-bold">Verification Question:</p>
-                                  <p className="font-sans text-slate-700 font-semibold leading-relaxed">"{claim.securityQuestion}"</p>
-                                </div>
-                                <div className="pt-2 border-t border-slate-200/50 mt-2">
-                                  <p className="font-mono text-[8.5px] text-slate-400 uppercase tracking-widest font-bold">Claimer's Answer / Proof details:</p>
-                                  <p className="font-sans text-slate-900 font-extrabold leading-relaxed bg-white p-2.5 rounded-lg border border-slate-200 mt-1 italic">
-                                    "{claim.providedAnswer}"
-                                  </p>
-                                </div>
-                              </div>
-
-                              {isPending ? (
-                                <div className="flex items-center space-x-2 mt-3.5 justify-end">
-                                  <button
-                                    onClick={() => handleRejectClaim(claim.id)}
-                                    className="px-3 py-1.5 rounded-lg border border-slate-200 text-slate-700 font-sans text-[11px] font-bold hover:bg-slate-50 cursor-pointer transition active:scale-95"
-                                  >
-                                    Decline Claim
-                                  </button>
-                                  <button
-                                    onClick={() => handleApproveClaim(claim.id, claim.itemId)}
-                                    className="px-3.5 py-1.5 rounded-lg bg-gradient-to-tr from-teal-850 to-indigo-950 text-white font-sans text-[11px] font-bold cursor-pointer transition hover:from-teal-900 hover:to-indigo-900 active:scale-95 flex items-center gap-1 shadow-sm"
-                                  >
-                                    <ShieldCheck className="h-3.5 w-3.5 text-teal-300" />
-                                    <span>Approve & Unlock PII</span>
-                                  </button>
-                                </div>
-                              ) : (
-                                <p className="text-right text-[10px] text-slate-400 mt-2.5 font-sans font-medium">
-                                  {claim.status === 'approved' 
-                                    ? '✓ Approved: Private coordinates are now fully shared.' 
-                                    : '✗ Declined claim.'}
-                                </p>
-                              )}
-                            </div>
-                          );
-                        })}
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="section-title flex items-center justify-between">
-                    <span className="flex items-center gap-1.5"><MessageCircle className="h-4 w-4" /> Active Chats Inbox</span>
-                    <span className="font-mono text-[9px] bg-teal-100 text-teal-850 font-bold uppercase rounded-full px-2 py-0.5 animate-pulse">Live Messaging</span>
-                  </div>
-                  <ChatInboxList 
-                    currentUserUid={user ? user.uid : null}
-                    onSelectChat={(id) => setActiveChatId(id)}
-                    activeChatId={activeChatId}
-                  />
-                </div>
-
-                {/* Static System Alerts Column */}
-                <div className="md:col-span-1 space-y-4">
-                  <div className="section-title"><Bell className="h-5 w-5 inline mr-1 text-sky-500" /> Platform Alerts</div>
-                  <div id="alertsList" className="space-y-3">
-                    <div className="alert-item m-0">
-                      <strong><Info className="h-4 w-4 inline mr-1 text-sky-500" /> Welcome to FindTrack!</strong>
-                      <p>You'll receive secure notifications and match recommendations here.</p>
-                    </div>
-                    <div className="alert-item m-0">
-                      <strong><CheckCircle2 className="h-4 w-4 inline mr-1 text-sky-500" /> Pro Tip</strong>
-                      <p>Tap "Message Finder" on other users' listings to contact them safely.</p>
-                    </div>
-                  </div>
-                </div>
-
-              </div>
-            </section>
-
-            {/* PANEL: PROFILE */}
-            <section id="profile" className={`panel ${activeTab === 'profile' ? 'active' : ''}`}>
-              <div className="section-title"><UserIcon className="h-5 w-5 inline mr-1 text-sky-500" /> My Profile</div>
-              <div className="profile-container">
-                <div className="profile-photo">
-                  <img id="pf_avatar" src={profileAvatar} alt="Profile" />
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '12px' }}>
-                    <button onClick={handleRandomAvatar} className="secondary-btn flex items-center gap-1.5" style={{ width: '100%', justifyContent: 'center' }}>
-                      <Dices className="h-4 w-4 text-slate-500" /> Random Avatar
-                    </button>
-                  </div>
+{/* PANEL: CATEGORIES BROWSER */}
+            <section
+              id="categories"
+              className={`${activeTab === "categories" ? "block" : "hidden"} flex-1 flex flex-col min-w-0`}
+            >
+              <div className="pt-8 px-4 md:px-8 pb-32 max-w-7xl mx-auto w-full">
+                {/* Page Header */}
+                <div className="mb-12">
+                  <h2 className="font-headline-lg text-4xl font-bold text-primary mb-2">Browse Categories</h2>
+                  <p className="font-body-lg text-on-surface-variant max-w-2xl">Find what you're looking for by exploring our organized categories. We've classified items to help you navigate through reports efficiently.</p>
                 </div>
                 
-                <div className="profile-fields">
-                  <div className="form-group">
-                    <label htmlFor="pf_name">Full Name</label>
-                    <input 
-                      id="pf_name" 
-                      placeholder="Enter your full name" 
-                      value={profileName}
-                      onChange={(e) => setProfileName(e.target.value)}
-                    />
+                {/* Bento Grid for Categories */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 auto-rows-[200px]">
+                  {/* Electronics (Large Featured) */}
+                  <div 
+                    className="col-span-1 sm:col-span-2 lg:col-span-2 row-span-2 rounded-xl bg-surface-container-lowest shadow-[0_4px_20px_rgba(1,114,90,0.05)] hover:shadow-[0_8px_30px_rgba(1,114,90,0.1)] hover:-translate-y-1 p-8 flex flex-col justify-between group overflow-hidden relative border border-outline-variant/30 transition-all duration-300 cursor-pointer"
+                    onClick={() => {
+                      setCategoryKeywords(["phone", "laptop", "tablet", "charger", "headphone", "earphone", "computer", "iphone", "samsung", "ipad", "macbook"]);
+                      setActiveTab("search");
+                    }}
+                  >
+                    <div className="absolute -right-10 -bottom-10 opacity-5 group-hover:opacity-10 transition-opacity duration-500 pointer-events-none">
+                      <Smartphone className="w-[300px] h-[300px] text-primary" />
+                    </div>
+                    <div className="relative z-10 flex justify-between items-start">
+                      <div className="bg-primary-container p-3 rounded-lg inline-flex">
+                        <Smartphone className="text-on-primary-container h-8 w-8" />
+                      </div>
+                      <span className="bg-surface-variant text-on-surface-variant font-label-md text-xs px-3 py-1 rounded-full border border-outline-variant/20">
+                        {items.filter(i => ["phone", "laptop", "tablet", "charger", "headphone", "earphone", "computer", "iphone", "samsung", "ipad", "macbook"].some(kw => i.title.toLowerCase().includes(kw) || i.desc?.toLowerCase().includes(kw))).length} Active
+                      </span>
+                    </div>
+                    <div className="relative z-10 mt-auto">
+                      <h3 className="font-headline-md text-3xl font-bold text-primary mb-2 group-hover:text-primary-dim transition-colors">Electronics</h3>
+                      <p className="font-body-md text-base text-on-surface-variant max-w-sm">Phones, laptops, tablets, and other digital devices reported lost or found recently.</p>
+                    </div>
                   </div>
-                  <div className="form-group">
-                    <label htmlFor="pf_email">Email Address</label>
-                    <input 
-                      id="pf_email" 
-                      type="email" 
-                      placeholder="your.email@example.com" 
-                      value={profileEmail}
-                      disabled
-                    />
+
+                  {/* Bags & Luggage */}
+                  <div 
+                    className="col-span-1 rounded-xl bg-surface-container-lowest shadow-[0_4px_20px_rgba(1,114,90,0.05)] hover:shadow-[0_8px_30px_rgba(1,114,90,0.1)] hover:-translate-y-1 p-6 flex flex-col justify-between group relative overflow-hidden border border-outline-variant/30 transition-all duration-300 cursor-pointer"
+                    onClick={() => {
+                      setCategoryKeywords(["bag", "backpack", "purse", "wallet", "luggage", "suitcase", "handbag"]);
+                      setActiveTab("search");
+                    }}
+                  >
+                    <div className="absolute -right-4 -bottom-4 opacity-5 group-hover:opacity-10 transition-opacity duration-500 pointer-events-none">
+                      <Package className="w-[150px] h-[150px] text-tertiary" />
+                    </div>
+                    <div className="relative z-10 flex justify-between items-start">
+                      <div className="bg-tertiary-container p-2 rounded-lg inline-flex">
+                        <Package className="text-on-tertiary-container h-6 w-6" />
+                      </div>
+                      <span className="bg-surface-variant text-on-surface-variant font-label-md text-[10px] px-2 py-1 rounded-full">
+                        {items.filter(i => ["bag", "backpack", "purse", "wallet", "luggage", "suitcase", "handbag"].some(kw => i.title.toLowerCase().includes(kw) || i.desc?.toLowerCase().includes(kw))).length} Active
+                      </span>
+                    </div>
+                    <div className="relative z-10 mt-auto">
+                      <h3 className="font-body-lg text-lg font-bold text-on-surface mb-1 group-hover:text-tertiary transition-colors">Bags & Luggage</h3>
+                      <p className="font-body-md text-sm text-on-surface-variant line-clamp-2">Backpacks, purses, suitcases and other carry-ons.</p>
+                    </div>
                   </div>
-                  <div className="form-group">
-                    <label htmlFor="pf_contact">Contact Number</label>
-                    <input 
-                      id="pf_contact" 
-                      placeholder="+63 912 345 6789" 
-                      value={profileContact}
-                      onChange={(e) => setProfileContact(e.target.value)}
-                    />
+
+                  {/* Pets */}
+                  <div 
+                    className="col-span-1 rounded-xl bg-surface-container-lowest shadow-[0_4px_20px_rgba(1,114,90,0.05)] hover:shadow-[0_8px_30px_rgba(1,114,90,0.1)] hover:-translate-y-1 p-6 flex flex-col justify-between group relative overflow-hidden border border-outline-variant/30 transition-all duration-300 cursor-pointer"
+                    onClick={() => {
+                      setCategoryKeywords(["dog", "cat", "pet", "bird", "animal", "puppy", "kitten", "collar"]);
+                      setActiveTab("search");
+                    }}
+                  >
+                    <div className="absolute -right-4 -bottom-4 opacity-5 group-hover:opacity-10 transition-opacity duration-500 pointer-events-none">
+                      <Heart className="w-[150px] h-[150px] text-error" />
+                    </div>
+                    <div className="relative z-10 flex justify-between items-start">
+                      <div className="bg-[#ffdcdc] p-2 rounded-lg inline-flex">
+                        <Heart className="text-error h-6 w-6" fill="currentColor" />
+                      </div>
+                      <span className="bg-surface-variant text-on-surface-variant font-label-md text-[10px] px-2 py-1 rounded-full">
+                        {items.filter(i => ["dog", "cat", "pet", "bird", "animal", "puppy", "kitten", "collar"].some(kw => i.title.toLowerCase().includes(kw) || i.desc?.toLowerCase().includes(kw))).length} Active
+                      </span>
+                    </div>
+                    <div className="relative z-10 mt-auto">
+                      <h3 className="font-body-lg text-lg font-bold text-on-surface mb-1 group-hover:text-error transition-colors">Pets & Animals</h3>
+                      <p className="font-body-md text-sm text-on-surface-variant line-clamp-2">Lost dogs, cats, and other companion animals.</p>
+                    </div>
                   </div>
-                  <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', alignItems: 'center', marginTop: '4px' }}>
-                    <button onClick={handleSaveProfile} className="primary-btn flex items-center gap-1.5"><Save className="h-4 w-4" /> Save Profile</button>
-                    <button 
-                      onClick={handleLogoutAction} 
-                      className="flex items-center gap-1"
-                      style={{ fontSize: '13px', color: '#ef4444', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 600 }}
-                    >
-                      <LogOut className="h-4 w-4" /> Logout
-                    </button>
+
+                  {/* Documents (Tall) */}
+                  <div 
+                    className="col-span-1 sm:col-span-1 row-span-2 rounded-xl bg-surface-container-lowest shadow-[0_4px_20px_rgba(1,114,90,0.05)] hover:shadow-[0_8px_30px_rgba(1,114,90,0.1)] hover:-translate-y-1 p-6 flex flex-col justify-between group relative overflow-hidden border border-outline-variant/30 transition-all duration-300 cursor-pointer"
+                    onClick={() => {
+                      setCategoryKeywords(["document", "id", "passport", "license", "card", "paper", "folder"]);
+                      setActiveTab("search");
+                    }}
+                  >
+                    <div className="absolute top-0 right-0 w-full h-full opacity-[0.03] group-hover:opacity-[0.05] transition-opacity duration-500 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-primary via-transparent to-transparent pointer-events-none"></div>
+                    <div className="relative z-10 flex justify-between items-start mb-4">
+                      <div className="bg-secondary-container p-3 rounded-lg inline-flex">
+                        <FileText className="text-on-secondary-container h-8 w-8" />
+                      </div>
+                      <span className="bg-surface-variant text-on-surface-variant font-label-md text-[10px] px-2 py-1 rounded-full">
+                        {items.filter(i => ["document", "id", "passport", "license", "card", "paper", "folder"].some(kw => i.title.toLowerCase().includes(kw) || i.desc?.toLowerCase().includes(kw))).length} Active
+                      </span>
+                    </div>
+                    <div className="relative z-10 mt-auto">
+                      <h3 className="font-body-lg text-2xl font-bold text-secondary mb-2 group-hover:text-primary transition-colors">Documents & IDs</h3>
+                      <p className="font-body-md text-sm text-on-surface-variant mb-4">Passports, driver's licenses, IDs, and important paperwork.</p>
+                      <div className="flex items-center text-primary font-label-md text-xs group-hover:translate-x-1 transition-transform">
+                        Explore <ArrowRight className="h-4 w-4 ml-1" />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Clothing */}
+                  <div 
+                    className="col-span-1 sm:col-span-1 row-span-1 rounded-xl bg-surface-container-lowest shadow-[0_4px_20px_rgba(1,114,90,0.05)] hover:shadow-[0_8px_30px_rgba(1,114,90,0.1)] hover:-translate-y-1 p-6 flex flex-col justify-between group relative overflow-hidden border border-outline-variant/30 transition-all duration-300 cursor-pointer"
+                    onClick={() => {
+                      setCategoryKeywords(["jacket", "shirt", "pants", "uniform", "shoes", "hat", "scarf", "coat", "clothing"]);
+                      setActiveTab("search");
+                    }}
+                  >
+                    <div className="relative z-10 flex justify-between items-start">
+                      <div className="bg-surface-variant p-2 rounded-lg inline-flex">
+                        <Tag className="text-on-surface h-6 w-6" />
+                      </div>
+                      <span className="bg-surface-variant text-on-surface-variant font-label-md text-[10px] px-2 py-1 rounded-full">
+                        {items.filter(i => ["jacket", "shirt", "pants", "uniform", "shoes", "hat", "scarf", "coat", "clothing"].some(kw => i.title.toLowerCase().includes(kw) || i.desc?.toLowerCase().includes(kw))).length} Active
+                      </span>
+                    </div>
+                    <div className="relative z-10 mt-auto">
+                      <h3 className="font-body-lg text-lg font-bold text-on-surface mb-1 group-hover:text-primary transition-colors">Clothing</h3>
+                    </div>
+                  </div>
+
+                  {/* Jewelry & Watches */}
+                  <div 
+                    className="col-span-1 sm:col-span-1 row-span-1 rounded-xl bg-surface-container-lowest shadow-[0_4px_20px_rgba(1,114,90,0.05)] hover:shadow-[0_8px_30px_rgba(1,114,90,0.1)] hover:-translate-y-1 p-6 flex flex-col justify-between group relative overflow-hidden border border-outline-variant/30 transition-all duration-300 cursor-pointer"
+                    onClick={() => {
+                      setCategoryKeywords(["ring", "necklace", "bracelet", "watch", "earring", "jewelry", "diamond", "gold", "silver"]);
+                      setActiveTab("search");
+                    }}
+                  >
+                    <div className="relative z-10 flex justify-between items-start">
+                      <div className="bg-surface-variant p-2 rounded-lg inline-flex">
+                        <Clock className="text-on-surface h-6 w-6" />
+                      </div>
+                      <span className="bg-surface-variant text-on-surface-variant font-label-md text-[10px] px-2 py-1 rounded-full">
+                        {items.filter(i => ["ring", "necklace", "bracelet", "watch", "earring", "jewelry", "diamond", "gold", "silver"].some(kw => i.title.toLowerCase().includes(kw) || i.desc?.toLowerCase().includes(kw))).length} Active
+                      </span>
+                    </div>
+                    <div className="relative z-10 mt-auto">
+                      <h3 className="font-body-lg text-lg font-bold text-on-surface mb-1 group-hover:text-primary transition-colors">Jewelry & Watches</h3>
+                    </div>
+                  </div>
+
+                  {/* Keys */}
+                  <div 
+                    className="col-span-1 sm:col-span-1 row-span-1 rounded-xl bg-surface-container-lowest shadow-[0_4px_20px_rgba(1,114,90,0.05)] hover:shadow-[0_8px_30px_rgba(1,114,90,0.1)] hover:-translate-y-1 p-6 flex flex-col justify-between group relative overflow-hidden border border-outline-variant/30 transition-all duration-300 cursor-pointer"
+                    onClick={() => {
+                      setCategoryKeywords(["key", "keychain", "fob", "car key"]);
+                      setActiveTab("search");
+                    }}
+                  >
+                    <div className="relative z-10 flex justify-between items-start">
+                      <div className="bg-surface-variant p-2 rounded-lg inline-flex">
+                        <Key className="text-on-surface h-6 w-6" />
+                      </div>
+                      <span className="bg-surface-variant text-on-surface-variant font-label-md text-[10px] px-2 py-1 rounded-full">
+                        {items.filter(i => ["key", "keychain", "fob", "car key"].some(kw => i.title.toLowerCase().includes(kw) || i.desc?.toLowerCase().includes(kw))).length} Active
+                      </span>
+                    </div>
+                    <div className="relative z-10 mt-auto">
+                      <h3 className="font-body-lg text-lg font-bold text-on-surface mb-1 group-hover:text-primary transition-colors">Keys</h3>
+                    </div>
                   </div>
                 </div>
               </div>
             </section>
-
-            {/* PANEL: MY ITEMS */}
-            <section id="myitems" className={`panel ${activeTab === 'myitems' ? 'active' : ''}`}>
-              <div className="section-title">📂 My Items</div>
-              <p className="section-subtitle">All items you've reported — tab to view details</p>
-              
-              <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-                {items.filter(item => item.userId === auth.currentUser?.uid).map(r => {
-                  const pinned = pinnedIds.includes(r.id);
-                  const statusLabel = r.claimed ? 'Match Found' : (r.type === 'found' ? 'Found' : 'Searching');
-                  const timeLabel = r.date ? new Date(r.date).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) : 'Just now';
-                  return (
-                    <article key={r.id} className="bg-surface-container-lowest rounded-[16px] p-6 ambient-shadow ambient-shadow-hover flex flex-col h-full border border-surface-variant">
-                      <div className="flex justify-between items-start mb-4">
-                        <div className="flex items-center space-x-2">
-                          <span className="bg-secondary-container text-on-secondary-container px-2 py-1 rounded-full font-label-md text-[10px] uppercase tracking-wider flex items-center space-x-1">
-                            <span className="material-symbols-outlined text-[14px]">check_circle</span>
-                            <span>{statusLabel}</span>
-                          </span>
-                          <span className="text-on-surface-variant font-label-md text-label-md">{r.type.charAt(0).toUpperCase() + r.type.slice(1)} • {timeLabel}</span>
-                        </div>
-                        <button className="text-on-surface-variant hover:text-primary transition-colors" onClick={(e) => { e.stopPropagation(); /* future: item menu */ }}>
-                          <span className="material-symbols-outlined">more_vert</span>
-                        </button>
-                      </div>
-
-                      <div className="flex space-x-4 mb-4 flex-1">
-                        <div className="w-24 h-24 rounded-lg overflow-hidden flex-shrink-0 bg-surface-container">
-                          {r.image || r.imageUrl ? (
-                            <img className="w-full h-full object-cover" src={r.image || r.imageUrl} alt="" referrerPolicy="no-referrer" />
-                          ) : (
-                            <div style={{ opacity: 0.35 }} className="w-full h-full flex items-center justify-center"><Camera className="h-12 w-12" /></div>
-                          )}
-                        </div>
-                        <div>
-                          <h3 className="font-headline-md text-headline-md text-on-surface mb-1 leading-tight">{r.title}</h3>
-                          <p className="font-body-md text-body-md text-on-surface-variant line-clamp-2">{r.desc || r.description || ''}</p>
-                          <div className="flex items-center space-x-1 mt-2 text-primary">
-                            <span className="material-symbols-outlined text-[16px]">location_on</span>
-                            <span className="font-label-md text-[11px]">{r.location || 'Unknown'}</span>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="pt-4 border-t border-outline-variant flex space-x-3 mt-auto">
-                        <button onClick={(e) => { e.stopPropagation(); handleStartChat(r.userId || '', r.id); }} className="flex-1 bg-primary text-on-primary py-2 rounded-lg font-label-md text-label-md hover:bg-primary-dim transition-colors flex items-center justify-center space-x-2">
-                          <span className="material-symbols-outlined text-[18px]">chat</span>
-                          <span>Message</span>
-                        </button>
-                        <button onClick={(e) => { e.stopPropagation(); /* edit flow */ }} className="px-4 py-2 rounded-lg border border-primary text-primary font-label-md text-label-md hover:bg-surface-container transition-colors">Edit</button>
-                      </div>
-                    </article>
-                  );
-                })}
-              </div>
-
-              {items.filter(item => item.userId === auth.currentUser?.uid).length === 0 && (
-                <div className="empty">You haven't reported any items yet.</div>
-              )}
-            </section>
-
-            {/* PANEL: PINNED ITEMS */}
-            <section id="pinned" className={`panel ${activeTab === 'pinned' ? 'active' : ''}`}>
-              <div className="section-title"><MapPin className="h-5 w-5 inline mr-1 text-sky-500" /> Pinned Items</div>
-              <p className="section-subtitle">Quick access to items you've bookmarked</p>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {items.filter(item => pinnedIds.includes(item.id)).map(r => {
-                  const pinned = pinnedIds.includes(r.id);
-                  const timeLabel = r.date ? new Date(r.date).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) : 'Just now';
-                  return (
-                    <article key={r.id} className="bg-surface-container-lowest rounded-xl shadow-[0_4px_20px_-4px_rgba(1,114,90,0.08)] border border-outline-variant/30 overflow-hidden flex flex-col group relative transition-transform hover:-translate-y-1 duration-300">
-                      <div className="absolute top-4 right-4 z-10 flex gap-2">
-                        <button className="bg-surface-container-lowest/80 backdrop-blur p-2 rounded-full text-primary hover:text-error transition-colors shadow-sm" title="Unpin Item" onClick={(e) => { e.stopPropagation(); togglePin(r.id); }}>
-                          <span className="material-symbols-outlined fill">push_pin</span>
-                        </button>
-                      </div>
-                      <div className="h-48 relative w-full overflow-hidden">
-                        {r.image || r.imageUrl ? <img className="w-full h-full object-cover" src={r.image || r.imageUrl} alt="" /> : <div className="w-full h-full flex items-center justify-center bg-surface-variant"><Camera className="h-12 w-12 text-outline-variant" /></div>}
-                      </div>
-                      <div className="p-5 flex-1 flex flex-col">
-                        <h3 className="font-headline-sm text-headline-sm font-bold text-on-surface mb-1">{r.title}</h3>
-                        <div className="flex items-center gap-1 text-on-surface-variant text-sm mb-3">
-                          <span className="material-symbols-outlined text-[14px]">location_on</span>
-                          <span>{r.location || 'Unknown'}</span>
-                        </div>
-                        <p className="font-body-md text-body-md text-on-surface-variant line-clamp-3 mb-4">{r.desc || r.description || ''}</p>
-                        <div className="mt-auto flex justify-between items-center">
-                          <span className="font-label-md text-label-md text-outline">Pinned</span>
-                          <button onClick={(e) => { e.stopPropagation(); setSelectedItemId(r.id); setActiveTab('itemDetail'); }} className="text-primary font-label-md text-label-md hover:underline">View Details</button>
-                        </div>
-                      </div>
-                    </article>
-                  );
-                })}
-              </div>
-
-              {items.filter(item => pinnedIds.includes(item.id)).length === 0 && (
-                <div className="empty">No pinned items yet. Pin items from search!</div>
-              )}
-            </section>
-
-            {/* PANEL: CATEGORIES BROWSER */}
-            <section id="categories" className={`panel ${activeTab === 'categories' ? 'active' : ''}`}>
-              <div className="section-title"><Tag className="h-5 w-5 inline mr-1" /> Browse by Category</div>
-              <p className="section-subtitle">Tap a category to filter lost items</p>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 auto-rows-[200px]">
-                <div onClick={() => { setCategoryKeywords(["phone","laptop","tablet","charger","headphone","earphone","computer","iphone","samsung","ipad","macbook"]); setActiveTab('search'); }} className="col-span-1 sm:col-span-2 lg:col-span-2 row-span-2 rounded-xl bg-surface-container-lowest ambient-shadow p-6 flex flex-col justify-between group overflow-hidden relative border border-outline-variant/30 transition-all duration-300 cursor-pointer">
-                  <div className="relative z-10 flex justify-between items-start">
-                    <div className="bg-primary-container p-3 rounded-lg inline-flex"><Smartphone className="text-on-primary-container text-3xl" /></div>
-                    <span className="bg-surface-variant text-on-surface-variant font-label-md text-label-md px-3 py-1 rounded-full">{countForKeywords(["phone","laptop","tablet","charger","headphone","earphone","computer","iphone","samsung","ipad","macbook"]) || '0'} Active</span>
-                  </div>
-                  <div className="relative z-10 mt-auto">
-                    <h3 className="font-headline-md text-headline-md font-bold text-primary mb-2">Electronics</h3>
-                    <p className="font-body-md text-body-md text-on-surface-variant max-w-sm">Phones, laptops, tablets, and other digital devices reported lost or found recently.</p>
-                  </div>
-                </div>
-
-                <div onClick={() => { setCategoryKeywords(["vehicle","car","bike","scooter","bicycle","motorbike"]); setActiveTab('search'); }} className="rounded-xl bg-surface-container-lowest ambient-shadow p-4 flex flex-col justify-between group relative overflow-hidden border border-outline-variant/30 transition-all duration-300 cursor-pointer">
-                  <div className="relative z-10 flex justify-between items-start">
-                    <div className="bg-tertiary-container p-2 rounded-lg inline-flex"><Info className="text-on-tertiary-container text-2xl" /></div>
-                    <span className="bg-surface-variant text-on-surface-variant font-label-md text-[10px] px-2 py-1 rounded-full">{countForKeywords(["vehicle","car","bike","scooter","bicycle","motorbike"]) || '0'} Active</span>
-                  </div>
-                  <div className="relative z-10">
-                    <h3 className="font-body-lg text-body-lg font-bold text-on-surface mb-1">Vehicles &amp; Transport</h3>
-                    <p className="font-body-md text-sm text-on-surface-variant line-clamp-2">Bicycles, scooters, cars, and related accessories.</p>
-                  </div>
-                </div>
-
-                <div onClick={() => { setCategoryKeywords(["pets","dog","cat","animal","puppy","kitten"]); setActiveTab('search'); }} className="rounded-xl bg-surface-container-lowest ambient-shadow p-4 flex flex-col justify-between group relative overflow-hidden border border-outline-variant/30 transition-all duration-300 cursor-pointer">
-                  <div className="relative z-10 flex justify-between items-start">
-                    <div className="bg-[#ffdcdc] p-2 rounded-lg inline-flex"><Tag className="text-error text-2xl filled-icon" /></div>
-                    <span className="bg-surface-variant text-on-surface-variant font-label-md text-[10px] px-2 py-1 rounded-full">{countForKeywords(["pets","dog","cat","animal","puppy","kitten"]) || '0'} Active</span>
-                  </div>
-                  <div className="relative z-10">
-                    <h3 className="font-body-lg text-body-lg font-bold text-on-surface mb-1">Pets &amp; Animals</h3>
-                    <p className="font-body-md text-sm text-on-surface-variant line-clamp-2">Lost dogs, cats, and other companion animals.</p>
-                  </div>
-                </div>
-
-                <div onClick={() => { setCategoryKeywords(["wallet","id","passport","document","card","license"]); setActiveTab('search'); }} className="col-span-1 sm:col-span-1 row-span-2 rounded-xl bg-surface-container-lowest ambient-shadow p-4 flex flex-col justify-between group relative overflow-hidden border border-outline-variant/30 transition-all duration-300 cursor-pointer">
-                  <div className="relative z-10 flex justify-between items-start mb-4">
-                    <div className="bg-secondary-container p-3 rounded-lg inline-flex"><Info className="text-on-secondary-container text-3xl" /></div>
-                    <span className="bg-surface-variant text-on-surface-variant font-label-md text-[10px] px-2 py-1 rounded-full">{countForKeywords(["wallet","id","passport","document","card","license"]) || '0'} Active</span>
-                  </div>
-                  <div className="relative z-10 mt-auto">
-                    <h3 className="font-body-lg text-body-lg font-bold text-secondary mb-2">Documents &amp; IDs</h3>
-                    <p className="font-body-md text-sm text-on-surface-variant mb-4">Passports, driver's licenses, wallets, and important paperwork.</p>
-                    <div className="flex items-center text-primary font-label-md text-xs">Explore <span className="material-symbols-outlined text-sm ml-1">arrow_forward</span></div>
-                  </div>
-                </div>
-              </div>
-            </section>
-
-            {/* PANEL: ANALYTICS DESK */}
-            <section id="analytics" className={`panel ${activeTab === 'analytics' ? 'active' : ''}`}>
+{/* PANEL: ANALYTICS DESK */}
+            <section
+              id="analytics"
+              className={`panel ${activeTab === "analytics" ? "active" : ""}`}
+            >
               <div className="section-title">📊 Analytics Dashboard</div>
-              <p className="section-subtitle">Visual overview of all reported items</p>
-              
+              <p className="section-subtitle">
+                Visual overview of all reported items
+              </p>
+
               <div className="analytics-grid" id="analyticsGrid">
                 <div className="analytics-card">
-                  <div className="big-num" style={{ color: '#ef4444' }}>{stats.lost}</div>
+                  <div className="big-num" style={{ color: "#ef4444" }}>
+                    {stats.lost}
+                  </div>
                   <div className="big-label">Active Lost</div>
                 </div>
                 <div className="analytics-card">
-                  <div className="big-num" style={{ color: '#0ea5e9' }}>{stats.found}</div>
+                  <div className="big-num" style={{ color: "#0ea5e9" }}>
+                    {stats.found}
+                  </div>
                   <div className="big-label">Found Items</div>
                 </div>
                 <div className="analytics-card">
-                  <div className="big-num" style={{ color: '#10b981' }}>{stats.claimed}</div>
+                  <div className="big-num" style={{ color: "#10b981" }}>
+                    {stats.claimed}
+                  </div>
                   <div className="big-label">Claimed</div>
                 </div>
                 <div className="analytics-card">
-                  <div className="big-num" style={{ color: '#8b5cf6' }}>{items.length}</div>
+                  <div className="big-num" style={{ color: "#8b5cf6" }}>
+                    {items.length}
+                  </div>
                   <div className="big-label">Total Reports</div>
                 </div>
               </div>
 
-              <div style={{ background: 'white', padding: '24px', borderRadius: '20px', boxShadow: 'var(--shadow-sm)', border: '1px solid var(--border)' }}>
-                <canvas ref={canvasRef} id="chartCanvas" width={400} height={220} style={{ maxWidth: '100%', display: 'block', margin: '0 auto' }}></canvas>
-                <p style={{ textAlign: 'center', color: 'var(--muted)', fontSize: '13px', marginTop: '14px' }}>Item distribution by status</p>
+              <div
+                style={{
+                  background: "white",
+                  padding: "24px",
+                  borderRadius: "20px",
+                  boxShadow: "var(--shadow-sm)",
+                  border: "1px solid var(--border)",
+                }}
+              >
+                <canvas
+                  ref={canvasRef}
+                  id="chartCanvas"
+                  width={400}
+                  height={220}
+                  style={{
+                    maxWidth: "100%",
+                    display: "block",
+                    margin: "0 auto",
+                  }}
+                ></canvas>
+                <p
+                  style={{
+                    textAlign: "center",
+                    color: "var(--muted)",
+                    fontSize: "13px",
+                    marginTop: "14px",
+                  }}
+                >
+                  Item distribution by status
+                </p>
               </div>
             </section>
 
             {/* PANEL: GENERAL LIST OF INFORMATION GUIDES */}
-            <section id="tips" className={`panel ${activeTab === 'tips' ? 'active' : ''}`}>
-              <div className="section-title"><Navigation className="h-5 w-5 inline mr-1 text-sky-500" /> Lost Item Recovery Guide</div>
-              <p className="section-subtitle">Helpful tips to increase your chances of finding lost items</p>
-              <div className="tips-grid">
-                <div className="tip-card"><Search className="h-5 w-5 text-sky-500 inline mr-1" /> <strong>Retrace Recent Locations</strong><br /><br />Carefully revisit the places you recently visited to help locate missing items.</div>
-                <div className="tip-card"><MapPin className="h-5 w-5 text-red-500 inline mr-1" /> <strong>Check Nearby Areas</strong><br /><br />Inspect public spaces, offices, transportation stops, shops, and common areas.</div>
-                <div className="tip-card"><Smartphone className="h-5 w-5 text-indigo-500 inline mr-1" /> <strong>Use Digital Tools</strong><br /><br />Post on forums, use FindTrack, check social media groups.</div>
-                <div className="tip-card"><CheckCircle2 className="h-5 w-5 text-green-500 inline mr-1" /> <strong>Act Quickly</strong><br /><br />Report and search within 2 hours for best results.</div>
-                <div className="tip-card"><Camera className="h-5 w-5 text-amber-500 inline mr-1" /> <strong>Add Photos</strong><br /><br />Upload a photo of your item for much faster identification.</div>
-                <div className="tip-card"><Bell className="h-5 w-5 text-pink-500 inline mr-1" /> <strong>Stay Updated</strong><br /><br />Receive updates and notifications about matched or recovered items.</div>
-                <div className="tip-card"><PenTool className="h-5 w-5 text-slate-500 inline mr-1" /> <strong>Submit Detailed Reports</strong><br /><br />Provide accurate descriptions and item details for easier identification.</div>
+            <section
+              id="tips"
+              className={`panel ${activeTab === "tips" ? "active" : ""}`}
+            >
+              <div className="section-title">
+                <Navigation className="h-5 w-5 inline mr-1 text-sky-500" /> Lost
+                Item Recovery Guide
               </div>
-            </section>
-
-            <section id="packaging" className={`panel ${activeTab === 'packaging' ? 'active' : ''}`}>
-              <div className="section-title"><Package className="h-5 w-5 inline mr-1 text-sky-500" /> Packaging &amp; Handling Tips</div>
-              <p className="section-subtitle">Best practices for securing found items</p>
+              <p className="section-subtitle">
+                Helpful tips to increase your chances of finding lost items
+              </p>
               <div className="tips-grid">
-                <div className="tip-card"><ShieldCheck className="h-5 w-5 text-teal-500 inline mr-1" /> <strong>Protect Fragile Items</strong><br /><br />Use bubble wrap or padding for delicate objects.</div>
-                <div className="tip-card"><Package className="h-5 w-5 text-blue-500 inline mr-1" /> <strong>Seal Securely</strong><br /><br />Ensure items are properly contained before storage.</div>
-                <div className="tip-card"><Home className="h-5 w-5 text-indigo-500 inline mr-1" /> <strong>Classify Correctly</strong><br /><br />Hand keys and sensitive IDs straight to the Library security safe desk.</div>
-                <div className="tip-card"><CheckCircle2 className="h-5 w-5 text-green-500 inline mr-1" /> <strong>Update Status</strong><br /><br />Mark items as claimed once they've been recovered.</div>
-              </div>
-            </section>
-
-            <section id="about" className={`panel ${activeTab === 'about' ? 'active' : ''}`}>
-              <div className="section-title"><CheckCircle2 className="h-5 w-5 inline mr-1 text-sky-500" /> About FindTrack</div>
-              <div className="report-form-wrap" style={{ maxWidth: '600px' }}>
-                <p style={{ marginBottom: '16px', lineHeight: 1.7 }}>
-                  <strong>FindTrack</strong> helps simplify lost and found reporting with fast search tools, organized listings, and a modern recovery system.
-                </p>
-                <div className="section-title" style={{ fontSize: '16px', marginTop: '8px' }}><Info className="h-4 w-4 inline mr-1 text-sky-500" /> How to Use</div>
-                <div className="tips-grid" style={{ gridTemplateColumns: '1fr' }}>
-                  <div className="tip-card"><Package className="h-4 w-4 text-sky-500 inline mr-2" /> <strong>Report</strong> — Submit details about lost or found items with photos and location</div>
-                  <div className="tip-card"><Search className="h-4 w-4 text-sky-500 inline mr-2" /> <strong>Search</strong> — Browse all reported items with advanced filters and category browsing</div>
-                  <div className="tip-card"><CheckCircle2 className="h-4 w-4 text-sky-500 inline mr-2" /> <strong>Claim</strong> — Mark items as found once recovered, or delete your own reports</div>
-                  <div className="tip-card"><MapPin className="h-4 w-4 text-sky-500 inline mr-2" /> <strong>Pin</strong> — Bookmark items you want quick access to</div>
+                <div className="tip-card">
+                  <Search className="h-5 w-5 text-sky-500 inline mr-1" />{" "}
+                  <strong>Retrace Recent Locations</strong>
+                  <br />
+                  <br />
+                  Carefully revisit the places you recently visited to help
+                  locate missing items.
                 </div>
-                <div className="tip-banner" style={{ marginTop: '16px' }}><Lightbulb className="h-4 w-4 inline mr-1 text-amber-500" /> Pro Tip: The more detail you add to reports, the faster items get matched!</div>
+                <div className="tip-card">
+                  <MapPin className="h-5 w-5 text-red-500 inline mr-1" />{" "}
+                  <strong>Check Nearby Areas</strong>
+                  <br />
+                  <br />
+                  Inspect public spaces, offices, transportation stops, shops,
+                  and common areas.
+                </div>
+                <div className="tip-card">
+                  <Smartphone className="h-5 w-5 text-indigo-500 inline mr-1" />{" "}
+                  <strong>Use Digital Tools</strong>
+                  <br />
+                  <br />
+                  Post on forums, use FindTrack, check social media groups.
+                </div>
+                <div className="tip-card">
+                  <CheckCircle2 className="h-5 w-5 text-green-500 inline mr-1" />{" "}
+                  <strong>Act Quickly</strong>
+                  <br />
+                  <br />
+                  Report and search within 2 hours for best results.
+                </div>
+                <div className="tip-card">
+                  <Camera className="h-5 w-5 text-amber-500 inline mr-1" />{" "}
+                  <strong>Add Photos</strong>
+                  <br />
+                  <br />
+                  Upload a photo of your item for much faster identification.
+                </div>
+                <div className="tip-card">
+                  <Bell className="h-5 w-5 text-pink-500 inline mr-1" />{" "}
+                  <strong>Stay Updated</strong>
+                  <br />
+                  <br />
+                  Receive updates and notifications about matched or recovered
+                  items.
+                </div>
+                <div className="tip-card">
+                  <PenTool className="h-5 w-5 text-slate-500 inline mr-1" />{" "}
+                  <strong>Submit Detailed Reports</strong>
+                  <br />
+                  <br />
+                  Provide accurate descriptions and item details for easier
+                  identification.
+                </div>
               </div>
             </section>
 
-          </main>
+            <section
+              id="packaging"
+              className={`panel ${activeTab === "packaging" ? "active" : ""}`}
+            >
+              <div className="section-title">
+                <Package className="h-5 w-5 inline mr-1 text-sky-500" />{" "}
+                Packaging &amp; Handling Tips
+              </div>
+              <p className="section-subtitle">
+                Best practices for securing found items
+              </p>
+              <div className="tips-grid">
+                <div className="tip-card">
+                  <ShieldCheck className="h-5 w-5 text-teal-500 inline mr-1" />{" "}
+                  <strong>Protect Fragile Items</strong>
+                  <br />
+                  <br />
+                  Use bubble wrap or padding for delicate objects.
+                </div>
+                <div className="tip-card">
+                  <Package className="h-5 w-5 text-blue-500 inline mr-1" />{" "}
+                  <strong>Seal Securely</strong>
+                  <br />
+                  <br />
+                  Ensure items are properly contained before storage.
+                </div>
+                <div className="tip-card">
+                  <Home className="h-5 w-5 text-indigo-500 inline mr-1" />{" "}
+                  <strong>Classify Correctly</strong>
+                  <br />
+                  <br />
+                  Hand keys and sensitive IDs straight to the Library security
+                  safe desk.
+                </div>
+                <div className="tip-card">
+                  <CheckCircle2 className="h-5 w-5 text-green-500 inline mr-1" />{" "}
+                  <strong>Update Status</strong>
+                  <br />
+                  <br />
+                  Mark items as claimed once they've been recovered.
+                </div>
+              </div>
+            </section>
+
+            <section
+              id="about"
+              className={`${activeTab === "about" ? "block" : "hidden"}`}
+            >
+              <div className="max-w-6xl mx-auto space-y-8">
+                <header className="mb-8">
+                  <h2 className="font-headline-lg text-3xl font-bold text-on-surface">About &amp; Help</h2>
+                  <p className="font-body-md text-on-surface-variant mt-2">Everything you need to know about FindTrack.</p>
+                </header>
+
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                  <div className="lg:col-span-8 space-y-8">
+                    {/* FAQ */}
+                    <div className="bg-surface-container-lowest rounded-2xl border border-outline-variant p-6 md:p-8">
+                      <h3 className="font-headline-md text-xl font-bold text-on-surface mb-6 flex items-center gap-2">
+                        <Info className="h-6 w-6 text-primary" /> Frequently Asked Questions
+                      </h3>
+                      
+                      <div className="space-y-6">
+                        <div className="border-b border-outline-variant pb-6">
+                          <h4 className="font-bold text-on-surface mb-2">How do I verify ownership?</h4>
+                          <p className="text-on-surface-variant text-sm">When you claim a found item, you must correctly answer the secret security question set by the finder. Additionally, the finder may request further proof of ownership via contact before handing over the item.</p>
+                        </div>
+                        <div className="border-b border-outline-variant pb-6">
+                          <h4 className="font-bold text-on-surface mb-2">What happens when an item is claimed?</h4>
+                          <p className="text-on-surface-variant text-sm">Once an item is successfully claimed and verified, its status changes to 'Resolved'. Contact details are then shared securely between both parties to arrange the return.</p>
+                        </div>
+                        <div>
+                          <h4 className="font-bold text-on-surface mb-2">Is FindTrack free to use?</h4>
+                          <p className="text-on-surface-variant text-sm">Yes, FindTrack is completely free for all community members. Our mission is to restore trust and reunite lost items with their rightful owners.</p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Guidelines */}
+                    <div className="bg-surface-container-lowest rounded-2xl border border-outline-variant p-6 md:p-8">
+                      <h3 className="font-headline-md text-xl font-bold text-on-surface mb-6 flex items-center gap-2">
+                        <ShieldCheck className="h-6 w-6 text-primary" /> Community Guidelines
+                      </h3>
+                      <ul className="space-y-3 text-sm text-on-surface-variant">
+                        <li className="flex gap-2"><CheckCircle2 className="h-5 w-5 text-primary shrink-0" /> Always meet in public, well-lit places when returning items.</li>
+                        <li className="flex gap-2"><CheckCircle2 className="h-5 w-5 text-primary shrink-0" /> Do not share personal addresses or sensitive information until verified.</li>
+                        <li className="flex gap-2"><CheckCircle2 className="h-5 w-5 text-primary shrink-0" /> Report any suspicious behavior or false claims immediately.</li>
+                      </ul>
+                    </div>
+                  </div>
+
+                  <div className="lg:col-span-4 space-y-6">
+                    {/* Contact Support */}
+                    <div className="bg-primary text-on-primary rounded-2xl p-6 md:p-8 text-center relative overflow-hidden">
+                      <div className="relative z-10">
+                        <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                          <Mail className="h-8 w-8" />
+                        </div>
+                        <h3 className="font-headline-md text-xl font-bold mb-2">Need More Help?</h3>
+                        <p className="text-sm text-on-primary/90 mb-6">Our support team is ready to assist you with any issues or disputes.</p>
+                        <a href="mailto:novapulsarsupport@gmail.com" className="inline-block w-full py-3 bg-white text-primary font-bold rounded-xl hover:bg-surface-variant transition-colors shadow-sm">
+                          Contact Support
+                        </a>
+                      </div>
+                      <div className="absolute -top-12 -right-12 w-32 h-32 bg-white/10 rounded-full blur-2xl"></div>
+                      <div className="absolute -bottom-12 -left-12 w-32 h-32 bg-white/10 rounded-full blur-2xl"></div>
+                    </div>
+
+                    {/* App Info */}
+                    <div className="bg-surface-container-lowest rounded-2xl border border-outline-variant p-6 text-center">
+                      <div className="w-12 h-12 bg-surface-variant rounded-xl flex items-center justify-center mx-auto mb-3">
+                        <span className="text-xl">✨</span>
+                      </div>
+                      <h4 className="font-bold text-on-surface">FindTrack</h4>
+                      <p className="text-xs text-on-surface-variant mt-1 mb-4">Version 2.0.0 (Beta)</p>
+                      <div className="flex justify-center gap-4 text-xs font-bold text-primary">
+                        <button onClick={() => setCurrentView('privacy')}>Privacy Policy</button>
+                        <span>&bull;</span>
+                        <button onClick={() => setCurrentView('terms')}>Terms of Service</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </section>
+</main>
 
           {/* MOBILE HUD BOTTOM NAV */}
           <nav className="bottom-nav" id="bottomNav">
-            <button onClick={() => { setActiveTab('home'); setCategoryKeywords(null); }} className={`bnav-btn ${activeTab === 'home' ? 'active' : ''}`}>
-              <span className="bnav-icon"><Home className="h-5 w-5" /></span>Home
+            <button
+              onClick={() => {
+                setActiveTab("home");
+                setCategoryKeywords(null);
+              }}
+              className={`bnav-btn ${activeTab === "home" ? "active" : ""}`}
+            >
+              <span className="bnav-icon">
+                <Home className="h-5 w-5" />
+              </span>
+              Home
             </button>
-            <button onClick={() => { setActiveTab('search'); setCategoryKeywords(null); }} className={`bnav-btn ${activeTab === 'search' ? 'active' : ''}`}>
-              <span className="bnav-icon"><Search className="h-5 w-5" /></span>Search
+            <button
+              onClick={() => {
+                setActiveTab("search");
+                setCategoryKeywords(null);
+              }}
+              className={`bnav-btn ${activeTab === "search" ? "active" : ""}`}
+            >
+              <span className="bnav-icon">
+                <Search className="h-5 w-5" />
+              </span>
+              Search
             </button>
-            <button onClick={() => { if (profileName === 'Guest') { setShowGuestModal(true); } else { setActiveTab('notifications'); } }} className={`bnav-btn ${activeTab === 'notifications' ? 'active' : ''}`}>
-              <span className="bnav-icon"><Bell className="h-5 w-5" /></span>Alerts
+            <button
+              onClick={() => {
+                if (profileName === "Guest") {
+                  setShowGuestModal(true);
+                } else {
+                  setActiveTab("notifications");
+                }
+              }}
+              className={`bnav-btn ${activeTab === "notifications" ? "active" : ""}`}
+            >
+              <span className="bnav-icon">
+                <Bell className="h-5 w-5" />
+              </span>
+              Alerts
             </button>
-            <button onClick={() => { setActiveTab('profile'); }} className={`bnav-btn ${activeTab === 'profile' ? 'active' : ''}`}>
-              <span className="bnav-icon"><UserIcon className="h-5 w-5" /></span>Profile
+            <button
+              onClick={() => {
+                setActiveTab("profile");
+              }}
+              className={`bnav-btn ${activeTab === "profile" ? "active" : ""}`}
+            >
+              <span className="bnav-icon">
+                <UserIcon className="h-5 w-5" />
+              </span>
+              Profile
             </button>
           </nav>
 
           {/* MOBILE REPORT INSTANT FAB */}
-          <button 
-            onClick={() => { if (profileName === 'Guest') { setShowGuestModal(true); } else { setActiveTab('report'); } }} 
-            className="report-fab" 
+          <button
+            onClick={() => {
+              if (profileName === "Guest") {
+                setShowGuestModal(true);
+              } else {
+                setActiveTab("report");
+              }
+            }}
+            className="report-fab"
             title="Report Item"
           >
             <Package className="h-6 w-6 text-white" />
           </button>
-
+          </div>
         </div>
       )}
 
@@ -2505,13 +4415,13 @@ export default function App() {
           <div className="onboard-card" id="onboardCard">
             <div className="onboard-progress" id="onboardProgress">
               {ONBOARD_STEPS.map((_, idx) => (
-                <div 
-                  key={idx} 
-                  className={`onboard-pip ${idx < onboardStep ? 'done' : idx === onboardStep ? 'active' : ''}`}
+                <div
+                  key={idx}
+                  className={`onboard-pip ${idx < onboardStep ? "done" : idx === onboardStep ? "active" : ""}`}
                 ></div>
               ))}
             </div>
-            
+
             <div className="onboard-visual">
               <div className="onboard-icon-wrap" id="onboardIcon">
                 {ONBOARD_STEPS[onboardStep].icon}
@@ -2519,31 +4429,39 @@ export default function App() {
             </div>
 
             <div className="onboard-body">
-              <div className="onboard-step-label" id="onboardLabel">{ONBOARD_STEPS[onboardStep].label}</div>
-              <div className="onboard-title" id="onboardTitle">{ONBOARD_STEPS[onboardStep].title}</div>
-              <div className="onboard-desc" id="onboardDesc">{ONBOARD_STEPS[onboardStep].desc}</div>
-              
+              <div className="onboard-step-label" id="onboardLabel">
+                {ONBOARD_STEPS[onboardStep].label}
+              </div>
+              <div className="onboard-title" id="onboardTitle">
+                {ONBOARD_STEPS[onboardStep].title}
+              </div>
+              <div className="onboard-desc" id="onboardDesc">
+                {ONBOARD_STEPS[onboardStep].desc}
+              </div>
+
               <div className="onboard-actions">
-                <button 
+                <button
                   onClick={() => {
                     if (onboardStep < ONBOARD_STEPS.length - 1) {
-                      setOnboardStep(prev => prev + 1);
+                      setOnboardStep((prev) => prev + 1);
                     } else {
                       setShowOnboarding(false);
                       localStorage.setItem("ft_onboarded", "1");
                     }
-                  }} 
-                  className="onboard-next" 
+                  }}
+                  className="onboard-next"
                   id="onboardNext"
                 >
-                  {onboardStep === ONBOARD_STEPS.length - 1 ? "Get Started 🚀" : "Next →"}
+                  {onboardStep === ONBOARD_STEPS.length - 1
+                    ? "Get Started 🚀"
+                    : "Next →"}
                 </button>
-                <button 
+                <button
                   onClick={() => {
                     setShowOnboarding(false);
                     localStorage.setItem("ft_onboarded", "1");
-                  }} 
-                  className="onboard-skip" 
+                  }}
+                  className="onboard-skip"
                   id="onboardSkip"
                 >
                   Skip tour
@@ -2557,7 +4475,9 @@ export default function App() {
       {/* ── IMAGE ZOOM SYSTEM MODAL ── */}
       {zoomImg && (
         <div className="zoom-overlay" onClick={() => setZoomImg(null)}>
-          <button className="zoom-close" onClick={() => setZoomImg(null)}>✕</button>
+          <button className="zoom-close" onClick={() => setZoomImg(null)}>
+            ✕
+          </button>
           <img src={zoomImg} className="zoom-img" alt="Zoom view" />
           <div className="zoom-hint">Tap anywhere to close</div>
         </div>
@@ -2565,16 +4485,46 @@ export default function App() {
 
       {/* ── GUEST ACCESS LOCK LOGIN REQUIRED MODAL ── */}
       {showGuestModal && (
-        <div id="guestModal" className="modal" onClick={(e) => { if ((e.target as HTMLElement).id === 'guestModal') setShowGuestModal(false); }}>
+        <div
+          id="guestModal"
+          className="modal"
+          onClick={(e) => {
+            if ((e.target as HTMLElement).id === "guestModal")
+              setShowGuestModal(false);
+          }}
+        >
           <div className="modal-content">
             <div className="modal-icon">🔒</div>
             <h2>Login Required</h2>
-            <p>Please login or sign up to unlock the full features of FindTrack!</p>
+            <p>
+              Please login or sign up to unlock the full features of FindTrack!
+            </p>
             <div className="modal-buttons">
-              <button onClick={() => { setShowGuestModal(false); setCurrentView('login'); }} className="modal-btn primary"><Lock className="h-4 w-4 inline mr-1" /> Login</button>
-              <button onClick={() => { setShowGuestModal(false); setCurrentView('signup'); }} className="modal-btn secondary"><UserPlus className="h-4 w-4 inline mr-1" /> Sign Up</button>
+              <button
+                onClick={() => {
+                  setShowGuestModal(false);
+                  setCurrentView("login");
+                }}
+                className="modal-btn primary"
+              >
+                <Lock className="h-4 w-4 inline mr-1" /> Login
+              </button>
+              <button
+                onClick={() => {
+                  setShowGuestModal(false);
+                  setCurrentView("signup");
+                }}
+                className="modal-btn secondary"
+              >
+                <UserPlus className="h-4 w-4 inline mr-1" /> Sign Up
+              </button>
             </div>
-            <button onClick={() => setShowGuestModal(false)} className="modal-close">Maybe later</button>
+            <button
+              onClick={() => setShowGuestModal(false)}
+              className="modal-close"
+            >
+              Maybe later
+            </button>
           </div>
         </div>
       )}
@@ -2588,7 +4538,6 @@ export default function App() {
           onSelectChat={(id) => setActiveChatId(id)}
         />
       )}
-
     </div>
   );
 }
@@ -2598,18 +4547,46 @@ function computeMatchScore(a: any, b: any) {
   if (a.type === b.type) return 0;
   if (a.claimed || b.claimed) return 0;
 
-  const textA = `${a.title} ${a.desc || a.description || ""} ${a.location}`.toLowerCase();
-  const textB = `${b.title} ${b.desc || b.description || ""} ${b.location}`.toLowerCase();
+  const textA =
+    `${a.title} ${a.desc || a.description || ""} ${a.location}`.toLowerCase();
+  const textB =
+    `${b.title} ${b.desc || b.description || ""} ${b.location}`.toLowerCase();
 
-  const stopWords = new Set(["a", "an", "the", "my", "i", "is", "at", "in", "on", "of", "and", "or", "was", "it", "this", "that", "with", "for", "to"]);
-  const tokenise = (t: string) => t.replace(/[^a-z0-9\s]/g, "").split(/\s+/).filter(w => w.length > 2 && !stopWords.has(w));
+  const stopWords = new Set([
+    "a",
+    "an",
+    "the",
+    "my",
+    "i",
+    "is",
+    "at",
+    "in",
+    "on",
+    "of",
+    "and",
+    "or",
+    "was",
+    "it",
+    "this",
+    "that",
+    "with",
+    "for",
+    "to",
+  ]);
+  const tokenise = (t: string) =>
+    t
+      .replace(/[^a-z0-9\s]/g, "")
+      .split(/\s+/)
+      .filter((w) => w.length > 2 && !stopWords.has(w));
 
   const tA = new Set(tokenise(textA));
   const tB = new Set(tokenise(textB));
   if (tA.size === 0 || tB.size === 0) return 0;
 
   let shared = 0;
-  tA.forEach(w => { if (tB.has(w)) shared++; });
+  tA.forEach((w) => {
+    if (tB.has(w)) shared++;
+  });
 
   // Jaccard similarity
   const union = new Set([...Array.from(tA), ...Array.from(tB)]).size;
@@ -2618,7 +4595,12 @@ function computeMatchScore(a: any, b: any) {
   // Location bonus
   const locA = (a.location || "").toLowerCase();
   const locB = (b.location || "").toLowerCase();
-  const locBonus = (locA && locB && (locA.includes(locB.slice(0, 5)) || locB.includes(locA.slice(0, 5)))) ? 0.15 : 0;
+  const locBonus =
+    locA &&
+    locB &&
+    (locA.includes(locB.slice(0, 5)) || locB.includes(locA.slice(0, 5)))
+      ? 0.15
+      : 0;
 
   return Math.min(1, jaccard + locBonus);
 }
