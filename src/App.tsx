@@ -72,7 +72,7 @@ import {
   Handshake,
   Filter,
   Clock,
-  Menu,
+  Menu, Grid,
   ArrowLeft, Share, Bot, RefreshCw, BadgeCheck, MessageSquare, Gavel, Shield , Scan , Settings , AlertTriangle, Star, Heart, TrendingUp, ArrowDownUp, FileText, Image as ImageIcon } from "lucide-react"
 import { uploadToCloudinary } from "./lib/cloudinary";
 
@@ -206,6 +206,7 @@ export default function App() {
   // Profile data
   const [profileName, setProfileName] = useState("Student");
   const [profileLocation, setProfileLocation] = useState("");
+  const [profileBio, setProfileBio] = useState("");
   const [notifications, setNotifications] = useState<any[]>([]);
   const markAlertRead = (id: string) => setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
   const markAllAlertsRead = () => setNotifications(prev => prev.map(n => ({ ...n, read: true })));
@@ -1055,9 +1056,9 @@ export default function App() {
               </div>
               <nav className="hidden md:flex items-center gap-6">
                 <button onClick={() => setCurrentView("landing")} className="text-[#01725a] border-b-2 border-[#01725a] pb-1 font-medium text-sm hover:text-[#01725a] transition-colors duration-200">Home</button>
-                <button className="text-[#666551] font-medium text-sm hover:text-[#01725a] transition-colors duration-200">How it Works</button>
-                <button className="text-[#666551] font-medium text-sm hover:text-[#01725a] transition-colors duration-200">Community</button>
-                <button className="text-[#666551] font-medium text-sm hover:text-[#01725a] transition-colors duration-200">Safety</button>
+                <button onClick={() => setCurrentView("help")} className="text-[#666551] font-medium text-sm hover:text-[#01725a] transition-colors duration-200">How it Works</button>
+                <button onClick={() => setCurrentView("about")} className="text-[#666551] font-medium text-sm hover:text-[#01725a] transition-colors duration-200">Community</button>
+                <button onClick={() => setCurrentView("safety")} className="text-[#666551] font-medium text-sm hover:text-[#01725a] transition-colors duration-200">Safety</button>
               </nav>
               <div className="flex items-center gap-4">
                 <button onClick={() => setCurrentView("login")} className="hidden md:block text-[#666551] font-medium text-sm hover:text-[#01725a] transition-colors duration-200 scale-95 active:scale-90">Login</button>
@@ -1076,10 +1077,10 @@ export default function App() {
           {/* Mobile Nav Dropdown */}
           {landingMenuOpen && (
             <div className="md:hidden absolute top-16 left-0 right-0 bg-white shadow-xl z-50 p-6 flex flex-col gap-4 border-b border-slate-100">
-              <button className="text-left font-medium text-slate-700 hover:text-[#01725a] py-2">Home</button>
-              <button className="text-left font-medium text-slate-700 hover:text-[#01725a] py-2">How it Works</button>
-              <button className="text-left font-medium text-slate-700 hover:text-[#01725a] py-2">Community</button>
-              <button className="text-left font-medium text-slate-700 hover:text-[#01725a] py-2">Safety</button>
+              <button onClick={() => { setCurrentView("landing"); setLandingMenuOpen(false); }} className="text-left font-medium text-slate-700 hover:text-[#01725a] py-2">Home</button>
+              <button onClick={() => { setCurrentView("help"); setLandingMenuOpen(false); }} className="text-left font-medium text-slate-700 hover:text-[#01725a] py-2">How it Works</button>
+              <button onClick={() => { setCurrentView("about"); setLandingMenuOpen(false); }} className="text-left font-medium text-slate-700 hover:text-[#01725a] py-2">Community</button>
+              <button onClick={() => { setCurrentView("safety"); setLandingMenuOpen(false); }} className="text-left font-medium text-slate-700 hover:text-[#01725a] py-2">Safety</button>
               <hr className="border-slate-100 my-2" />
               <button 
                 onClick={() => {
@@ -2258,6 +2259,13 @@ export default function App() {
       {/* ── VIEW 4: MAIN DASHBOARD PORTAL ── */}
       {currentView === "dashboard" && (
         <div className="flex h-[100dvh] bg-surface-container-lowest text-on-surface font-body-md overflow-hidden">
+          {/* Mobile Sidebar Overlay */}
+          {sidebarOpen && (
+            <div 
+              className="fixed inset-0 bg-black/50 z-40 md:hidden" 
+              onClick={() => setSidebarOpen(false)}
+            />
+          )}
           {/* SIDEBAR (Desktop) */}
           <aside className={`fixed md:relative z-50 flex flex-col w-64 h-full bg-primary text-on-primary shadow-md transition-transform transform ${sidebarOpen ? "translate-x-0" : "-translate-x-full"} md:translate-x-0`}>
             {/* Brand Header & Avatar */}
@@ -2284,13 +2292,21 @@ export default function App() {
                 { id: "home", label: "Dashboard", icon: Home },
                 { id: "search", label: "Item Listings", icon: FileSearch },
                 { id: "report", label: "Report Item", icon: PlusCircle },
-                { id: "analytics", label: "Analytics", icon: PenTool },
-                { id: "settings", label: "Settings", icon: Settings } // Using a placeholder icon for settings since we might not have Settings icon
+                { id: "search", label: "Search", icon: Search },
+                { id: "notifications", label: "Alerts", icon: Bell },
+                { id: "profile", label: "Profile", icon: UserIcon },
+                { id: "myitems", label: "My Items", icon: Package },
+                { id: "pinned", label: "Pinned Items", icon: Tag },
+                { id: "categories", label: "Categories", icon: Grid },
+                { id: "analytics", label: "Analytics", icon: TrendingUp },
+                { id: "tips", label: "Recovery Tips", icon: Lightbulb },
+                { id: "packaging", label: "Packaging Tips", icon: PackageCheck },
+                { id: "about", label: "About/Help", icon: Info }
               ].map((item) => (
                 <button
-                  key={item.id}
+                  key={item.label}
                   onClick={() => {
-                    if (profileName === "Guest" && ["report", "analytics", "settings"].includes(item.id)) {
+                    if (profileName === "Guest" && ["report", "analytics", "profile", "myitems", "pinned"].includes(item.id)) {
                       setShowGuestModal(true);
                     } else {
                       // Map the labels to the existing tabs if they differ
@@ -2393,7 +2409,7 @@ export default function App() {
 
             {/* MAIN PANELS INJECTION DESK */}
 
-          <main className="flex-1 overflow-y-auto bg-surface-container-low p-4 md:p-6 lg:p-8 relative">
+          <main className="flex-1 overflow-y-auto bg-surface-container-low p-4 pb-28 md:p-6 lg:p-8 relative">
             {/* PANEL: HOME */}
             <section
               id="home"
@@ -2418,7 +2434,7 @@ export default function App() {
                   <div className="bg-[#D3E8E5] p-5 rounded-2xl flex flex-col items-center justify-center text-center shadow-sm">
                     <Users className="w-8 h-8 text-[#1A7B72] mb-3" strokeWidth={1.5} />
                     <div className="text-sm font-medium text-[#15605A] leading-tight mb-1">Community<br/>Members:</div>
-                    <div className="text-3xl font-bold text-[#1A7B72]">250+</div>
+                    <div className="text-3xl font-bold text-[#1A7B72]">{new Set(items.map(i => i.userId).filter(Boolean)).size || 1}</div>
                   </div>
                   <div className="bg-[#D3E8E5] p-5 rounded-2xl flex flex-col items-center justify-center text-center shadow-sm">
                     <CheckSquare className="w-8 h-8 text-[#1A7B72] mb-3" strokeWidth={1.5} />
@@ -2446,28 +2462,10 @@ export default function App() {
                   {/* Private Messages */}
                   <div className="bg-white rounded-3xl p-6 shadow-sm border border-slate-100 flex flex-col h-full">
                     <h2 className="text-xl font-bold text-slate-900 mb-6">Private Messages</h2>
-                    <div className="space-y-4 overflow-y-auto flex-1 pr-2">
-                      <div className="flex gap-4">
-                        <div className="w-10 h-10 rounded-full bg-teal-100 flex items-center justify-center text-teal-700 font-bold shrink-0">JS</div>
-                        <div className="bg-slate-100 rounded-2xl rounded-tl-none p-3 text-sm text-slate-700">
-                          <div className="font-bold mb-1">Juan S.</div>
-                          - Hi, I think I found your item... We actually dropped this item around your area?
-                        </div>
-                      </div>
-                      <div className="flex gap-4">
-                        <div className="w-10 h-10 rounded-full bg-teal-100 flex items-center justify-center text-teal-700 font-bold shrink-0">MD</div>
-                        <div className="bg-[#D3E8E5] rounded-2xl rounded-tl-none p-3 text-sm text-slate-700">
-                          <div className="font-bold mb-1">Maria D.</div>
-                          - Can you confirm the location... near a north store?
-                        </div>
-                      </div>
-                      <div className="flex gap-4">
-                        <div className="w-10 h-10 rounded-full bg-teal-100 flex items-center justify-center text-teal-700 font-bold shrink-0">LG</div>
-                        <div className="bg-slate-100 rounded-2xl rounded-tl-none p-3 text-sm text-slate-700">
-                          <div className="font-bold mb-1">Leo G.</div>
-                          - New match for your report... Step up now, speaker!
-                        </div>
-                      </div>
+                    <div className="space-y-4 overflow-y-auto flex-1 pr-2 flex items-center justify-center flex-col text-slate-500">
+                      <MessageSquare className="h-12 w-12 mb-3 text-slate-300" />
+                      <p className="text-sm font-medium">No messages yet</p>
+                      <p className="text-xs text-center mt-1">When someone contacts you about your reported item, it will appear here.</p>
                     </div>
                   </div>
               </div>
@@ -3338,7 +3336,7 @@ export default function App() {
                                 <span className="inline-flex items-center px-3 py-1 rounded-full bg-secondary-fixed-dim text-on-secondary-fixed font-label-md text-[11px]">
                                   <CheckCircle2 className="h-3 w-3 mr-1" /> Closed
                                 </span>
-                                <button className="text-secondary hover:underline font-label-md text-sm">View details</button>
+                                <button onClick={() => { if (notif.itemId) { setSelectedItemId(notif.itemId); setActiveTab("itemDetail"); } }} className="text-secondary hover:underline font-label-md text-sm">View details</button>
                               </div>
                             )}
                           </div>
@@ -3414,10 +3412,10 @@ export default function App() {
                               </span>
                             </div>
                             <p className="mt-4 font-body-md text-on-surface-variant max-w-2xl">
-                              "Dedicated to keeping our community connected."
+                              {profileBio || "Update your profile to add a bio."}
                             </p>
                           </div>
-                          <button className="bg-surface-container-high border border-outline-variant text-on-surface hover:bg-surface-variant px-4 py-2 rounded-lg font-label-md text-sm transition-colors flex items-center justify-center gap-2 shadow-sm shrink-0 w-full md:w-auto">
+                          <button onClick={() => document.getElementById("profName")?.focus()} className="bg-surface-container-high border border-outline-variant text-on-surface hover:bg-surface-variant px-4 py-2 rounded-lg font-label-md text-sm transition-colors flex items-center justify-center gap-2 shadow-sm shrink-0 w-full md:w-auto">
                             <Settings className="h-[18px] w-[18px]" />
                             Edit Profile
                           </button>
@@ -3444,13 +3442,7 @@ export default function App() {
                           <span className="block font-headline-lg text-secondary text-3xl mb-1">{items.filter(i => i.userId === auth.currentUser?.uid && i.claimed).length}</span>
                           <span className="font-label-md text-on-surface-variant uppercase tracking-wide text-[10px]">Reunited</span>
                         </div>
-                        <div className="bg-surface-container rounded-lg p-4 text-center col-span-2 flex items-center justify-center gap-3">
-                          <div>
-                            <span className="block font-headline-lg text-tertiary text-2xl mb-1">Top {Math.max(1, 100 - items.filter(i => i.userId === auth.currentUser?.uid).length * 5)}%</span>
-                            <span className="font-label-md text-on-surface-variant uppercase tracking-wide text-[10px]">Local Finders</span>
-                          </div>
-                          <TrendingUp className="h-8 w-8 text-tertiary opacity-50" />
-                        </div>
+                        
                       </div>
                     </div>
                   </div>
@@ -3475,6 +3467,18 @@ export default function App() {
                               onChange={(e) => setProfileName(e.target.value)}
                             />
                           </div>
+                        </div>
+                        
+                        <div className="md:col-span-2">
+                          <label className="block font-label-md text-sm text-on-surface-variant mb-2" htmlFor="profBio">Bio</label>
+                          <textarea 
+                            className="w-full bg-surface-container-lowest border border-outline rounded-lg p-3 text-on-surface focus:ring-2 focus:ring-primary focus:border-primary transition-shadow font-body-md" 
+                            id="profBio" 
+                            rows={3}
+                            placeholder="Tell the community a bit about yourself..."
+                            value={profileBio}
+                            onChange={(e) => setProfileBio(e.target.value)}
+                          ></textarea>
                         </div>
                         
                         <div className="md:col-span-2">
@@ -3587,7 +3591,7 @@ export default function App() {
                           <h3 className="font-headline-md text-lg font-semibold">Security</h3>
                         </div>
                         <div className="space-y-4">
-                          <button className="w-full flex items-center justify-between p-4 rounded-lg border border-outline-variant hover:bg-surface-variant transition-colors group">
+                          <button onClick={async () => { if (auth.currentUser?.email) { try { const { sendPasswordResetEmail } = await import("firebase/auth"); await sendPasswordResetEmail(auth, auth.currentUser.email); triggerToast("Password reset email sent", "success"); } catch (e) { triggerToast("Failed to send reset email", "error"); } } else { triggerToast("No email associated with account", "error"); } }} className="w-full flex items-center justify-between p-4 rounded-lg border border-outline-variant hover:bg-surface-variant transition-colors group">
                             <div className="flex items-center gap-3 text-left">
                               <Key className="h-5 w-5 text-on-surface-variant" />
                               <div>
