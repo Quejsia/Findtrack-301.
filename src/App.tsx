@@ -176,6 +176,8 @@ export default function App() {
   const [showGuestModal, setShowGuestModal] = useState(false);
   const [guestBannerDismissed, setGuestBannerDismissed] = useState(false);
   const [activeChatId, setActiveChatId] = useState<string | null>(null);
+  const [showRefererModal, setShowRefererModal] = useState(false);
+  const [refererBlockedDomain, setRefererBlockedDomain] = useState("");
 
   // Dashboard inputs
   const [reportStep, setReportStep] = useState(1);
@@ -385,6 +387,28 @@ export default function App() {
     return () => window.removeEventListener("popstate", handlePopState);
   }, [user]);
 
+  // 1.5. Automatic email verification polling when on verify-email view
+  useEffect(() => {
+    if (currentView !== "verify-email") return;
+
+    const interval = setInterval(async () => {
+      try {
+        if (auth.currentUser) {
+          await auth.currentUser.reload();
+          if (auth.currentUser.emailVerified) {
+            await auth.currentUser.getIdToken(true);
+            triggerToast("✅ Email verified automatically!", "success");
+            setCurrentView("dashboard");
+          }
+        }
+      } catch (e) {
+        console.error("Auto verification check failed:", e);
+      }
+    }, 3000);
+
+    return () => clearInterval(interval);
+  }, [currentView, user]);
+
   // 2. Real-time Firestore Sync of items / reports
   useEffect(() => {
     const reportsCollection = collection(db, "items"); // Rules define items matching
@@ -515,6 +539,13 @@ export default function App() {
     } catch (err: any) {
       console.error("SignIn error:", err);
       if (
+        err.message?.includes("requests-from-referer") ||
+        err.code?.includes("requests-from-referer")
+      ) {
+        setRefererBlockedDomain(window.location.hostname);
+        setShowRefererModal(true);
+        triggerToast("⚠️ Domain not authorized in Firebase Console.", "error");
+      } else if (
         err.code === "auth/invalid-credential" ||
         err.code === "auth/user-not-found" ||
         err.code === "auth/wrong-password"
@@ -586,7 +617,7 @@ export default function App() {
       // Automatically send a verification email using Firebase sendEmailVerification()
       try {
         const actionCodeSettings = {
-          url: "https://find-track-6kzf.vercel.app",
+          url: window.location.origin,
           handleCodeInApp: false,
         };
         await sendEmailVerification(credentials.user, actionCodeSettings);
@@ -612,6 +643,13 @@ export default function App() {
       console.error("SignUp error:", err);
       if (err.code === "auth/email-already-in-use") {
         triggerToast("❌ Email already registered.", "error");
+      } else if (
+        err.message?.includes("requests-from-referer") ||
+        err.code?.includes("requests-from-referer")
+      ) {
+        setRefererBlockedDomain(window.location.hostname);
+        setShowRefererModal(true);
+        triggerToast("⚠️ Domain not authorized in Firebase Console.", "error");
       } else {
         triggerToast(
           "❌ Signup failed: " + (err.message || err.code || "Try again."),
@@ -1250,6 +1288,27 @@ export default function App() {
               <p className="font-body-lg text-lg text-on-surface-variant">Welcome back to the community.</p>
             </div>
 
+            {(!["localhost", "127.0.0.1"].includes(window.location.hostname) &&
+              !window.location.hostname.endsWith(".run.app") &&
+              !window.location.hostname.endsWith(".web.app") &&
+              !window.location.hostname.endsWith(".firebaseapp.com")) && (
+              <div 
+                onClick={() => {
+                  setRefererBlockedDomain(window.location.hostname);
+                  setShowRefererModal(true);
+                }}
+                className="mb-6 p-3 bg-amber-50 hover:bg-amber-100 border border-amber-200 rounded-xl flex items-start gap-2.5 cursor-pointer transition-colors text-left text-xs text-amber-900 shadow-sm"
+              >
+                <span className="text-sm shrink-0">⚠️</span>
+                <div>
+                  <p className="font-semibold mb-0.5">Custom Domain Configuration</p>
+                  <p className="text-amber-800 leading-normal">
+                    Using a custom domain like <span className="font-mono bg-amber-100/50 px-1 py-0.5 rounded">{window.location.hostname}</span>? Ensure it is authorized in Firebase. <strong className="underline font-semibold block mt-1">View authorization steps →</strong>
+                  </p>
+                </div>
+              </div>
+            )}
+
             {/* Form */}
             <form onSubmit={handleLoginSubmit} name="login" className="space-y-6">
               {/* Email Field */}
@@ -1361,6 +1420,27 @@ export default function App() {
                 </button>
               </p>
             </div>
+
+            {(!["localhost", "127.0.0.1"].includes(window.location.hostname) &&
+              !window.location.hostname.endsWith(".run.app") &&
+              !window.location.hostname.endsWith(".web.app") &&
+              !window.location.hostname.endsWith(".firebaseapp.com")) && (
+              <div 
+                onClick={() => {
+                  setRefererBlockedDomain(window.location.hostname);
+                  setShowRefererModal(true);
+                }}
+                className="mb-4 p-3 bg-amber-50 hover:bg-amber-100 border border-amber-200 rounded-xl flex items-start gap-2.5 cursor-pointer transition-colors text-left text-xs text-amber-900 shadow-sm"
+              >
+                <span className="text-sm shrink-0">⚠️</span>
+                <div>
+                  <p className="font-semibold mb-0.5">Custom Domain Configuration</p>
+                  <p className="text-amber-800 leading-normal">
+                    Using a custom domain like <span className="font-mono bg-amber-100/50 px-1 py-0.5 rounded">{window.location.hostname}</span>? Ensure it is authorized in Firebase. <strong className="underline font-semibold block mt-1">View authorization steps →</strong>
+                  </p>
+                </div>
+              </div>
+            )}
 
             {/* Form */}
             <form onSubmit={handleSignupSubmit} name="signup" className="space-y-4">
@@ -1542,7 +1622,7 @@ export default function App() {
                   try {
                     if (auth.currentUser) {
                       const actionCodeSettings = {
-                        url: "https://find-track-6kzf.vercel.app",
+                        url: window.location.origin,
                         handleCodeInApp: false,
                       };
                       await sendEmailVerification(
@@ -4511,6 +4591,87 @@ export default function App() {
             >
               Maybe later
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* ── REFERER DOMAIN BLOCKED EXPLANATION MODAL ── */}
+      {showRefererModal && (
+        <div 
+          className="fixed inset-0 flex items-center justify-center p-4 z-[1001] bg-slate-900/60 backdrop-blur-sm"
+          style={{ height: '100dvh' }}
+        >
+          <div className="relative w-full max-w-lg flex flex-col bg-white rounded-2xl shadow-2xl border border-slate-100 max-h-[85dvh]">
+            {/* Header */}
+            <div className="p-6 border-b border-slate-100 flex items-center justify-between shrink-0 bg-gradient-to-r from-teal-700 to-teal-900 rounded-t-2xl text-white">
+              <div className="flex items-center gap-2">
+                <span className="text-xl">⚠️</span>
+                <h3 className="text-lg font-bold">Domain Security Authorization Required</h3>
+              </div>
+              <button 
+                onClick={() => setShowRefererModal(false)}
+                className="text-white/80 hover:text-white bg-white/10 hover:bg-white/20 p-1.5 rounded-full transition-colors text-sm"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Content (Scrollable) */}
+            <div className="p-6 flex-1 overflow-y-auto space-y-4 text-slate-700 text-sm leading-relaxed">
+              <p className="font-semibold text-slate-900">
+                You are visiting FindTrack from a custom domain: <code className="bg-amber-50 text-amber-800 px-1.5 py-0.5 rounded border border-amber-200/50 font-mono">{refererBlockedDomain || window.location.hostname}</code>
+              </p>
+              
+              <div className="bg-teal-50 border border-teal-100 p-4 rounded-xl text-teal-900 text-left">
+                <p className="font-medium mb-1">💡 Quick Fix for Users / Testers:</p>
+                <p>If you are a user trying to test FindTrack, please use the official sandbox domain of the app which is pre-authorized and works perfectly:</p>
+                <a 
+                  href="https://ais-pre-ugza3g3lajlvapecr5xph7-125820164386.asia-east1.run.app" 
+                  className="font-semibold underline block mt-1 hover:text-teal-700 font-mono break-all"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  https://ais-pre-ugza3g3lajlvapecr5xph7-125820164386.asia-east1.run.app
+                </a>
+              </div>
+
+              <div className="space-y-3 text-left">
+                <p className="font-semibold text-slate-900">🛠️ Step-by-Step Developer Guide:</p>
+                <p>If this is your own Firebase project, you must register your domain in your Firebase project console to allow authentication requests:</p>
+                
+                <ol className="list-decimal pl-5 space-y-2.5">
+                  <li>
+                    Go to the <strong><a href="https://console.firebase.google.com/" target="_blank" rel="noopener noreferrer" className="text-teal-600 font-semibold underline hover:text-teal-800">Firebase Console</a></strong> and select your project.
+                  </li>
+                  <li>
+                    In the sidebar, go to <strong>Authentication</strong>, then click the <strong>Settings</strong> tab.
+                  </li>
+                  <li>
+                    In the left settings list, click <strong>Authorized Domains</strong>.
+                  </li>
+                  <li>
+                    Click <strong>Add domain</strong> and enter: <code className="bg-slate-100 px-1.5 py-0.5 rounded font-mono text-xs">{refererBlockedDomain || window.location.hostname}</code>
+                  </li>
+                  <li>
+                    <strong>GCP API Key restriction (Optional):</strong> If you restricted your API Key in the <a href="https://console.cloud.google.com/apis/credentials" target="_blank" rel="noopener noreferrer" className="text-teal-600 font-semibold underline hover:text-teal-800">Google Cloud Console</a> by HTTP Referer, make sure to add <code className="bg-slate-100 px-1.5 py-0.5 rounded font-mono text-xs">https://{refererBlockedDomain || window.location.hostname}/*</code> to your allowed HTTP referers.
+                  </li>
+                </ol>
+              </div>
+
+              <div className="p-3 bg-slate-50 border border-slate-100 rounded-lg text-slate-500 text-xs text-left">
+                Once added, Firebase propagates changes within 30-60 seconds. You will then be able to register and login securely from this custom domain!
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className="p-4 bg-slate-50 border-t border-slate-100 flex justify-end shrink-0 rounded-b-2xl">
+              <button
+                onClick={() => setShowRefererModal(false)}
+                className="px-5 py-2 bg-slate-200 hover:bg-slate-300 text-slate-800 font-semibold rounded-lg transition-colors text-xs"
+              >
+                Close & Got It
+              </button>
+            </div>
           </div>
         </div>
       )}
