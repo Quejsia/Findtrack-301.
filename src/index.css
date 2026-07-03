@@ -93,7 +93,7 @@ body {
 /* ── IMMERSIVE BACKGROUND SCENE (Landing & Auth pages) ── */
 .bg-scene {
   position: fixed; inset: 0; z-index: 0;
-  background: linear-gradient(145deg, #001f5c 0%, #0038A8 40%, #8a0b19 70%, #CE1126 100%);
+  background: #fdfae7;
 }
 .bg-orb {
   position: absolute; border-radius: 50%; filter: blur(80px); opacity: 0.45;

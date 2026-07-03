@@ -1036,12 +1036,7 @@ export default function App() {
       {(currentView === "login" ||
         currentView === "signup" ||
         currentView === "verify-email") && (
-        <div className="bg-scene">
-          <div className="bg-orb"></div>
-          <div className="bg-orb"></div>
-          <div className="bg-orb"></div>
-          <div className="bg-grid"></div>
-        </div>
+        <div className="fixed inset-0 bg-[#fdfae7] z-0"></div>
       )}
 
       {/* ── VIEW 1: LANDING PAGE ── */}
@@ -1239,7 +1234,7 @@ export default function App() {
       )}
       {/* ── VIEW 2: LOGIN PAGE ── */}
       {currentView === "login" && (
-        <div className="bg-surface-container min-h-screen flex items-center justify-center p-4 md:p-8 font-body-md text-on-surface">
+        <div className="min-h-screen flex items-center justify-center p-4 md:p-8 font-body-md text-on-surface relative z-10">
           {/* Decorative Background Elements */}
           <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
             <div className="absolute -top-40 -right-40 w-96 h-96 bg-primary-container rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-pulse"></div>
@@ -1248,7 +1243,7 @@ export default function App() {
           </div>
 
           {/* Login Card */}
-          <main className="bg-white/85 backdrop-blur-[12px] border border-white/50 shadow-[0_8px_32px_0_rgba(1,114,90,0.05)] w-full max-w-md rounded-xl p-8 relative z-10">
+          <main className="bg-white border border-outline-variant/30 shadow-[0_8px_32px_0_rgba(1,114,90,0.05)] w-full max-w-[400px] rounded-xl p-8 relative z-10">
             {/* Header */}
             <div className="text-center mb-8">
               <h1 className="font-headline-lg text-4xl text-primary mb-3 cursor-pointer" onClick={() => setCurrentView("landing")}>FindTrack</h1>
@@ -1256,7 +1251,7 @@ export default function App() {
             </div>
 
             {/* Form */}
-            <form onSubmit={handleLoginSubmit} className="space-y-6">
+            <form onSubmit={handleLoginSubmit} name="login" className="space-y-6">
               {/* Email Field */}
               <div>
                 <label className="block font-label-md text-sm text-on-surface mb-1" htmlFor="email">Email Address</label>
@@ -1269,6 +1264,7 @@ export default function App() {
                     placeholder="you@example.com" 
                     required 
                     type="email"
+                    autoComplete="email"
                     value={authEmail}
                     onChange={(e) => setAuthEmail(e.target.value)}
                   />
@@ -1287,6 +1283,7 @@ export default function App() {
                     placeholder="••••••••" 
                     required 
                     type={showPass ? "text" : "password"}
+                    autoComplete="current-password"
                     value={authPassword}
                     onChange={(e) => setAuthPass(e.target.value)}
                   />
@@ -1340,154 +1337,139 @@ export default function App() {
 
       {/* ── VIEW 3: SIGNUP PAGE ── */}
       {currentView === "signup" && (
-        <div className="bg-surface text-on-surface min-h-screen flex">
-          <div className="flex flex-1 flex-col lg:flex-row w-full">
-            {/* Left Side: Brand/Image */}
-            <div className="relative hidden w-full flex-1 lg:flex flex-col bg-primary justify-center items-center overflow-hidden">
-              <div className="absolute inset-0 z-0">
-                <img 
-                  className="w-full h-full object-cover opacity-40 mix-blend-overlay" 
-                  alt="Community gathering" 
-                  src="https://lh3.googleusercontent.com/aida-public/AB6AXuCvRFZSJBgEE2S4kkhaO3FQG94HOqflWeXoL7sWVnj0cOhd4whz01siH4EXJov53DfuShTq2v0BMqFvJoJkj_0tkmbaPPG8jWsm6SnnwXQ5o_2JqORb_gsB2IzZs3U31vlcGuPJ2_kSrom8AQj1y9o2Wn7pTAxfxxqxBatxF_0Qpck-1QipkaPBlFHQoBbWRXVj5iegysuvvce_AMs_OV4xTQfQbuZfw6pSuCirbU4wFv5VodyyiV-dwn93gHRSx1XEY15EVt6l3A"
+        <div className="min-h-screen flex items-center justify-center p-4 md:p-8 font-body-md text-on-surface relative z-10">
+          {/* Decorative Background Elements */}
+          <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
+            <div className="absolute -top-40 -right-40 w-96 h-96 bg-primary-container rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-pulse"></div>
+            <div className="absolute top-40 -left-20 w-72 h-72 bg-secondary-container rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-pulse" style={{animationDelay: '2s'}}></div>
+            <div className="absolute -bottom-40 left-20 w-80 h-80 bg-tertiary-container rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse" style={{animationDelay: '4s'}}></div>
+          </div>
+
+          {/* Signup Card */}
+          <main className="bg-white border border-outline-variant/30 shadow-[0_8px_32px_0_rgba(1,114,90,0.05)] w-full max-w-[400px] rounded-xl p-8 relative z-10">
+            {/* Header */}
+            <div className="text-center mb-6">
+              <h1 className="font-headline-lg text-4xl text-primary mb-3 cursor-pointer" onClick={() => setCurrentView("landing")}>FindTrack</h1>
+              <h2 className="font-headline-md text-2xl font-bold text-on-surface">Create an account</h2>
+              <p className="font-body-md text-sm text-on-surface-variant mt-1">
+                Already a member?{" "}
+                <button 
+                  onClick={() => setCurrentView("login")}
+                  className="font-semibold text-primary hover:underline transition-colors"
+                >
+                  Login here
+                </button>
+              </p>
+            </div>
+
+            {/* Form */}
+            <form onSubmit={handleSignupSubmit} name="signup" className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block font-label-md text-xs text-on-surface mb-1" htmlFor="firstName">First Name</label>
+                  <input 
+                    id="firstName" 
+                    name="firstName" 
+                    type="text" 
+                    required 
+                    autoComplete="given-name"
+                    value={signupFirst}
+                    onChange={(e) => setSignupFirst(e.target.value)}
+                    className="block w-full rounded-lg border border-outline-variant/60 py-2.5 px-3 bg-surface-container-low shadow-sm placeholder:text-outline focus:border-primary focus:ring-1 focus:ring-primary outline-none font-body-md transition-shadow text-sm"
+                  />
+                </div>
+                <div>
+                  <label className="block font-label-md text-xs text-on-surface mb-1" htmlFor="lastName">Last Name</label>
+                  <input 
+                    id="lastName" 
+                    name="lastName" 
+                    type="text" 
+                    required 
+                    autoComplete="family-name"
+                    value={signupLast}
+                    onChange={(e) => setSignupLast(e.target.value)}
+                    className="block w-full rounded-lg border border-outline-variant/60 py-2.5 px-3 bg-surface-container-low shadow-sm placeholder:text-outline focus:border-primary focus:ring-1 focus:ring-primary outline-none font-body-md transition-shadow text-sm"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block font-label-md text-xs text-on-surface mb-1" htmlFor="email">Email address</label>
+                <input 
+                  id="email" 
+                  name="email" 
+                  type="email" 
+                  required 
+                  autoComplete="email"
+                  value={authEmail}
+                  onChange={(e) => setAuthEmail(e.target.value)}
+                  className="block w-full rounded-lg border border-outline-variant/60 py-2.5 px-3 bg-surface-container-low shadow-sm placeholder:text-outline focus:border-primary focus:ring-1 focus:ring-primary outline-none font-body-md transition-shadow text-sm"
                 />
               </div>
-              <div className="absolute inset-0 bg-gradient-to-t from-primary/90 to-primary/20 z-10"></div>
-              <div className="relative z-20 flex flex-col items-center text-center px-12 max-w-2xl">
-                <div className="mb-8 p-4 bg-surface/10 rounded-2xl backdrop-blur-sm border border-surface/20">
-                  <span className="material-symbols-outlined text-on-primary text-6xl" style={{fontVariationSettings: "'FILL' 1"}}>volunteer_activism</span>
-                </div>
-                <h1 className="font-headline-lg text-4xl text-on-primary mb-6">Join the Community</h1>
-                <p className="font-body-lg text-lg text-primary-fixed-dim">
-                  FindTrack brings people together to recover lost items and build trust. Start your journey with our supportive network today.
-                </p>
+
+              <div>
+                <label className="block font-label-md text-xs text-on-surface mb-1" htmlFor="phone">Phone Number (Optional)</label>
+                <input 
+                  id="phone" 
+                  name="phone" 
+                  type="tel" 
+                  value={signupContact}
+                  onChange={(e) => setSignupContact(e.target.value)}
+                  className="block w-full rounded-lg border border-outline-variant/60 py-2.5 px-3 bg-surface-container-low shadow-sm placeholder:text-outline focus:border-primary focus:ring-1 focus:ring-primary outline-none font-body-md transition-shadow text-sm"
+                />
               </div>
-            </div>
 
-            {/* Right Side: Sign Up Form */}
-            <div className="flex flex-1 flex-col justify-center px-4 py-12 sm:px-6 lg:flex-none lg:px-20 xl:px-24 bg-surface">
-              <div className="mx-auto w-full max-w-sm lg:w-96">
-                <div>
-                  <h2 className="mt-8 font-headline-lg text-4xl text-on-surface">Create an account</h2>
-                  <p className="mt-2 font-body-md text-on-surface-variant">
-                    Already a member?{" "}
-                    <button 
-                      onClick={() => setCurrentView("login")}
-                      className="font-label-md text-sm font-semibold text-primary hover:text-primary-dim transition-colors"
-                    >
-                      Login here
-                    </button>
-                  </p>
-                </div>
-
-                <div className="mt-10">
-                  <div>
-                    <form onSubmit={handleSignupSubmit} className="space-y-6">
-                      <div className="flex flex-col sm:flex-row gap-4">
-                        <div className="w-full">
-                          <label className="block font-label-md text-sm text-on-surface mb-2" htmlFor="firstName">First Name</label>
-                          <input 
-                            id="firstName" 
-                            name="firstName" 
-                            type="text" 
-                            required 
-                            value={signupFirst}
-                            onChange={(e) => setSignupFirst(e.target.value)}
-                            className="block w-full rounded-lg border-0 py-3 px-4 text-on-surface bg-surface-container-low shadow-sm ring-1 ring-inset ring-outline-variant placeholder:text-outline focus:ring-2 focus:ring-inset focus:ring-primary font-body-md transition-shadow"
-                          />
-                        </div>
-                        <div className="w-full">
-                          <label className="block font-label-md text-sm text-on-surface mb-2" htmlFor="lastName">Last Name</label>
-                          <input 
-                            id="lastName" 
-                            name="lastName" 
-                            type="text" 
-                            required 
-                            value={signupLast}
-                            onChange={(e) => setSignupLast(e.target.value)}
-                            className="block w-full rounded-lg border-0 py-3 px-4 text-on-surface bg-surface-container-low shadow-sm ring-1 ring-inset ring-outline-variant placeholder:text-outline focus:ring-2 focus:ring-inset focus:ring-primary font-body-md transition-shadow"
-                          />
-                        </div>
-                      </div>
-
-                      <div>
-                        <label className="block font-label-md text-sm text-on-surface mb-2" htmlFor="email">Email address</label>
-                        <input 
-                          id="email" 
-                          name="email" 
-                          type="email" 
-                          required 
-                          value={authEmail}
-                          onChange={(e) => setAuthEmail(e.target.value)}
-                          className="block w-full rounded-lg border-0 py-3 px-4 text-on-surface bg-surface-container-low shadow-sm ring-1 ring-inset ring-outline-variant placeholder:text-outline focus:ring-2 focus:ring-inset focus:ring-primary font-body-md transition-shadow"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block font-label-md text-sm text-on-surface mb-2" htmlFor="phone">Phone Number (Optional)</label>
-                        <input 
-                          id="phone" 
-                          name="phone" 
-                          type="tel" 
-                          value={signupContact}
-                          onChange={(e) => setSignupContact(e.target.value)}
-                          className="block w-full rounded-lg border-0 py-3 px-4 text-on-surface bg-surface-container-low shadow-sm ring-1 ring-inset ring-outline-variant placeholder:text-outline focus:ring-2 focus:ring-inset focus:ring-primary font-body-md transition-shadow"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block font-label-md text-sm text-on-surface mb-2" htmlFor="password">Password</label>
-                        <div className="relative">
-                          <input 
-                            id="password" 
-                            name="password" 
-                            type={showPass ? "text" : "password"}
-                            required 
-                            value={authPassword}
-                            onChange={(e) => setAuthPass(e.target.value)}
-                            className="block w-full rounded-lg border-0 py-3 px-4 text-on-surface bg-surface-container-low shadow-sm ring-1 ring-inset ring-outline-variant placeholder:text-outline focus:ring-2 focus:ring-inset focus:ring-primary font-body-md transition-shadow"
-                          />
-                          <button 
-                            type="button" 
-                            onClick={() => setShowPass(!showPass)}
-                            className="absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant hover:text-primary transition-colors focus:outline-none" 
-                          >
-                            {showPass ? (
-                              <EyeOff className="h-5 w-5" strokeWidth={1.5} />
-                            ) : (
-                              <Eye className="h-5 w-5" strokeWidth={1.5} />
-                            )}
-                          </button>
-                        </div>
-                      </div>
-
-                      <div className="flex items-center">
-                        <input 
-                          id="terms" 
-                          name="terms" 
-                          type="checkbox" 
-                          required 
-                          className="h-4 w-4 rounded border-outline-variant text-primary focus:ring-primary bg-surface-container-low"
-                        />
-                        <label className="ml-3 block font-body-md text-sm text-on-surface-variant" htmlFor="terms">
-                          I agree to the <button type="button" onClick={() => setCurrentView("terms")} className="text-primary hover:underline">Terms of Service</button> and <button type="button" onClick={() => setCurrentView("privacy")} className="text-primary hover:underline">Privacy Policy</button>.
-                        </label>
-                      </div>
-
-                      <div>
-                        <button 
-                          type="submit" 
-                          disabled={loadingAuth}
-                          className="flex w-full justify-center rounded-lg bg-primary-container px-3 py-3 font-label-md text-sm font-semibold text-on-primary-container shadow-sm hover:bg-primary-fixed focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary transition-colors disabled:opacity-70"
-                        >
-                          {loadingAuth ? "Creating Account..." : "Create Account"}
-                        </button>
-                      </div>
-                    </form>
-                  </div>
+              <div>
+                <label className="block font-label-md text-xs text-on-surface mb-1" htmlFor="password">Password</label>
+                <div className="relative">
+                  <input 
+                    id="password" 
+                    name="password" 
+                    type={showPass ? "text" : "password"}
+                    required 
+                    autoComplete="new-password"
+                    value={authPassword}
+                    onChange={(e) => setAuthPass(e.target.value)}
+                    className="block w-full rounded-lg border border-outline-variant/60 py-2.5 px-3 bg-surface-container-low shadow-sm placeholder:text-outline focus:border-primary focus:ring-1 focus:ring-primary outline-none font-body-md transition-shadow text-sm pr-10"
+                  />
+                  <button 
+                    type="button" 
+                    onClick={() => setShowPass(!showPass)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant hover:text-primary transition-colors focus:outline-none" 
+                  >
+                    {showPass ? (
+                      <EyeOff className="h-5 w-5" strokeWidth={1.5} />
+                    ) : (
+                      <Eye className="h-5 w-5" strokeWidth={1.5} />
+                    )}
+                  </button>
                 </div>
               </div>
-            </div>
-          </div>
+
+              <div className="flex items-center">
+                <input 
+                  id="terms" 
+                  name="terms" 
+                  type="checkbox" 
+                  required 
+                  className="h-4 w-4 rounded border-outline-variant text-primary focus:ring-primary bg-surface-container-low"
+                />
+                <label className="ml-3 block font-body-md text-xs text-on-surface-variant" htmlFor="terms">
+                  I agree to the <button type="button" onClick={() => setCurrentView("terms")} className="text-primary hover:underline">Terms of Service</button> and <button type="button" onClick={() => setCurrentView("privacy")} className="text-primary hover:underline">Privacy Policy</button>.
+                </label>
+              </div>
+
+              <div>
+                <button 
+                  type="submit" 
+                  disabled={loadingAuth}
+                  className="flex w-full justify-center rounded-lg bg-primary px-4 py-3 font-label-md text-sm font-semibold text-on-primary shadow-sm hover:bg-primary-dim focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary transition-colors disabled:opacity-70 mt-2"
+                >
+                  {loadingAuth ? "Creating Account..." : "Create Account"}
+                </button>
+              </div>
+            </form>
+          </main>
         </div>
       )}
 
