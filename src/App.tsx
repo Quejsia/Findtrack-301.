@@ -1251,20 +1251,20 @@ export default function App() {
             </div>
 
             {/* Form */}
-            <form onSubmit={handleLoginSubmit} name="login" className="space-y-6">
+            <form key="login-form" onSubmit={handleLoginSubmit} name="login" className="space-y-6">
               {/* Email Field */}
               <div>
-                <label className="block font-label-md text-sm text-on-surface mb-1" htmlFor="email">Email Address</label>
+                <label className="block font-label-md text-sm text-on-surface mb-1" htmlFor="login-email">Email Address</label>
                 <div className="relative">
                   <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant h-5 w-5" strokeWidth={1.5} />
                   <input 
                     className="w-full pl-10 pr-3 py-3 bg-surface-container-lowest border border-outline-variant rounded-lg font-body-md text-on-surface focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-colors" 
-                    id="email" 
+                    id="login-email" 
                     name="email" 
                     placeholder="you@example.com" 
                     required 
                     type="email"
-                    autoComplete="email"
+                    autoComplete="username"
                     value={authEmail}
                     onChange={(e) => setAuthEmail(e.target.value)}
                   />
@@ -1273,12 +1273,12 @@ export default function App() {
 
               {/* Password Field */}
               <div>
-                <label className="block font-label-md text-sm text-on-surface mb-1" htmlFor="password">Password</label>
+                <label className="block font-label-md text-sm text-on-surface mb-1" htmlFor="login-password">Password</label>
                 <div className="relative">
                   <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant h-5 w-5" strokeWidth={1.5} />
                   <input 
                     className="w-full pl-10 pr-10 py-3 bg-surface-container-lowest border border-outline-variant rounded-lg font-body-md text-on-surface focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-colors" 
-                    id="password" 
+                    id="login-password" 
                     name="password" 
                     placeholder="••••••••" 
                     required 
@@ -1363,12 +1363,12 @@ export default function App() {
             </div>
 
             {/* Form */}
-            <form onSubmit={handleSignupSubmit} name="signup" className="space-y-4">
+            <form key="signup-form" onSubmit={handleSignupSubmit} name="signup" className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block font-label-md text-xs text-on-surface mb-1" htmlFor="firstName">First Name</label>
+                  <label className="block font-label-md text-xs text-on-surface mb-1" htmlFor="signup-firstName">First Name</label>
                   <input 
-                    id="firstName" 
+                    id="signup-firstName" 
                     name="firstName" 
                     type="text" 
                     required 
@@ -1379,9 +1379,9 @@ export default function App() {
                   />
                 </div>
                 <div>
-                  <label className="block font-label-md text-xs text-on-surface mb-1" htmlFor="lastName">Last Name</label>
+                  <label className="block font-label-md text-xs text-on-surface mb-1" htmlFor="signup-lastName">Last Name</label>
                   <input 
-                    id="lastName" 
+                    id="signup-lastName" 
                     name="lastName" 
                     type="text" 
                     required 
@@ -1394,9 +1394,9 @@ export default function App() {
               </div>
 
               <div>
-                <label className="block font-label-md text-xs text-on-surface mb-1" htmlFor="email">Email address</label>
+                <label className="block font-label-md text-xs text-on-surface mb-1" htmlFor="signup-email">Email address</label>
                 <input 
-                  id="email" 
+                  id="signup-email" 
                   name="email" 
                   type="email" 
                   required 
@@ -1408,9 +1408,9 @@ export default function App() {
               </div>
 
               <div>
-                <label className="block font-label-md text-xs text-on-surface mb-1" htmlFor="phone">Phone Number (Optional)</label>
+                <label className="block font-label-md text-xs text-on-surface mb-1" htmlFor="signup-phone">Phone Number (Optional)</label>
                 <input 
-                  id="phone" 
+                  id="signup-phone" 
                   name="phone" 
                   type="tel" 
                   value={signupContact}
@@ -1420,10 +1420,10 @@ export default function App() {
               </div>
 
               <div>
-                <label className="block font-label-md text-xs text-on-surface mb-1" htmlFor="password">Password</label>
+                <label className="block font-label-md text-xs text-on-surface mb-1" htmlFor="signup-password">Password</label>
                 <div className="relative">
                   <input 
-                    id="password" 
+                    id="signup-password" 
                     name="password" 
                     type={showPass ? "text" : "password"}
                     required 
@@ -1448,13 +1448,13 @@ export default function App() {
 
               <div className="flex items-center">
                 <input 
-                  id="terms" 
+                  id="signup-terms" 
                   name="terms" 
                   type="checkbox" 
                   required 
                   className="h-4 w-4 rounded border-outline-variant text-primary focus:ring-primary bg-surface-container-low"
                 />
-                <label className="ml-3 block font-body-md text-xs text-on-surface-variant" htmlFor="terms">
+                <label className="ml-3 block font-body-md text-xs text-on-surface-variant" htmlFor="signup-terms">
                   I agree to the <button type="button" onClick={() => setCurrentView("terms")} className="text-primary hover:underline">Terms of Service</button> and <button type="button" onClick={() => setCurrentView("privacy")} className="text-primary hover:underline">Privacy Policy</button>.
                 </label>
               </div>
