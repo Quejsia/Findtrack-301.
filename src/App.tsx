@@ -73,7 +73,7 @@ import {
   Filter,
   Clock,
   Menu,
-  ArrowLeft, Share, Bot, RefreshCw, BadgeCheck, MessageSquare, Gavel, Shield , Scan , Settings } from "lucide-react"
+  ArrowLeft, Share, Bot, RefreshCw, BadgeCheck, MessageSquare, Gavel, Shield , Scan , Settings , AlertTriangle, Star, Heart, TrendingUp, ArrowDownUp, FileText, Image as ImageIcon } from "lucide-react"
 import { uploadToCloudinary } from "./lib/cloudinary";
 
 interface ItemReport {
@@ -205,6 +205,11 @@ export default function App() {
 
   // Profile data
   const [profileName, setProfileName] = useState("Student");
+  const [profileLocation, setProfileLocation] = useState("");
+  const [notifications, setNotifications] = useState<any[]>([]);
+  const markAlertRead = (id: string) => setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
+  const markAllAlertsRead = () => setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+
   const [profileEmail, setProfileEmail] = useState("");
   const [profileContact, setProfileContact] = useState("");
   const [profileAvatar, setProfileAvatar] = useState(
@@ -1233,125 +1238,61 @@ export default function App() {
       )}
       {/* ── VIEW 2: LOGIN PAGE ── */}
       {currentView === "login" && (
-        <div className="min-h-screen flex flex-col md:flex-row bg-[#FDFCF8] text-slate-900 font-sans">
-          {/* Left Panel */}
-          <div className="hidden md:flex md:w-[45%] lg:w-1/2 bg-[#1A7B72] text-white p-8 md:p-12 flex-col relative overflow-hidden">
-            <div
-              className="text-xl font-bold tracking-tight mb-auto z-10 cursor-pointer flex items-center gap-2"
-              onClick={() => setCurrentView("landing")}
-            >
-              <MapPin className="h-6 w-6 text-white" />
-              FindTrack
-            </div>
-
-            <div className="flex-1 flex flex-col items-center justify-center relative z-10 py-12 animate-in fade-in slide-in-from-bottom-4 duration-700">
-              <div className="relative w-full max-w-sm aspect-square flex items-center justify-center mb-8">
-                {/* Illustration based on reference */}
-                <div className="relative w-full h-full flex items-center justify-center">
-                  <MapPin className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-48 text-[#14635C] opacity-50" strokeWidth={1} />
-                  <div className="relative z-10 w-full max-w-[280px] h-full flex flex-col items-center justify-center gap-4">
-                    {/* Top hand holding keys */}
-                    <div className="flex flex-col items-center animate-[float_4s_ease-in-out_infinite]">
-                      <Hand className="w-24 h-24 text-white rotate-180 -scale-x-100" strokeWidth={1} />
-                      <Key className="w-10 h-10 text-[#B2D235] -mt-6" />
-                    </div>
-                    {/* Small house/item icon */}
-                    <div className="bg-[#B2D235] p-3 rounded-xl shadow-lg -my-2 z-20">
-                      <Package className="w-8 h-8 text-[#1A7B72]" />
-                    </div>
-                    {/* Bottom hand receiving */}
-                    <div className="flex flex-col items-center mt-2">
-                      <Hand className="w-24 h-24 text-white" strokeWidth={1} />
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="mt-auto z-10 text-left w-full max-w-sm">
-                <h1 className="text-4xl md:text-5xl font-bold mb-4 leading-tight tracking-tight">
-                  Welcome back to<br />the community
-                </h1>
-                <p className="text-teal-50 text-lg">
-                  Join forces to help neighbors recover what matters.
-                </p>
-              </div>
-            </div>
-
-            {/* Background elements */}
-            <div className="absolute top-0 right-0 w-full h-full opacity-10 pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle at 100% 0%, white 0%, transparent 50%)' }}></div>
+        <div className="bg-surface-container min-h-screen flex items-center justify-center p-4 md:p-8 font-body-md text-on-surface">
+          {/* Decorative Background Elements */}
+          <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
+            <div className="absolute -top-40 -right-40 w-96 h-96 bg-primary-container rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-pulse"></div>
+            <div className="absolute top-40 -left-20 w-72 h-72 bg-secondary-container rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-pulse" style={{animationDelay: '2s'}}></div>
+            <div className="absolute -bottom-40 left-20 w-80 h-80 bg-tertiary-container rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse" style={{animationDelay: '4s'}}></div>
           </div>
 
-          {/* Right Panel */}
-          <div className="w-full md:w-[55%] lg:w-1/2 p-6 sm:p-8 md:p-12 lg:p-20 flex flex-col bg-[#FDFCF8] relative min-h-screen md:min-h-0">
-            {/* Top Bar for Desktop */}
-            <div className="hidden md:flex justify-between items-center w-full mb-auto z-20">
-              <h2 
-                className="text-2xl font-bold text-[#1A7B72] cursor-pointer"
-                onClick={() => setCurrentView("landing")}
-              >
-                FindTrack
-              </h2>
-              <button
-                onClick={() => setCurrentView("signup")}
-                className="text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors"
-              >
-                Sign Up
-              </button>
+          {/* Login Card */}
+          <main className="bg-white/85 backdrop-blur-[12px] border border-white/50 shadow-[0_8px_32px_0_rgba(1,114,90,0.05)] w-full max-w-md rounded-xl p-8 relative z-10">
+            {/* Header */}
+            <div className="text-center mb-8">
+              <h1 className="font-headline-lg text-4xl text-primary mb-3 cursor-pointer" onClick={() => setCurrentView("landing")}>FindTrack</h1>
+              <p className="font-body-lg text-lg text-on-surface-variant">Welcome back to the community.</p>
             </div>
 
-            {/* Mobile Header */}
-            <div className="md:hidden flex justify-between items-center w-full mb-12 z-20">
-              <div
-                className="text-xl font-bold tracking-tight cursor-pointer flex items-center gap-2 text-[#1A7B72]"
-                onClick={() => setCurrentView("landing")}
-              >
-                <MapPin className="h-6 w-6 text-[#1A7B72]" />
-                FindTrack
-              </div>
-              <button
-                onClick={() => setCurrentView("signup")}
-                className="text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors"
-              >
-                Sign Up
-              </button>
-            </div>
-
-            <div className="flex flex-col justify-center max-w-md w-full mx-auto relative z-10 flex-1">
-              <h3 className="text-4xl md:text-5xl font-bold mb-8 text-[#14635C]">
-                Login
-              </h3>
-
-              <form onSubmit={handleLoginSubmit} className="space-y-5">
-                <div className="relative group">
-                  <div className="absolute inset-y-0 left-0 pl-6 flex items-center pointer-events-none">
-                    <Mail className="h-[22px] w-[22px] text-[#1A7B72] opacity-80 group-focus-within:opacity-100 transition-opacity" strokeWidth={1.5} />
-                  </div>
-                  <input
+            {/* Form */}
+            <form onSubmit={handleLoginSubmit} className="space-y-6">
+              {/* Email Field */}
+              <div>
+                <label className="block font-label-md text-sm text-on-surface mb-1" htmlFor="email">Email Address</label>
+                <div className="relative">
+                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant h-5 w-5" strokeWidth={1.5} />
+                  <input 
+                    className="w-full pl-10 pr-3 py-3 bg-surface-container-lowest border border-outline-variant rounded-lg font-body-md text-on-surface focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-colors" 
+                    id="email" 
+                    name="email" 
+                    placeholder="you@example.com" 
+                    required 
                     type="email"
-                    placeholder="Email Address"
                     value={authEmail}
                     onChange={(e) => setAuthEmail(e.target.value)}
-                    required
-                    className="w-full pl-14 pr-6 py-[18px] bg-transparent border-2 border-[#1A7B72] rounded-[2rem] text-slate-900 placeholder:text-[#1A7B72]/60 focus:outline-none focus:ring-4 focus:ring-[#1A7B72]/10 focus:border-[#1A7B72] transition-all font-medium"
                   />
                 </div>
+              </div>
 
-                <div className="relative group">
-                  <div className="absolute inset-y-0 left-0 pl-6 flex items-center pointer-events-none">
-                    <Lock className="h-[22px] w-[22px] text-[#1A7B72] opacity-80 group-focus-within:opacity-100 transition-opacity" strokeWidth={1.5} />
-                  </div>
-                  <input
+              {/* Password Field */}
+              <div>
+                <label className="block font-label-md text-sm text-on-surface mb-1" htmlFor="password">Password</label>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant h-5 w-5" strokeWidth={1.5} />
+                  <input 
+                    className="w-full pl-10 pr-10 py-3 bg-surface-container-lowest border border-outline-variant rounded-lg font-body-md text-on-surface focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-colors" 
+                    id="password" 
+                    name="password" 
+                    placeholder="••••••••" 
+                    required 
                     type={showPass ? "text" : "password"}
-                    placeholder="Password"
                     value={authPassword}
                     onChange={(e) => setAuthPass(e.target.value)}
-                    required
-                    className="w-full pl-14 pr-14 py-[18px] bg-transparent border-2 border-[#1A7B72] rounded-[2rem] text-slate-900 placeholder:text-[#1A7B72]/60 focus:outline-none focus:ring-4 focus:ring-[#1A7B72]/10 focus:border-[#1A7B72] transition-all font-medium"
                   />
-                  <button
-                    type="button"
+                  <button 
+                    type="button" 
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant hover:text-primary transition-colors focus:outline-none" 
                     onClick={() => setShowPass(!showPass)}
-                    className="absolute inset-y-0 right-0 pr-6 flex items-center text-[#1A7B72] hover:text-[#14635C] opacity-80 hover:opacity-100 transition-all"
                   >
                     {showPass ? (
                       <EyeOff className="h-5 w-5" strokeWidth={1.5} />
@@ -1360,234 +1301,190 @@ export default function App() {
                     )}
                   </button>
                 </div>
-
-                <div className="text-right mt-2 mb-6">
-                  <button
+                <div className="flex justify-end mt-2">
+                  <button 
                     type="button"
                     onClick={() => setCurrentView("reset")}
-                    className="text-sm font-medium text-[#1A7B72] hover:text-[#14635C] transition-colors"
+                    className="font-label-md text-sm text-primary hover:text-primary-dim transition-colors" 
                   >
                     Forgot Password?
                   </button>
                 </div>
+              </div>
 
-                <button
-                  type="submit"
-                  className="w-full bg-[#B2D235] hover:bg-[#A3C12D] text-[#14635C] font-semibold py-[18px] rounded-[2rem] transition-all hover:shadow-lg hover:-translate-y-0.5 text-lg"
+              {/* Submit Button */}
+              <button 
+                className="w-full py-3 px-4 bg-primary text-on-primary rounded-lg font-body-lg text-lg font-medium hover:bg-primary-dim transition-colors shadow-sm flex items-center justify-center gap-3" 
+                type="submit"
+              >
+                Login
+              </button>
+            </form>
+
+            {/* Footer */}
+            <div className="mt-8 text-center">
+              <p className="font-body-md text-on-surface-variant">
+                Don't have an account?{" "}
+                <button 
+                  onClick={() => setCurrentView("signup")}
+                  className="text-primary font-semibold hover:underline transition-all"
                 >
-                  Login
+                  Sign up
                 </button>
-              </form>
+              </p>
+            </div>
+          </main>
+        </div>
+      )}
 
-              <div className="mt-8 text-center pb-8 md:pb-0">
-                <p className="text-[15px] text-slate-600">
-                  Don't have an account?{" "}
-                  <button
-                    onClick={() => setCurrentView("signup")}
-                    className="text-[#1A7B72] font-semibold hover:underline"
-                  >
-                    Sign up now.
-                  </button>
+      {/* ── VIEW 3: SIGNUP PAGE ── */}
+      {currentView === "signup" && (
+        <div className="bg-surface text-on-surface min-h-screen flex">
+          <div className="flex flex-1 flex-col lg:flex-row w-full">
+            {/* Left Side: Brand/Image */}
+            <div className="relative hidden w-full flex-1 lg:flex flex-col bg-primary justify-center items-center overflow-hidden">
+              <div className="absolute inset-0 z-0">
+                <img 
+                  className="w-full h-full object-cover opacity-40 mix-blend-overlay" 
+                  alt="Community gathering" 
+                  src="https://lh3.googleusercontent.com/aida-public/AB6AXuCvRFZSJBgEE2S4kkhaO3FQG94HOqflWeXoL7sWVnj0cOhd4whz01siH4EXJov53DfuShTq2v0BMqFvJoJkj_0tkmbaPPG8jWsm6SnnwXQ5o_2JqORb_gsB2IzZs3U31vlcGuPJ2_kSrom8AQj1y9o2Wn7pTAxfxxqxBatxF_0Qpck-1QipkaPBlFHQoBbWRXVj5iegysuvvce_AMs_OV4xTQfQbuZfw6pSuCirbU4wFv5VodyyiV-dwn93gHRSx1XEY15EVt6l3A"
+                />
+              </div>
+              <div className="absolute inset-0 bg-gradient-to-t from-primary/90 to-primary/20 z-10"></div>
+              <div className="relative z-20 flex flex-col items-center text-center px-12 max-w-2xl">
+                <div className="mb-8 p-4 bg-surface/10 rounded-2xl backdrop-blur-sm border border-surface/20">
+                  <span className="material-symbols-outlined text-on-primary text-6xl" style={{fontVariationSettings: "'FILL' 1"}}>volunteer_activism</span>
+                </div>
+                <h1 className="font-headline-lg text-4xl text-on-primary mb-6">Join the Community</h1>
+                <p className="font-body-lg text-lg text-primary-fixed-dim">
+                  FindTrack brings people together to recover lost items and build trust. Start your journey with our supportive network today.
                 </p>
               </div>
             </div>
-          </div>
-        </div>
-      )}
-      {/* ── VIEW 3: SIGNUP PAGE ── */}
-      {currentView === "signup" && (
-        <div className="min-h-screen flex flex-col md:flex-row bg-[#F4F1E1] text-slate-900 font-sans">
-          {/* Left Panel */}
-          <div className="md:w-1/2 bg-[#1A7B72] text-white p-8 md:p-12 flex flex-col relative overflow-hidden">
-            <div
-              className="text-xl font-medium tracking-tight mb-auto z-10 cursor-pointer"
-              onClick={() => setCurrentView("landing")}
-            >
-              FindTrack
-            </div>
 
-            <div className="flex-1 flex flex-col justify-center relative z-10 py-12">
-              <h1 className="text-4xl md:text-5xl font-semibold mb-6">
-                Join the
-                <br />
-                FindTrack
-                <br />
-                Community
-              </h1>
-              <p className="text-teal-100 text-base md:text-lg max-w-md mb-12">
-                Reconnect with what matters. Secure, verified, and
-                community-driven recovery.
-              </p>
+            {/* Right Side: Sign Up Form */}
+            <div className="flex flex-1 flex-col justify-center px-4 py-12 sm:px-6 lg:flex-none lg:px-20 xl:px-24 bg-surface">
+              <div className="mx-auto w-full max-w-sm lg:w-96">
+                <div>
+                  <h2 className="mt-8 font-headline-lg text-4xl text-on-surface">Create an account</h2>
+                  <p className="mt-2 font-body-md text-on-surface-variant">
+                    Already a member?{" "}
+                    <button 
+                      onClick={() => setCurrentView("login")}
+                      className="font-label-md text-sm font-semibold text-primary hover:text-primary-dim transition-colors"
+                    >
+                      Login here
+                    </button>
+                  </p>
+                </div>
 
-              <div className="flex gap-8">
-                <div className="flex flex-col items-center">
-                  <div className="bg-[#15605A] p-4 rounded-full mb-3 shadow-inner">
-                    <ShieldCheck
-                      className="w-8 h-8 text-[#B2D235]"
-                      strokeWidth={1.5}
-                    />
+                <div className="mt-10">
+                  <div>
+                    <form onSubmit={handleSignupSubmit} className="space-y-6">
+                      <div className="flex flex-col sm:flex-row gap-4">
+                        <div className="w-full">
+                          <label className="block font-label-md text-sm text-on-surface mb-2" htmlFor="firstName">First Name</label>
+                          <input 
+                            id="firstName" 
+                            name="firstName" 
+                            type="text" 
+                            required 
+                            value={signupFirst}
+                            onChange={(e) => setSignupFirst(e.target.value)}
+                            className="block w-full rounded-lg border-0 py-3 px-4 text-on-surface bg-surface-container-low shadow-sm ring-1 ring-inset ring-outline-variant placeholder:text-outline focus:ring-2 focus:ring-inset focus:ring-primary font-body-md transition-shadow"
+                          />
+                        </div>
+                        <div className="w-full">
+                          <label className="block font-label-md text-sm text-on-surface mb-2" htmlFor="lastName">Last Name</label>
+                          <input 
+                            id="lastName" 
+                            name="lastName" 
+                            type="text" 
+                            required 
+                            value={signupLast}
+                            onChange={(e) => setSignupLast(e.target.value)}
+                            className="block w-full rounded-lg border-0 py-3 px-4 text-on-surface bg-surface-container-low shadow-sm ring-1 ring-inset ring-outline-variant placeholder:text-outline focus:ring-2 focus:ring-inset focus:ring-primary font-body-md transition-shadow"
+                          />
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="block font-label-md text-sm text-on-surface mb-2" htmlFor="email">Email address</label>
+                        <input 
+                          id="email" 
+                          name="email" 
+                          type="email" 
+                          required 
+                          value={authEmail}
+                          onChange={(e) => setAuthEmail(e.target.value)}
+                          className="block w-full rounded-lg border-0 py-3 px-4 text-on-surface bg-surface-container-low shadow-sm ring-1 ring-inset ring-outline-variant placeholder:text-outline focus:ring-2 focus:ring-inset focus:ring-primary font-body-md transition-shadow"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block font-label-md text-sm text-on-surface mb-2" htmlFor="phone">Phone Number (Optional)</label>
+                        <input 
+                          id="phone" 
+                          name="phone" 
+                          type="tel" 
+                          value={signupContact}
+                          onChange={(e) => setSignupContact(e.target.value)}
+                          className="block w-full rounded-lg border-0 py-3 px-4 text-on-surface bg-surface-container-low shadow-sm ring-1 ring-inset ring-outline-variant placeholder:text-outline focus:ring-2 focus:ring-inset focus:ring-primary font-body-md transition-shadow"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block font-label-md text-sm text-on-surface mb-2" htmlFor="password">Password</label>
+                        <div className="relative">
+                          <input 
+                            id="password" 
+                            name="password" 
+                            type={showPass ? "text" : "password"}
+                            required 
+                            value={authPassword}
+                            onChange={(e) => setAuthPass(e.target.value)}
+                            className="block w-full rounded-lg border-0 py-3 px-4 text-on-surface bg-surface-container-low shadow-sm ring-1 ring-inset ring-outline-variant placeholder:text-outline focus:ring-2 focus:ring-inset focus:ring-primary font-body-md transition-shadow"
+                          />
+                          <button 
+                            type="button" 
+                            onClick={() => setShowPass(!showPass)}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant hover:text-primary transition-colors focus:outline-none" 
+                          >
+                            {showPass ? (
+                              <EyeOff className="h-5 w-5" strokeWidth={1.5} />
+                            ) : (
+                              <Eye className="h-5 w-5" strokeWidth={1.5} />
+                            )}
+                          </button>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center">
+                        <input 
+                          id="terms" 
+                          name="terms" 
+                          type="checkbox" 
+                          required 
+                          className="h-4 w-4 rounded border-outline-variant text-primary focus:ring-primary bg-surface-container-low"
+                        />
+                        <label className="ml-3 block font-body-md text-sm text-on-surface-variant" htmlFor="terms">
+                          I agree to the <button type="button" onClick={() => setCurrentView("terms")} className="text-primary hover:underline">Terms of Service</button> and <button type="button" onClick={() => setCurrentView("privacy")} className="text-primary hover:underline">Privacy Policy</button>.
+                        </label>
+                      </div>
+
+                      <div>
+                        <button 
+                          type="submit" 
+                          disabled={loadingAuth}
+                          className="flex w-full justify-center rounded-lg bg-primary-container px-3 py-3 font-label-md text-sm font-semibold text-on-primary-container shadow-sm hover:bg-primary-fixed focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary transition-colors disabled:opacity-70"
+                        >
+                          {loadingAuth ? "Creating Account..." : "Create Account"}
+                        </button>
+                      </div>
+                    </form>
                   </div>
-                  <span className="text-sm font-medium">Security</span>
-                </div>
-                <div className="flex flex-col items-center">
-                  <div className="bg-[#15605A] p-4 rounded-full mb-3 shadow-inner">
-                    <Users
-                      className="w-8 h-8 text-[#B2D235]"
-                      strokeWidth={1.5}
-                    />
-                  </div>
-                  <span className="text-sm font-medium">Community</span>
-                </div>
-                <div className="flex flex-col items-center">
-                  <div className="bg-[#15605A] p-4 rounded-full mb-3 shadow-inner">
-                    <Package
-                      className="w-8 h-8 text-[#B2D235]"
-                      strokeWidth={1.5}
-                    />
-                  </div>
-                  <span className="text-sm font-medium">Recovery</span>
                 </div>
               </div>
-            </div>
-
-            {/* Background elements */}
-            <div className="absolute top-1/4 -right-20 w-64 h-64 bg-teal-600 rounded-full mix-blend-multiply filter blur-3xl opacity-50"></div>
-            <div className="absolute -bottom-20 -left-20 w-80 h-80 bg-teal-800 rounded-full mix-blend-multiply filter blur-3xl opacity-50"></div>
-          </div>
-
-          {/* Right Panel */}
-          <div className="md:w-1/2 p-8 md:p-12 lg:p-24 flex flex-col bg-[#F4F1E1] relative">
-            <div className="text-right mb-8 md:mb-0">
-              <button
-                onClick={() => setCurrentView("login")}
-                className="text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors"
-              >
-                Already have an account? Log In
-              </button>
-            </div>
-
-            <div className="flex-1 flex flex-col justify-center max-w-md w-full mx-auto">
-              <h2 className="text-3xl font-semibold mb-8 text-slate-900">
-                Create your account
-              </h2>
-
-              <form onSubmit={handleSignupSubmit} className="space-y-4">
-                <div className="flex flex-col sm:flex-row gap-4">
-                  <div className="relative w-full">
-                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                      <UserIcon className="h-5 w-5 text-[#1A7B72]" />
-                    </div>
-                    <input
-                      type="text"
-                      placeholder="First Name"
-                      value={signupFirst}
-                      onChange={(e) => setSignupFirst(e.target.value)}
-                      required
-                      className="w-full pl-11 pr-4 py-3.5 bg-white border-2 border-transparent rounded-full text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#1A7B72]/30 focus:border-[#1A7B72] transition-all shadow-sm"
-                    />
-                  </div>
-                  <div className="relative w-full">
-                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                      <UserIcon className="h-5 w-5 text-[#1A7B72]" />
-                    </div>
-                    <input
-                      type="text"
-                      placeholder="Last Name"
-                      value={signupLast}
-                      onChange={(e) => setSignupLast(e.target.value)}
-                      required
-                      className="w-full pl-11 pr-4 py-3.5 bg-white border-2 border-transparent rounded-full text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#1A7B72]/30 focus:border-[#1A7B72] transition-all shadow-sm"
-                    />
-                  </div>
-                </div>
-
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                    <Mail className="h-5 w-5 text-[#1A7B72]" />
-                  </div>
-                  <input
-                    type="email"
-                    placeholder="Email Address"
-                    value={authEmail}
-                    onChange={(e) => setAuthEmail(e.target.value)}
-                    required
-                    className="w-full pl-11 pr-4 py-3.5 bg-white border-2 border-transparent rounded-full text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#1A7B72]/30 focus:border-[#1A7B72] transition-all shadow-sm"
-                  />
-                </div>
-
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                    <Smartphone className="h-5 w-5 text-[#1A7B72]" />
-                  </div>
-                  <input
-                    type="tel"
-                    placeholder="Phone Number (Optional)"
-                    value={signupContact}
-                    onChange={(e) => setSignupContact(e.target.value)}
-                    className="w-full pl-11 pr-4 py-3.5 bg-white border-2 border-transparent rounded-full text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#1A7B72]/30 focus:border-[#1A7B72] transition-all shadow-sm"
-                  />
-                </div>
-
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                    <Lock className="h-5 w-5 text-[#1A7B72]" />
-                  </div>
-                  <input
-                    type={showPass ? "text" : "password"}
-                    placeholder="Password"
-                    value={authPassword}
-                    onChange={(e) => setAuthPass(e.target.value)}
-                    required
-                    className="w-full pl-11 pr-12 py-3.5 bg-white border-2 border-transparent rounded-full text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#1A7B72]/30 focus:border-[#1A7B72] transition-all shadow-sm"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPass(!showPass)}
-                    className="absolute inset-y-0 right-0 pr-4 flex items-center text-slate-400 hover:text-slate-900 transition-colors"
-                  >
-                    {showPass ? (
-                      <EyeOff className="h-5 w-5" />
-                    ) : (
-                      <Eye className="h-5 w-5" />
-                    )}
-                  </button>
-                </div>
-
-                <label className="flex items-start gap-3 mt-4 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    required
-                    className="mt-1 w-4 h-4 text-[#1A7B72] border-slate-300 rounded focus:ring-[#1A7B72]"
-                  />
-                  <span className="text-sm text-slate-600">
-                    I agree to the{" "}
-                    <button
-                      type="button"
-                      onClick={() => setCurrentView("terms")}
-                      className="text-[#1A7B72] font-medium hover:underline"
-                    >
-                      Terms of Service
-                    </button>{" "}
-                    &amp;{" "}
-                    <button
-                      type="button"
-                      onClick={() => setCurrentView("privacy")}
-                      className="text-[#1A7B72] font-medium hover:underline"
-                    >
-                      Privacy Policy
-                    </button>
-                    .
-                  </span>
-                </label>
-
-                <button
-                  type="submit"
-                  disabled={loadingAuth}
-                  className="w-full bg-[#B2D235] hover:bg-[#A1C124] text-slate-900 py-3.5 rounded-full font-semibold transition-colors disabled:opacity-70 disabled:cursor-not-allowed shadow-sm mt-6"
-                >
-                  {loadingAuth ? "Creating Account..." : "Get Started"}
-                </button>
-              </form>
             </div>
           </div>
         </div>
@@ -2730,196 +2627,219 @@ export default function App() {
             {/* PANEL: SEARCH REGISTRY */}
             <section
               id="search"
-              className={`panel ${activeTab === "search" ? "active" : ""}`}
+              className={`${activeTab === "search" ? "block" : "hidden"} `}
             >
-              <div className="section-title">
-                <Search className="h-5 w-5 inline mr-1 text-sky-500" /> Search
-                Database
-              </div>
-
-              <div className="search-container">
-                <div className="search-bar">
-                  <div className="search-input-wrapper">
-                    <span className="search-icon">
-                      <Search className="h-5 w-5" />
-                    </span>
-                    <input
-                      id="s_query"
-                      placeholder="Search by title, description or location..."
-                      value={sQuery}
-                      onChange={(e) => setSQuery(e.target.value)}
-                    />
-                  </div>
-                  <select
-                    id="s_filter"
-                    value={sFilter}
-                    onChange={(e) => setSFilter(e.target.value)}
-                  >
-                    <option value="all">All Statuses</option>
-                    <option value="lost">Lost Only</option>
-                    <option value="found">Found Only</option>
-                    <option value="claimed">Claimed</option>
-                  </select>
-                  <button
-                    onClick={() => setAdvancedFiltersOpen(!advancedFiltersOpen)}
-                    className="filter-btn"
-                  >
-                    Filters ▾
-                  </button>
-                </div>
-
-                <div
-                  id="advancedFilters"
-                  className={`advanced-filters ${!advancedFiltersOpen ? "hidden" : ""}`}
-                >
-                  <input
-                    id="filterLocation"
-                    placeholder="Filter by location"
-                    value={sLoc}
-                    onChange={(e) => setSLoc(e.target.value)}
-                  />
-                  <input
-                    id="filterDate"
-                    type="date"
-                    value={sDate}
-                    onChange={(e) => setSDate(e.target.value)}
-                  />
-                </div>
-              </div>
-
-              {/* Dynamic Categories highlight info bar */}
-              {categoryKeywords && (
-                <div className="mb-4 bg-indigo-50 border border-indigo-200 text-indigo-700 py-2 px-4 rounded-xl flex items-center justify-between text-xs">
-                  <span>Filtered: Category Mode Active</span>
-                  <button
-                    onClick={() => setCategoryKeywords(null)}
-                    className="font-bold underline"
-                  >
-                    Show all files
-                  </button>
-                </div>
-              )}
-
-              {/* SMART SUGGESTION MATCH BANNER COGNITIVE extraction */}
-              {smartMatches.length > 0 && (
-                <div id="matchBanner" className="match-banner show">
-                  <div className="match-banner-title">
-                    🤖 Smart suggestions — Possible matches for your query
-                  </div>
-                  <div className="match-cards">
-                    {smartMatches.map(({ report, score }) => {
-                      const pct = Math.round(score * 100);
-                      return (
-                        <div
-                          key={report.id}
-                          onClick={() => {
-                            setSelectedItemId(report.id);
-                            setActiveTab("itemDetail");
-                          }}
-                          className="match-chip"
-                        >
-                          <div className="match-chip-title">{report.title}</div>
-                          <div className="match-chip-meta">
-                            <MapPin className="h-3 w-3 inline text-slate-400 mr-1" />{" "}
-                            {report.location || "Unknown"}
-                          </div>
-                          <div className="match-score">
-                            <CheckCircle2 className="h-3 w-3 inline mr-1 text-green-500" />{" "}
-                            {pct}% match
-                          </div>
+              <div className="p-4 md:p-8">
+                {/* Search Header & Filters (Bento Layout) */}
+                <div className="grid grid-cols-1 md:grid-cols-12 gap-4 md:gap-6 mb-8">
+                  {/* Large Search Hero */}
+                  <div className="md:col-span-8 bg-surface-container-high rounded-xl p-6 md:p-8 relative overflow-hidden group">
+                    <div className="absolute inset-0 opacity-10 bg-cover bg-center"></div>
+                    <div className="relative z-10">
+                      <h2 className="font-headline-lg text-3xl font-bold text-primary mb-2">Find Lost Items</h2>
+                      <p className="font-body-lg text-on-surface-variant mb-6">Search through our community database to find what you're looking for.</p>
+                      <div className="relative flex items-center w-full shadow-sm rounded-lg overflow-hidden border border-outline-variant focus-within:border-primary transition-colors bg-surface">
+                        <div className="pl-4 text-on-surface-variant">
+                          <Search className="h-5 w-5" />
                         </div>
-                      );
-                    })}
+                        <input 
+                          className="w-full px-4 py-4 bg-transparent border-none focus:ring-0 font-body-lg text-on-surface placeholder:text-on-surface-variant/50 outline-none" 
+                          placeholder="Search by keywords, brands, or descriptions..." 
+                          type="text"
+                          value={sQuery}
+                          onChange={(e) => setSQuery(e.target.value)}
+                        />
+                      </div>
+                    </div>
                   </div>
-                </div>
-              )}
 
-              {/* SEARCH REGISTRY CARDS GRID */}
-              <div id="searchResults" className="cards-grid">
-                {filteredSearchList.map((r) => {
-                  const pinned = pinnedIds.includes(r.id);
-                  return (
-                    <div
-                      key={r.id}
-                      onClick={() => {
-                        setSelectedItemId(r.id);
-                        setActiveTab("itemDetail");
-                      }}
-                      className="card-item clickable"
-                    >
-                      <div className="relative">
-                        <div className="card-media">
-                          {r.image || r.imageUrl ? (
-                            <img
-                              src={r.image || r.imageUrl}
-                              alt=""
-                              referrerPolicy="no-referrer"
-                            />
-                          ) : (
-                            <div style={{ opacity: 0.35 }}>
-                              <Camera className="h-12 w-12" />
-                            </div>
-                          )}
-                        </div>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            togglePin(r.id);
-                          }}
-                          className={`pin-toggle ${pinned ? "pinned" : ""}`}
-                        >
-                          {pinned ? (
-                            <MapPin className="h-4 w-4" fill="currentColor" />
-                          ) : (
-                            <MapPin className="h-4 w-4 text-slate-400" />
-                          )}
-                        </button>
-                      </div>
-                      <div className="card-title">{r.title}</div>
-                      <div className="card-desc">
-                        {r.desc || r.description || "No description provided."}
-                      </div>
-                      <div className="card-footer">
+                  {/* Quick Filters */}
+                  <div className="md:col-span-4 flex flex-col gap-4">
+                    <div className="bg-surface-container rounded-xl p-4 flex-1 border border-outline-variant/30 flex flex-col justify-center hover:shadow-md transition-shadow">
+                      <div className="flex items-center justify-between">
                         <div>
-                          <small style={{ display: "block", color: "#64748b" }}>
-                            {r.location || "Unknown location"}
-                          </small>
-                          <small style={{ color: "#94a3b8" }}>
-                            {r.date
-                              ? new Date(r.date).toLocaleDateString("en-US", {
-                                  weekday: "long",
-                                  year: "numeric",
-                                  month: "long",
-                                  day: "numeric",
-                                })
-                              : "Just now"}
-                          </small>
+                          <h3 className="font-label-md text-xs text-on-surface-variant uppercase tracking-wider mb-1">Status</h3>
+                          <select 
+                            value={sFilter}
+                            onChange={(e) => setSFilter(e.target.value)}
+                            className="bg-transparent border-none p-0 font-headline-md text-lg text-primary focus:ring-0 cursor-pointer outline-none font-bold"
+                          >
+                            <option value="all">All Items</option>
+                            <option value="lost">Lost Only</option>
+                            <option value="found">Found Only</option>
+                            <option value="claimed">Resolved</option>
+                          </select>
                         </div>
-                        <div
-                          className={`badge ${r.claimed ? "claimed" : r.type}`}
-                        >
-                          {r.claimed ? "CLAIMED" : r.type.toUpperCase()}
+                        <div className="w-10 h-10 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center">
+                          <Filter className="h-5 w-5" />
                         </div>
                       </div>
                     </div>
-                  );
-                })}
-              </div>
-
-              {filteredSearchList.length === 0 && (
-                <div
-                  id="noResults"
-                  className="empty flex flex-col items-center justify-center text-center"
-                >
-                  <div className="w-16 h-16 bg-sky-50 rounded-full flex items-center justify-center mb-4 border border-sky-100 shadow-sm mt-4">
-                    <Search className="h-8 w-8 text-sky-400" />
+                    
+                    <div className="bg-tertiary-container/20 rounded-xl p-4 flex-1 border border-tertiary-container/30 flex flex-col justify-center hover:shadow-md transition-shadow">
+                      <div className="flex items-center justify-between">
+                        <div className="w-full pr-2">
+                          <h3 className="font-label-md text-xs text-tertiary uppercase tracking-wider mb-1">Location</h3>
+                          <input 
+                            value={sLoc}
+                            onChange={(e) => setSLoc(e.target.value)}
+                            placeholder="Type location..."
+                            className="bg-transparent border-none p-0 w-full font-headline-md text-lg text-on-surface leading-tight focus:ring-0 outline-none placeholder:text-on-surface/50 font-bold"
+                          />
+                        </div>
+                        <div className="w-10 h-10 shrink-0 rounded-full bg-tertiary-container text-on-tertiary-container flex items-center justify-center">
+                          <MapPin className="h-5 w-5" />
+                        </div>
+                      </div>
+                    </div>
                   </div>
-                  No items found matching the current criteria.
                 </div>
-              )}
-            </section>
 
-            {/* PANEL: ITEM DETAIL VIEW */}
+                {/* Dynamic Categories highlight info bar */}
+                {categoryKeywords && (
+                  <div className="mb-8 bg-primary-container/30 border border-primary-container/50 text-on-primary-container py-3 px-4 rounded-xl flex items-center justify-between">
+                    <span className="font-body-md">Filtered by Category: <strong className="capitalize">{categoryKeywords[0]}</strong></span>
+                    <button
+                      onClick={() => setCategoryKeywords(null)}
+                      className="font-label-md text-sm font-bold text-primary hover:text-primary-dim underline"
+                    >
+                      Clear Category Filter
+                    </button>
+                  </div>
+                )}
+
+                {/* SMART SUGGESTION MATCH BANNER COGNITIVE extraction */}
+                {smartMatches.length > 0 && (
+                  <div className="mb-8 bg-surface-container-low rounded-xl p-6 border border-primary-container shadow-sm">
+                    <div className="flex items-center gap-2 text-primary font-headline-md font-bold mb-4">
+                      <Bot className="h-6 w-6" />
+                      Smart Suggestions — Possible matches
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                      {smartMatches.map(({ report, score }) => {
+                        const pct = Math.round(score * 100);
+                        return (
+                          <div
+                            key={report.id}
+                            onClick={() => {
+                              setSelectedItemId(report.id);
+                              setActiveTab("itemDetail");
+                            }}
+                            className="bg-surface-container-lowest p-4 rounded-lg border border-outline-variant hover:border-primary cursor-pointer hover:shadow-md transition-all group"
+                          >
+                            <div className="font-headline-md text-base font-semibold text-on-surface mb-1 group-hover:text-primary transition-colors line-clamp-1">{report.title}</div>
+                            <div className="flex items-center text-sm text-on-surface-variant mb-2">
+                              <MapPin className="h-3.5 w-3.5 mr-1" />{" "}
+                              <span className="truncate">{report.location || "Unknown"}</span>
+                            </div>
+                            <div className="flex items-center text-xs font-bold text-primary">
+                              <CheckCircle2 className="h-3.5 w-3.5 mr-1" />{" "}
+                              {pct}% AI Match Confidence
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {/* Results Grid */}
+                <div className="mb-6 flex justify-between items-end">
+                  <h2 className="font-headline-md text-2xl font-bold text-on-surface">
+                    Search Results <span className="text-on-surface-variant font-body-md font-normal ml-2 text-lg">({filteredSearchList.length} found)</span>
+                  </h2>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 pb-8">
+                  {filteredSearchList.map((r) => {
+                    const pinned = pinnedIds.includes(r.id);
+                    return (
+                      <div
+                        key={r.id}
+                        onClick={() => {
+                          setSelectedItemId(r.id);
+                          setActiveTab("itemDetail");
+                        }}
+                        className="bg-surface-container-lowest rounded-xl overflow-hidden border border-outline-variant shadow-sm hover:shadow-md transition-all group flex flex-col cursor-pointer"
+                      >
+                        <div className="h-48 relative overflow-hidden bg-surface-variant flex items-center justify-center">
+                          {r.image || r.imageUrl ? (
+                            <img
+                              src={r.image || r.imageUrl}
+                              alt={r.title}
+                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                              referrerPolicy="no-referrer"
+                            />
+                          ) : (
+                            <div className="opacity-30 text-outline">
+                              <Camera className="h-12 w-12" />
+                            </div>
+                          )}
+                          <div className={`absolute top-3 left-3 px-3 py-1 rounded-full font-label-md text-xs font-semibold tracking-wide uppercase flex items-center gap-1 shadow-sm ${
+                            r.claimed ? 'bg-primary-container text-on-primary-container' : 
+                            r.type === 'found' ? 'bg-secondary-container text-on-secondary-container' : 'bg-error-container text-on-error-container'
+                          }`}>
+                            {r.claimed ? <CheckCircle2 className="h-[14px] w-[14px]" /> : r.type === "found" ? <CheckCircle2 className="h-[14px] w-[14px]" /> : <Search className="h-[14px] w-[14px]" />}
+                            {r.claimed ? "CLAIMED" : r.type === "found" ? "Found" : "Lost"}
+                          </div>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              togglePin(r.id);
+                            }}
+                            className={`absolute top-3 right-3 w-8 h-8 rounded-full flex items-center justify-center transition-colors ${pinned ? "bg-tertiary text-on-tertiary shadow-md" : "bg-surface/80 backdrop-blur-sm text-on-surface-variant hover:text-primary"}`}
+                          >
+                            <MapPin className="h-[18px] w-[18px]" fill={pinned ? "currentColor" : "none"} />
+                          </button>
+                        </div>
+                        <div className="p-4 flex-1 flex flex-col">
+                          <div className="flex justify-between items-start mb-2">
+                            <h3 className="font-headline-md text-base text-on-surface font-semibold line-clamp-1 group-hover:text-primary transition-colors">{r.title}</h3>
+                          </div>
+                          <p className="font-body-md text-on-surface-variant line-clamp-2 mb-4 text-sm">
+                            {r.desc || r.description || "No description provided."}
+                          </p>
+                          <div className="mt-auto space-y-2">
+                            <div className="flex items-center text-xs text-on-surface-variant">
+                              <MapPin className="h-[14px] w-[14px] mr-1 text-primary shrink-0" />
+                              <span className="truncate">{r.location || "Unknown location"}</span>
+                            </div>
+                            <div className="flex items-center text-xs text-on-surface-variant">
+                              <Clock className="h-[14px] w-[14px] mr-1 text-primary shrink-0" />
+                              <span>{r.date
+                                ? new Date(r.date).toLocaleDateString("en-US", {
+                                    year: "numeric",
+                                    month: "short",
+                                    day: "numeric",
+                                  })
+                                : r.createdAt ? new Date(r.createdAt.seconds ? r.createdAt.seconds * 1000 : r.createdAt).toLocaleDateString() : "Recent"}</span>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="px-4 py-3 border-t border-outline-variant bg-surface-container-lowest">
+                          <button className={`w-full py-2 rounded font-label-md text-sm transition-colors text-center block shadow-sm ${
+                            r.type === 'found' ? 'bg-primary text-on-primary hover:bg-primary-dim' : 'border border-primary text-primary hover:bg-primary-container/20'
+                          }`}>
+                            View Details
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {filteredSearchList.length === 0 && (
+                  <div className="py-16 flex flex-col items-center justify-center text-center border-2 border-dashed border-outline-variant rounded-2xl bg-surface-container-lowest">
+                    <div className="w-16 h-16 bg-primary-container/30 rounded-full flex items-center justify-center mb-4 border border-primary-container">
+                      <Search className="h-8 w-8 text-primary" />
+                    </div>
+                    <h3 className="font-headline-md text-lg font-bold text-on-surface mb-2">No items found</h3>
+                    <p className="font-body-md text-on-surface-variant">Try adjusting your search filters or keywords.</p>
+                  </div>
+                )}
+              </div>
+            </section>
+{/* PANEL: ITEM DETAIL VIEW */}
             <section
               id="itemDetail"
               className={`${activeTab === "itemDetail" ? "block" : "hidden"} bg-background h-full w-full overflow-y-auto`}
@@ -3308,397 +3228,508 @@ export default function App() {
 {/* PANEL: NOTIFICATIONS & ALERTS */}
             <section
               id="notifications"
-              className={`panel ${activeTab === "notifications" ? "active" : ""}`}
+              className={`${activeTab === "notifications" ? "block" : "hidden"} flex-1 flex flex-col min-w-0`}
             >
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {/* Real-time Chats Inbox Column */}
-                <div className="md:col-span-2 space-y-6">
-                  {/* 🛡️ "PROVE IT" LANDING CLAIMS FOR OWNER ITEMS (Item 3) */}
-                  <div
-                    className="p-5 bg-slate-50/50 border border-slate-200/60 rounded-3xl space-y-4"
-                    id="finder-claims-review-panel"
-                  >
-                    <div className="flex flex-col gap-1.5 items-start sm:flex-row sm:items-center sm:justify-between">
-                      <span className="text-sm font-bold text-slate-800 font-sans flex items-center gap-1.5 flex-wrap">
-                        <Key className="h-4 w-4 inline mr-1 text-sky-500" />{" "}
-                        Incoming Ownership Claims (
-                        {
-                          incomingClaims.filter((c) => c.status === "pending")
-                            .length
-                        }{" "}
-                        pending)
-                      </span>
-                      <span className="font-mono text-[10px] px-2 py-0.5 bg-indigo-50 border border-indigo-100 text-indigo-700 font-bold uppercase rounded-full inline-block whitespace-nowrap shrink-0">
-                        Prove-it Verification Layer
-                      </span>
-                    </div>
+              <div className="pt-8 px-4 md:px-8 pb-32 max-w-5xl mx-auto w-full">
+                <div className="mb-8 flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
+                  <div>
+                    <h2 className="font-headline-lg text-3xl font-bold text-on-background mb-2">Alerts & Notifications</h2>
+                    <p className="font-body-md text-on-surface-variant">Stay updated on your reported items and community activity.</p>
+                  </div>
+                  <div className="hidden sm:flex gap-2">
+                    <button 
+                      onClick={() => markAllAlertsRead()}
+                      className="px-4 py-2 rounded-full border border-outline-variant font-label-md text-sm text-on-surface-variant hover:bg-surface-variant transition-colors"
+                    >
+                      Mark all read
+                    </button>
+                    <button className="px-4 py-2 rounded-full border border-outline-variant font-label-md text-sm text-on-surface-variant hover:bg-surface-variant transition-colors flex items-center gap-1">
+                      <Filter className="h-4 w-4" />
+                      Filter
+                    </button>
+                  </div>
+                </div>
 
-                    {incomingClaims.length === 0 ? (
-                      <div className="text-center py-10 bg-white border border-slate-200 border-dashed rounded-3xl flex flex-col items-center justify-center text-slate-450 p-6 shadow-sm">
-                        <div className="h-10 w-10 bg-indigo-50 border border-indigo-100 rounded-full flex items-center justify-center text-indigo-500 mb-2">
-                          <ShieldCheck className="h-5 w-5" />
+                {/* Bento Grid Layout for Alerts */}
+                <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
+                  {/* High Priority Alert - Spans full width on mobile, 8 cols on desktop */}
+                  <div className="md:col-span-8 bg-surface-container-lowest rounded-xl p-6 shadow-[0_2px_12px_rgba(0,0,0,0.04)] border border-outline-variant/30 hover:shadow-md transition-shadow relative overflow-hidden group cursor-pointer">
+                    <div className="absolute top-0 left-0 w-1 h-full bg-error-container"></div>
+                    <div className="flex gap-4">
+                      <div className="w-12 h-12 rounded-full bg-error-container/20 flex items-center justify-center flex-shrink-0 text-error-container">
+                        <AlertTriangle className="h-6 w-6" />
+                      </div>
+                      <div className="flex-1">
+                        <div className="flex justify-between items-start mb-1">
+                          <h3 className="font-headline-md text-lg text-on-background">Community Safety Alert</h3>
+                          <span className="font-label-md text-xs text-on-surface-variant whitespace-nowrap ml-2">Just now</span>
                         </div>
-                        <p className="font-sans text-xs font-extrabold text-slate-700">
-                          No claims registered yet.
-                        </p>
-                        <p className="font-sans text-[10.5px] text-slate-400 max-w-xs mt-1 leading-relaxed">
-                          Your active listings verification answers from
-                          claiming searchers will update here automatically in
-                          real-time.
-                        </p>
+                        <p className="font-body-md text-on-surface mb-3">Increase in reported lost keys in the Downtown Business District. Please ensure your belongings are secure.</p>
+                        <div className="flex items-center gap-2">
+                          <span className="inline-flex items-center px-2 py-1 rounded-md bg-surface-variant text-on-surface-variant font-label-md text-[10px] uppercase tracking-wider">Announcement</span>
+                        </div>
                       </div>
-                    ) : (
-                      <div className="space-y-3.5">
-                        {incomingClaims.map((claim) => {
-                          const isPending = claim.status === "pending";
+                    </div>
+                  </div>
 
-                          return (
-                            <div
-                              key={claim.id}
-                              className={`bg-white border rounded-2xl p-4 shadow-sm relative transition hover:shadow-md ${
-                                claim.status === "approved"
-                                  ? "border-emerald-200 bg-emerald-50/5"
-                                  : claim.status === "rejected"
-                                    ? "border-rose-200 bg-rose-50/5"
-                                    : "border-slate-200/80 hover:border-indigo-200"
-                              }`}
-                              id={`claim-review-card-${claim.id}`}
-                            >
-                              <div className="flex flex-col gap-2 items-start justify-between sm:flex-row sm:items-center w-full mb-2">
-                                <div className="space-y-0.5">
-                                  <h4 className="font-sans text-xs font-bold text-slate-900 flex items-center gap-1.5">
-                                    <span>Claim on:</span>
-                                    <span className="text-indigo-600 font-extrabold">
-                                      {claim.itemTitle}
-                                    </span>
-                                  </h4>
-                                  <span className="font-mono text-[9px] text-slate-400 block mt-0.5">
-                                    Claimer:{" "}
-                                    <strong className="text-slate-600 font-bold">
-                                      {claim.claimerName}
-                                    </strong>{" "}
-                                    ({claim.claimerEmail || "anonymous_email"})
-                                  </span>
-                                </div>
+                  {/* Quick Stat / Summary Card */}
+                  <div className="md:col-span-4 bg-primary text-on-primary rounded-xl p-6 shadow-sm flex flex-col justify-between relative overflow-hidden">
+                    <div className="absolute -right-4 -top-4 opacity-10">
+                      <Bell className="w-[120px] h-[120px]" />
+                    </div>
+                    <div>
+                      <h3 className="font-headline-md text-lg text-on-primary mb-1">Unread Alerts</h3>
+                      <p className="font-body-md text-primary-fixed-dim opacity-90">You have new activity</p>
+                    </div>
+                    <div className="mt-4 flex items-baseline gap-2">
+                      <span className="font-headline-lg text-5xl font-bold leading-none">{notifications.filter(n => !n.read).length}</span>
+                      <span className="font-body-md opacity-90">Pending reviews</span>
+                    </div>
+                  </div>
 
-                                <span
-                                  className={`inline-flex items-center gap-1 text-[9px] font-mono font-bold px-2 py-0.5 rounded-full uppercase shrink-0 ${
-                                    claim.status === "approved"
-                                      ? "bg-emerald-100 text-emerald-800"
-                                      : claim.status === "rejected"
-                                        ? "bg-rose-100 text-rose-800"
-                                        : "bg-amber-105 text-amber-805"
-                                  }`}
-                                >
-                                  {claim.status}
-                                </span>
-                              </div>
-
-                              <div className="space-y-2 bg-slate-50 border border-slate-205/60 rounded-xl p-3 text-xs mt-2.5">
-                                <div>
-                                  <p className="font-mono text-[8.5px] text-slate-400 uppercase tracking-widest font-bold">
-                                    Verification Question:
-                                  </p>
-                                  <p className="font-sans text-slate-700 font-semibold leading-relaxed">
-                                    "{claim.securityQuestion}"
-                                  </p>
-                                </div>
-                                <div className="pt-2 border-t border-slate-200/50 mt-2">
-                                  <p className="font-mono text-[8.5px] text-slate-400 uppercase tracking-widest font-bold">
-                                    Claimer's Answer / Proof details:
-                                  </p>
-                                  <p className="font-sans text-slate-900 font-extrabold leading-relaxed bg-white p-2.5 rounded-lg border border-slate-200 mt-1 italic">
-                                    "{claim.providedAnswer}"
-                                  </p>
-                                </div>
-                              </div>
-
-                              {isPending ? (
-                                <div className="flex items-center space-x-2 mt-3.5 justify-end">
-                                  <button
-                                    onClick={() => handleRejectClaim(claim.id)}
-                                    className="px-3 py-1.5 rounded-lg border border-slate-200 text-slate-700 font-sans text-[11px] font-bold hover:bg-slate-50 cursor-pointer transition active:scale-95"
-                                  >
-                                    Decline Claim
-                                  </button>
-                                  <button
-                                    onClick={() =>
-                                      handleApproveClaim(claim.id, claim.itemId)
-                                    }
-                                    className="px-3.5 py-1.5 rounded-lg bg-gradient-to-tr from-teal-850 to-indigo-950 text-white font-sans text-[11px] font-bold cursor-pointer transition hover:from-teal-900 hover:to-indigo-900 active:scale-95 flex items-center gap-1 shadow-sm"
-                                  >
-                                    <ShieldCheck className="h-3.5 w-3.5 text-teal-300" />
-                                    <span>Approve & Unlock PII</span>
-                                  </button>
-                                </div>
-                              ) : (
-                                <p className="text-right text-[10px] text-slate-400 mt-2.5 font-sans font-medium">
-                                  {claim.status === "approved"
-                                    ? "✓ Approved: Private coordinates are now fully shared."
-                                    : "✗ Declined claim."}
-                                </p>
-                              )}
+                  {notifications.map((notif) => {
+                    const isUnread = !notif.read;
+                    const isMatch = notif.message.toLowerCase().includes("match");
+                    const isClaim = notif.message.toLowerCase().includes("claim");
+                    
+                    return (
+                      <div 
+                        key={notif.id}
+                        onClick={() => markAlertRead(notif.id)}
+                        className={`md:col-span-6 bg-surface-container-lowest rounded-xl p-6 shadow-sm border border-outline-variant/30 hover:shadow-md transition-shadow relative cursor-pointer ${!isUnread ? "opacity-80" : ""}`}
+                      >
+                        {isUnread && <div className="absolute top-4 right-4 w-2 h-2 rounded-full bg-primary"></div>}
+                        <div className="flex gap-4">
+                          <div className={`w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0 ${
+                            isMatch ? "bg-primary-container text-on-primary-container" : 
+                            isClaim ? "bg-secondary-container text-on-secondary-container" : 
+                            "bg-surface-variant text-on-surface-variant"
+                          }`}>
+                            {isMatch ? <Search className="h-6 w-6" /> : isClaim ? <CheckCircle2 className="h-6 w-6" /> : <MessageSquare className="h-6 w-6" />}
+                          </div>
+                          <div className="flex-1">
+                            <div className="flex justify-between items-start mb-1">
+                              <h3 className="font-headline-md text-lg text-on-background">
+                                {isMatch ? "Potential Match Found!" : isClaim ? "Item Claimed" : "New Message"}
+                              </h3>
+                              <span className="font-label-md text-xs text-on-surface-variant">
+                                {notif.timestamp ? new Date(notif.timestamp.seconds ? notif.timestamp.seconds * 1000 : notif.timestamp).toLocaleDateString() : 'Recently'}
+                              </span>
                             </div>
-                          );
-                        })}
+                            <p className="font-body-md text-sm text-on-surface mb-3 line-clamp-2">{notif.message}</p>
+                            
+                            {isMatch && (
+                              <div className="bg-surface-container rounded-lg p-3 flex items-center gap-3 mt-2">
+                                <div className="w-10 h-10 rounded bg-surface-variant flex items-center justify-center">
+                                  <ImageIcon className="h-5 w-5 text-outline" />
+                                </div>
+                                <div>
+                                  <p className="font-label-md text-xs font-bold text-on-surface">Review Match</p>
+                                  <p className="font-label-md text-[10px] text-on-surface-variant">Tap to view details</p>
+                                </div>
+                                <button className="ml-auto text-primary hover:bg-surface-variant p-2 rounded-full transition-colors">
+                                  <ArrowRight className="h-4 w-4" />
+                                </button>
+                              </div>
+                            )}
+                            
+                            {isClaim && (
+                              <div className="flex items-center gap-2 mt-2">
+                                <span className="inline-flex items-center px-3 py-1 rounded-full bg-secondary-fixed-dim text-on-secondary-fixed font-label-md text-[11px]">
+                                  <CheckCircle2 className="h-3 w-3 mr-1" /> Closed
+                                </span>
+                                <button className="text-secondary hover:underline font-label-md text-sm">View details</button>
+                              </div>
+                            )}
+                          </div>
+                        </div>
                       </div>
-                    )}
-                  </div>
-
-                  <div className="section-title flex items-center justify-between">
-                    <span className="flex items-center gap-1.5">
-                      <MessageCircle className="h-4 w-4" /> Active Chats Inbox
-                    </span>
-                    <span className="font-mono text-[9px] bg-teal-100 text-teal-850 font-bold uppercase rounded-full px-2 py-0.5 animate-pulse">
-                      Live Messaging
-                    </span>
-                  </div>
-                  <ChatInboxList
-                    currentUserUid={user ? user.uid : null}
-                    onSelectChat={(id) => setActiveChatId(id)}
-                    activeChatId={activeChatId}
-                  />
-                </div>
-
-                {/* Static System Alerts Column */}
-                <div className="md:col-span-1 space-y-4">
-                  <div className="section-title">
-                    <Bell className="h-5 w-5 inline mr-1 text-sky-500" />{" "}
-                    Platform Alerts
-                  </div>
-                  <div id="alertsList" className="space-y-3">
-                    <div className="alert-item m-0">
-                      <strong>
-                        <Info className="h-4 w-4 inline mr-1 text-sky-500" />{" "}
-                        Welcome to FindTrack!
-                      </strong>
-                      <p>
-                        You'll receive secure notifications and match
-                        recommendations here.
-                      </p>
+                    );
+                  })}
+                  
+                  {notifications.length === 0 && (
+                    <div className="col-span-full py-16 text-center border-2 border-dashed border-outline-variant rounded-2xl bg-surface-container-lowest">
+                      <div className="w-16 h-16 bg-surface-container rounded-full flex items-center justify-center mx-auto mb-4 border border-outline-variant">
+                        <Bell className="h-8 w-8 text-outline" />
+                      </div>
+                      <h3 className="font-headline-md text-lg font-bold text-on-surface mb-2">You're all caught up</h3>
+                      <p className="font-body-md text-on-surface-variant">There are no new notifications or alerts at this time.</p>
                     </div>
-                    <div className="alert-item m-0">
-                      <strong>
-                        <CheckCircle2 className="h-4 w-4 inline mr-1 text-sky-500" />{" "}
-                        Pro Tip
-                      </strong>
-                      <p>
-                        Tap "Message Finder" on other users' listings to contact
-                        them safely.
-                      </p>
-                    </div>
-                  </div>
+                  )}
                 </div>
+                
+                {notifications.length > 0 && (
+                  <div className="mt-8 flex justify-center">
+                    <button className="px-6 py-2 rounded-full bg-surface-container text-on-surface border border-outline-variant hover:bg-surface-variant transition-colors font-label-md text-sm shadow-sm">
+                      Load Older Alerts
+                    </button>
+                  </div>
+                )}
               </div>
             </section>
 
-            {/* PANEL: PROFILE */}
+{/* PANEL: PROFILE */}
             <section
               id="profile"
-              className={`panel ${activeTab === "profile" ? "active" : ""}`}
+              className={`${activeTab === "profile" ? "block" : "hidden"} flex-1 flex flex-col min-w-0`}
             >
-              <div className="section-title">
-                <UserIcon className="h-5 w-5 inline mr-1 text-sky-500" /> My
-                Profile
-              </div>
-              <div className="profile-container">
-                <div className="profile-photo">
-                  <img id="pf_avatar" src={profileAvatar} alt="Profile" />
-                  <div
-                    style={{
-                      display: "flex",
-                      flexDirection: "column",
-                      gap: "8px",
-                      marginTop: "12px",
-                    }}
-                  >
-                    <button
-                      onClick={handleRandomAvatar}
-                      className="secondary-btn flex items-center gap-1.5"
-                      style={{ width: "100%", justifyContent: "center" }}
-                    >
-                      <Dices className="h-4 w-4 text-slate-500" /> Random Avatar
-                    </button>
+              <div className="pt-8 px-4 md:px-8 pb-32 max-w-7xl mx-auto w-full space-y-8">
+                {/* Mobile Menu Toggle header would be here, but we are inside the main canvas */}
+                <h2 className="font-headline-sm text-3xl font-bold text-on-surface mb-8 hidden md:block">Profile Overview</h2>
+                
+                {/* Bento Grid Layout */}
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                  {/* Profile Header Card (Hero) */}
+                  <div className="col-span-1 lg:col-span-12 bg-surface-container-lowest rounded-xl shadow-sm border border-surface-variant overflow-hidden relative">
+                    <div className="absolute inset-0 bg-gradient-to-br from-primary-container/20 to-transparent pointer-events-none"></div>
+                    <div className="p-6 md:p-8 flex flex-col md:flex-row items-center md:items-start gap-8 relative z-10">
+                      {/* Avatar Container with 'Level' Ring */}
+                      <div className="relative group cursor-pointer shrink-0">
+                        <div className="w-32 h-32 md:w-40 md:h-40 rounded-full border-4 border-tertiary-container shadow-md overflow-hidden relative bg-surface-variant flex items-center justify-center text-4xl font-bold text-on-surface-variant">
+                          {profileName.charAt(0).toUpperCase()}
+                          <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                            <Camera className="h-8 w-8 text-white" />
+                          </div>
+                        </div>
+                        {/* Badge */}
+                        <div className="absolute -bottom-2 -right-2 bg-tertiary text-on-tertiary px-3 py-1 rounded-full shadow-md flex items-center gap-1 border-2 border-surface-container-lowest">
+                          <Star className="h-4 w-4" fill="currentColor" />
+                          <span className="font-label-md text-[10px] uppercase font-bold tracking-wider">Level {Math.max(1, Math.floor(items.filter(i => i.userId === auth.currentUser?.uid).length / 5))}</span>
+                        </div>
+                      </div>
+                      
+                      {/* User Info */}
+                      <div className="flex-1 text-center md:text-left mt-4 md:mt-0 w-full">
+                        <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
+                          <div>
+                            <h1 className="font-headline-lg text-4xl text-on-surface">{profileName}</h1>
+                            <div className="flex flex-wrap items-center justify-center md:justify-start gap-2 mt-2">
+                              <span className="bg-primary-container text-on-primary-container px-3 py-1 rounded-full font-label-md text-sm font-semibold inline-flex items-center gap-1">
+                                <Heart className="h-4 w-4" fill="currentColor" />
+                                Community Member
+                              </span>
+                              <span className="text-on-surface-variant font-body-md flex items-center gap-1">
+                                <MapPin className="h-4 w-4" />
+                                {profileLocation || "Location not set"}
+                              </span>
+                            </div>
+                            <p className="mt-4 font-body-md text-on-surface-variant max-w-2xl">
+                              "Dedicated to keeping our community connected."
+                            </p>
+                          </div>
+                          <button className="bg-surface-container-high border border-outline-variant text-on-surface hover:bg-surface-variant px-4 py-2 rounded-lg font-label-md text-sm transition-colors flex items-center justify-center gap-2 shadow-sm shrink-0 w-full md:w-auto">
+                            <Settings className="h-[18px] w-[18px]" />
+                            Edit Profile
+                          </button>
+                        </div>
+                      </div>
+                    </div>
                   </div>
-                </div>
 
-                <div className="profile-fields">
-                  <div className="form-group">
-                    <label htmlFor="pf_name">Full Name</label>
-                    <input
-                      id="pf_name"
-                      placeholder="Enter your full name"
-                      value={profileName}
-                      onChange={(e) => setProfileName(e.target.value)}
-                    />
+                  {/* Stats Grid */}
+                  <div className="col-span-1 lg:col-span-4 flex flex-col gap-6">
+                    <div className="bg-surface-container-lowest rounded-xl shadow-sm border border-surface-variant p-6 flex-1 hover:shadow-md transition-shadow">
+                      <div className="flex items-center gap-3 mb-4 text-primary">
+                        <div className="bg-primary-container p-2 rounded-lg">
+                          <Package className="h-5 w-5 text-on-primary-container" />
+                        </div>
+                        <h3 className="font-headline-md text-lg font-semibold">Impact Stats</h3>
+                      </div>
+                      <div className="grid grid-cols-2 gap-4 mt-6">
+                        <div className="bg-surface-container rounded-lg p-4 text-center">
+                          <span className="block font-headline-lg text-primary text-3xl mb-1">{items.filter(i => i.userId === auth.currentUser?.uid).length}</span>
+                          <span className="font-label-md text-on-surface-variant uppercase tracking-wide text-[10px]">Items Reported</span>
+                        </div>
+                        <div className="bg-surface-container rounded-lg p-4 text-center">
+                          <span className="block font-headline-lg text-secondary text-3xl mb-1">{items.filter(i => i.userId === auth.currentUser?.uid && i.claimed).length}</span>
+                          <span className="font-label-md text-on-surface-variant uppercase tracking-wide text-[10px]">Reunited</span>
+                        </div>
+                        <div className="bg-surface-container rounded-lg p-4 text-center col-span-2 flex items-center justify-center gap-3">
+                          <div>
+                            <span className="block font-headline-lg text-tertiary text-2xl mb-1">Top {Math.max(1, 100 - items.filter(i => i.userId === auth.currentUser?.uid).length * 5)}%</span>
+                            <span className="font-label-md text-on-surface-variant uppercase tracking-wide text-[10px]">Local Finders</span>
+                          </div>
+                          <TrendingUp className="h-8 w-8 text-tertiary opacity-50" />
+                        </div>
+                      </div>
+                    </div>
                   </div>
-                  <div className="form-group">
-                    <label htmlFor="pf_email">Email Address</label>
-                    <input
-                      id="pf_email"
-                      type="email"
-                      placeholder="your.email@example.com"
-                      value={profileEmail}
-                      disabled
-                    />
+
+                  {/* Personal Information Form */}
+                  <div className="col-span-1 lg:col-span-8 bg-surface-container-lowest rounded-xl shadow-sm border border-surface-variant p-6 md:p-8">
+                    <h3 className="font-headline-md text-xl text-on-surface mb-6 border-b border-surface-variant pb-4">Personal Information</h3>
+                    <form className="space-y-6" onSubmit={(e) => { e.preventDefault(); triggerToast("Profile updated successfully", "success"); }}>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        {/* Input Group */}
+                        <div>
+                          <label className="block font-label-md text-sm text-on-surface-variant mb-2" htmlFor="profName">Display Name</label>
+                          <div className="relative">
+                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                              <UserIcon className="h-5 w-5 text-outline" />
+                            </div>
+                            <input 
+                              className="pl-10 w-full bg-surface-container-lowest border border-outline rounded-lg py-2.5 text-on-surface focus:ring-2 focus:ring-primary focus:border-primary transition-shadow font-body-md" 
+                              id="profName" 
+                              type="text" 
+                              value={profileName}
+                              onChange={(e) => setProfileName(e.target.value)}
+                            />
+                          </div>
+                        </div>
+                        
+                        <div className="md:col-span-2">
+                          <label className="block font-label-md text-sm text-on-surface-variant mb-2" htmlFor="profEmail">Email Address</label>
+                          <div className="relative">
+                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                              <Mail className="h-5 w-5 text-outline" />
+                            </div>
+                            <input 
+                              className="pl-10 w-full bg-surface-container-lowest border border-outline rounded-lg py-2.5 text-on-surface opacity-70 cursor-not-allowed font-body-md" 
+                              id="profEmail" 
+                              type="email" 
+                              value={profileEmail || "No email"}
+                              disabled
+                            />
+                          </div>
+                          {auth.currentUser?.emailVerified && (
+                            <p className="text-xs text-on-surface-variant mt-1 ml-1 flex items-center gap-1">
+                              <CheckCircle2 className="h-3.5 w-3.5 text-primary" />
+                              Email verified
+                            </p>
+                          )}
+                        </div>
+                        
+                        <div>
+                          <label className="block font-label-md text-sm text-on-surface-variant mb-2" htmlFor="profPhone">Phone Number</label>
+                          <div className="relative">
+                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                              <span className="text-outline font-body-md">+</span>
+                            </div>
+                            <input 
+                              className="pl-8 w-full bg-surface-container-lowest border border-outline rounded-lg py-2.5 text-on-surface focus:ring-2 focus:ring-primary focus:border-primary transition-shadow font-body-md" 
+                              id="profPhone" 
+                              type="tel" 
+                              value={profileContact}
+                              onChange={(e) => setProfileContact(e.target.value)}
+                            />
+                          </div>
+                        </div>
+                        
+                        <div>
+                          <label className="block font-label-md text-sm text-on-surface-variant mb-2" htmlFor="profLoc">Primary Location</label>
+                          <div className="relative">
+                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                              <MapPin className="h-5 w-5 text-outline" />
+                            </div>
+                            <input 
+                              className="pl-10 w-full bg-surface-container-lowest border border-outline rounded-lg py-2.5 text-on-surface focus:ring-2 focus:ring-primary focus:border-primary transition-shadow font-body-md" 
+                              id="profLoc" 
+                              type="text" 
+                              value={profileLocation}
+                              onChange={(e) => setProfileLocation(e.target.value)}
+                            />
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="flex justify-end pt-4">
+                        <button 
+                          className="bg-primary hover:bg-primary-dim text-on-primary font-label-md text-sm py-2.5 px-6 rounded-lg shadow-sm transition-colors" 
+                          type="submit"
+                        >
+                          Save Changes
+                        </button>
+                      </div>
+                    </form>
                   </div>
-                  <div className="form-group">
-                    <label htmlFor="pf_contact">Contact Number</label>
-                    <input
-                      id="pf_contact"
-                      placeholder="+63 912 345 6789"
-                      value={profileContact}
-                      onChange={(e) => setProfileContact(e.target.value)}
-                    />
-                  </div>
-                  <div
-                    style={{
-                      display: "flex",
-                      gap: "10px",
-                      flexWrap: "wrap",
-                      alignItems: "center",
-                      marginTop: "4px",
-                    }}
-                  >
-                    <button
-                      onClick={handleSaveProfile}
-                      className="primary-btn flex items-center gap-1.5"
-                    >
-                      <Save className="h-4 w-4" /> Save Profile
-                    </button>
-                    <button
-                      onClick={handleLogoutAction}
-                      className="flex items-center gap-1"
-                      style={{
-                        fontSize: "13px",
-                        color: "#ef4444",
-                        background: "none",
-                        border: "none",
-                        cursor: "pointer",
-                        fontWeight: 600,
-                      }}
-                    >
-                      <LogOut className="h-4 w-4" /> Logout
-                    </button>
+
+                  {/* Settings & Preferences */}
+                  <div className="col-span-1 lg:col-span-12 bg-surface-container-lowest rounded-xl shadow-sm border border-surface-variant overflow-hidden">
+                    <div className="grid grid-cols-1 md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-surface-variant">
+                      {/* Notifications */}
+                      <div className="p-6 md:p-8">
+                        <div className="flex items-center gap-3 mb-6 text-on-surface">
+                          <div className="bg-secondary-container p-2 rounded-lg">
+                            <Bell className="h-5 w-5 text-on-secondary-container" />
+                          </div>
+                          <h3 className="font-headline-md text-lg font-semibold">Notification Preferences</h3>
+                        </div>
+                        <div className="space-y-5">
+                          <label className="flex items-center justify-between cursor-pointer group">
+                            <div>
+                              <span className="font-body-md text-on-surface font-medium block">New matches for my items</span>
+                              <span className="font-body-md text-xs text-on-surface-variant">Get notified when a found item matches your report.</span>
+                            </div>
+                            <div className="relative">
+                              <input defaultChecked className="sr-only peer" type="checkbox" />
+                              <div className="w-11 h-6 bg-surface-variant peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-primary rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                            </div>
+                          </label>
+                          <label className="flex items-center justify-between cursor-pointer group">
+                            <div>
+                              <span className="font-body-md text-on-surface font-medium block">Community Alerts</span>
+                              <span className="font-body-md text-xs text-on-surface-variant">Important alerts in your primary location.</span>
+                            </div>
+                            <div className="relative">
+                              <input defaultChecked className="sr-only peer" type="checkbox" />
+                              <div className="w-11 h-6 bg-surface-variant peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-primary rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                            </div>
+                          </label>
+                        </div>
+                      </div>
+                      
+                      {/* Security */}
+                      <div className="p-6 md:p-8">
+                        <div className="flex items-center gap-3 mb-6 text-on-surface">
+                          <div className="bg-surface-variant p-2 rounded-lg">
+                            <Lock className="h-5 w-5 text-on-surface-variant" />
+                          </div>
+                          <h3 className="font-headline-md text-lg font-semibold">Security</h3>
+                        </div>
+                        <div className="space-y-4">
+                          <button className="w-full flex items-center justify-between p-4 rounded-lg border border-outline-variant hover:bg-surface-variant transition-colors group">
+                            <div className="flex items-center gap-3 text-left">
+                              <Key className="h-5 w-5 text-on-surface-variant" />
+                              <div>
+                                <span className="block font-body-md font-medium text-on-surface">Change Password</span>
+                                <span className="block text-xs text-on-surface-variant mt-0.5">Update your security credentials</span>
+                              </div>
+                            </div>
+                            <ArrowRight className="h-5 w-5 text-on-surface-variant group-hover:text-primary transition-colors" />
+                          </button>
+                          
+                          <div className="pt-4 mt-4 border-t border-surface-variant">
+                            <button 
+                              onClick={logOut}
+                              className="text-error hover:text-error-dim font-label-md text-sm flex items-center gap-2 transition-colors w-full p-2"
+                            >
+                              <LogOut className="h-5 w-5" />
+                              Sign Out Everywhere
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
             </section>
-
-            {/* PANEL: MY ITEMS */}
+{/* PANEL: MY ITEMS */}
             <section
               id="myitems"
-              className={`${activeTab === "myitems" ? "block" : "hidden"}`}
+              className={`${activeTab === "myitems" ? "block" : "hidden"} `}
             >
-              <div className="max-w-6xl mx-auto space-y-8">
-                <header className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+              <div className="p-4 md:p-8">
+                {/* Dashboard Header */}
+                <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 space-y-4 md:space-y-0">
                   <div>
-                    <h2 className="font-headline-lg text-3xl font-bold text-on-surface">My Items</h2>
-                    <p className="font-body-md text-on-surface-variant mt-2">Manage your reported lost and found items.</p>
+                    <h2 className="font-headline-lg text-3xl font-bold text-on-background mb-1">My Items</h2>
+                    <p className="font-body-lg text-on-surface-variant">Manage and track your reported lost or found items.</p>
                   </div>
-                  <div className="flex gap-3">
-                    <button className="flex items-center gap-2 px-4 py-2 font-label-md font-bold border border-outline rounded-lg text-on-surface hover:bg-surface-variant transition-colors">
-                      <Filter className="h-4 w-4" /> Filter
-                    </button>
-                    <button 
-                      onClick={() => setActiveTab("report")}
-                      className="flex items-center gap-2 px-4 py-2 font-label-md font-bold bg-primary text-on-primary rounded-lg shadow-sm hover:bg-primary-dim transition-colors"
-                    >
-                      <PlusCircle className="h-4 w-4" /> Report New
-                    </button>
-                  </div>
-                </header>
+                  <button 
+                    onClick={() => setActiveTab("report")}
+                    className="flex items-center gap-2 px-4 py-2 font-label-md font-bold bg-primary text-on-primary rounded-lg shadow-sm hover:bg-primary-dim transition-colors"
+                  >
+                    <PlusCircle className="h-4 w-4" /> Report New
+                  </button>
+                </div>
 
                 {/* Tabs */}
-                <div className="flex gap-2 overflow-x-auto pb-2 border-b border-outline-variant">
-                  <button className="px-4 py-2 font-label-md font-bold text-primary border-b-2 border-primary whitespace-nowrap">
+                <div className="flex space-x-8 border-b border-outline-variant mb-8 overflow-x-auto pb-px">
+                  <button className="font-label-md text-sm text-primary border-b-2 border-primary pb-3 px-1 whitespace-nowrap">
                     Active ({items.filter(i => i.userId === auth.currentUser?.uid && !i.claimed).length})
                   </button>
-                  <button className="px-4 py-2 font-label-md font-medium text-on-surface-variant hover:text-on-surface whitespace-nowrap">
+                  <button className="font-label-md text-sm text-on-surface-variant hover:text-primary transition-colors pb-3 px-1 whitespace-nowrap">
                     Resolved ({items.filter(i => i.userId === auth.currentUser?.uid && i.claimed).length})
                   </button>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                {/* Bento Grid List */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
                   {items
                     .filter((item) => item.userId === auth.currentUser?.uid)
                     .map((r) => {
-                      const pinned = pinnedIds.includes(r.id);
                       return (
-                        <div key={r.id} className="bg-surface-container-lowest rounded-xl border border-outline-variant overflow-hidden hover:shadow-md transition-shadow group flex flex-col">
+                        <article key={r.id} className="bg-surface-container-lowest rounded-[16px] p-4 md:p-6 shadow-[0_4px_24px_rgba(1,114,90,0.08)] hover:shadow-[0_8px_32px_rgba(1,114,90,0.12)] hover:-translate-y-0.5 transition-all duration-200 flex flex-col h-full border border-surface-variant group">
+                          <div className="flex justify-between items-start mb-4">
+                            <div className="flex items-center space-x-2">
+                              {r.claimed ? (
+                                <span className="bg-secondary-container text-on-secondary-container px-2 py-1 rounded-full font-label-md text-[10px] uppercase tracking-wider flex items-center space-x-1">
+                                  <CheckCircle2 className="h-[14px] w-[14px]" />
+                                  <span>Match Found</span>
+                                </span>
+                              ) : r.type === "found" ? (
+                                <span className="bg-primary-container text-on-primary-container px-2 py-1 rounded-full font-label-md text-[10px] uppercase tracking-wider flex items-center space-x-1">
+                                  <Hand className="h-[14px] w-[14px]" />
+                                  <span>Found</span>
+                                </span>
+                              ) : (
+                                <span className="bg-tertiary-container text-on-tertiary-container px-2 py-1 rounded-full font-label-md text-[10px] uppercase tracking-wider flex items-center space-x-1">
+                                  <Search className="h-[14px] w-[14px] animate-pulse" />
+                                  <span>Searching</span>
+                                </span>
+                              )}
+                              <span className="text-on-surface-variant font-label-md text-xs">
+                                {r.type === 'found' ? 'Found' : 'Lost'} • {r.createdAt ? new Date(r.createdAt.seconds ? r.createdAt.seconds * 1000 : r.createdAt).toLocaleDateString() : 'Recent'}
+                              </span>
+                            </div>
+                            <button 
+                              onClick={() => deleteItem(r.id)}
+                              className="text-on-surface-variant hover:text-error transition-colors"
+                            >
+                              <X className="h-5 w-5" />
+                            </button>
+                          </div>
+                          
                           <div 
-                            className="relative h-48 bg-surface-variant overflow-hidden cursor-pointer"
+                            className="flex space-x-4 mb-4 flex-1 cursor-pointer"
                             onClick={() => {
                               setSelectedItemId(r.id);
                               setActiveTab("itemDetail");
                             }}
                           >
-                            {r.image || r.imageUrl ? (
-                              <img src={r.image || r.imageUrl} alt="" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" referrerPolicy="no-referrer" />
-                            ) : (
-                              <div className="w-full h-full flex items-center justify-center text-outline">
-                                <Camera className="h-10 w-10 opacity-30" />
+                            <div className="w-24 h-24 rounded-lg overflow-hidden flex-shrink-0 bg-surface-container flex items-center justify-center text-outline-variant">
+                              {r.image || r.imageUrl ? (
+                                <img src={r.image || r.imageUrl} alt="" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" referrerPolicy="no-referrer" />
+                              ) : (
+                                <ImageIcon className="h-10 w-10 opacity-30" />
+                              )}
+                            </div>
+                            <div>
+                              <h3 className="font-headline-md text-lg font-bold text-on-surface mb-1 leading-tight group-hover:text-primary transition-colors line-clamp-2">
+                                {r.title}
+                              </h3>
+                              <div className="flex items-center space-x-1 mt-2 text-primary">
+                                <MapPin className="h-4 w-4 shrink-0" />
+                                <span className="font-label-md text-[11px] truncate">{r.location}</span>
                               </div>
+                            </div>
+                          </div>
+                          
+                          <div className="pt-4 border-t border-outline-variant flex space-x-3 mt-auto">
+                            {r.claimed ? (
+                              <>
+                                <button className="flex-1 bg-primary text-on-primary py-2 rounded-lg font-label-md text-sm hover:bg-primary-dim transition-colors flex items-center justify-center space-x-2">
+                                  <MessageSquare className="h-[18px] w-[18px]" />
+                                  <span>Message Finder</span>
+                                </button>
+                              </>
+                            ) : (
+                              <>
+                                <button 
+                                  onClick={() => {
+                                    setSelectedItemId(r.id);
+                                    setActiveTab("itemDetail");
+                                  }}
+                                  className="flex-1 border border-primary text-primary py-2 rounded-lg font-label-md text-sm hover:bg-surface-container transition-colors flex items-center justify-center space-x-2"
+                                >
+                                  <Eye className="h-[18px] w-[18px]" />
+                                  <span>View Details</span>
+                                </button>
+                              </>
                             )}
-                            <div className="absolute top-3 left-3 flex gap-2">
-                              <span className={`px-2.5 py-1 text-xs font-bold rounded-full ${
-                                r.claimed ? 'bg-primary-container text-on-primary-container' : 
-                                r.type === 'found' ? 'bg-secondary-container text-on-secondary-container' : 'bg-error-container text-on-error-container'
-                              }`}>
-                                {r.claimed ? 'RESOLVED' : r.type === 'found' ? 'FOUND ITEM' : 'LOST ITEM'}
-                              </span>
-                            </div>
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                togglePin(r.id);
-                              }}
-                              className={`absolute top-3 right-3 p-2 rounded-full backdrop-blur-md transition-colors ${
-                                pinned ? "bg-tertiary-container text-on-tertiary-container" : "bg-black/30 text-white hover:bg-black/50"
-                              }`}
-                            >
-                              <MapPin className="h-4 w-4" fill={pinned ? "currentColor" : "none"} />
-                            </button>
                           </div>
-                          <div className="p-5 flex-1 flex flex-col">
-                            <h3 
-                              className="font-headline-md text-lg font-bold text-on-surface mb-2 cursor-pointer hover:text-primary transition-colors line-clamp-1"
-                              onClick={() => {
-                                setSelectedItemId(r.id);
-                                setActiveTab("itemDetail");
-                              }}
-                            >
-                              {r.title}
-                            </h3>
-                            <div className="space-y-1.5 mb-4 flex-1">
-                              <p className="flex items-center text-sm text-on-surface-variant">
-                                <MapPin className="h-4 w-4 mr-2 text-outline shrink-0" />
-                                <span className="truncate">{r.location}</span>
-                              </p>
-                              <p className="flex items-center text-sm text-on-surface-variant">
-                                <Clock className="h-4 w-4 mr-2 text-outline shrink-0" />
-                                <span>{r.createdAt ? new Date(r.createdAt.seconds ? r.createdAt.seconds * 1000 : r.createdAt).toLocaleDateString() : 'Recent'}</span>
-                              </p>
-                            </div>
-                            <div className="pt-4 border-t border-outline-variant flex justify-between items-center">
-                              <button 
-                                onClick={() => {
-                                  setSelectedItemId(r.id);
-                                  setActiveTab("itemDetail");
-                                }}
-                                className="text-sm font-bold text-primary hover:text-primary-dim"
-                              >
-                                View Details
-                              </button>
-                              <button 
-                                onClick={() => deleteItem(r.id)}
-                                className="text-sm font-bold text-error hover:text-error-container"
-                              >
-                                Delete
-                              </button>
-                            </div>
-                          </div>
-                        </div>
+                        </article>
                       );
                     })}
                   
@@ -3706,7 +3737,7 @@ export default function App() {
                     <div className="col-span-full py-16 text-center border-2 border-dashed border-outline-variant rounded-2xl bg-surface-container-lowest">
                       <Inbox className="h-12 w-12 text-outline mx-auto mb-4" />
                       <h3 className="font-headline-md text-lg font-bold text-on-surface mb-2">No items yet</h3>
-                      <p className="text-on-surface-variant mb-6">You haven't reported any lost or found items.</p>
+                      <p className="font-body-md text-on-surface-variant mb-6">You haven't reported any lost or found items.</p>
                       <button 
                         onClick={() => setActiveTab("report")}
                         className="inline-flex items-center gap-2 px-6 py-2.5 font-label-md font-bold bg-primary text-on-primary rounded-lg shadow-sm hover:bg-primary-dim transition-colors"
@@ -3718,21 +3749,31 @@ export default function App() {
                 </div>
               </div>
             </section>
-
-            {/* PANEL: PINNED ITEMS */}
+{/* PANEL: PINNED ITEMS */}
             <section
               id="pinned"
-              className={`${activeTab === "pinned" ? "block" : "hidden"}`}
+              className={`${activeTab === "pinned" ? "block" : "hidden"} flex-1 flex flex-col min-w-0`}
             >
-              <div className="max-w-6xl mx-auto space-y-8">
-                <header className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+              <div className="pt-8 px-4 md:px-8 pb-32">
+                <div className="mb-8 flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
                   <div>
-                    <h2 className="font-headline-lg text-3xl font-bold text-on-surface">Pinned Items</h2>
-                    <p className="font-body-md text-on-surface-variant mt-2">Quick access to items you are keeping track of.</p>
+                    <h2 className="font-headline-lg text-3xl font-bold text-on-background mb-2">Pinned Items</h2>
+                    <p className="font-body-lg text-on-surface-variant max-w-2xl">Keep track of important community reports. Items you pin will appear here for quick access until they are resolved or you unpin them.</p>
                   </div>
-                </header>
+                  <div className="flex gap-2">
+                    <button className="px-4 py-2 bg-surface-container rounded-lg font-label-md text-sm text-on-surface flex items-center gap-2 hover:bg-surface-container-high transition-colors border border-outline-variant">
+                      <Filter className="h-[18px] w-[18px]" />
+                      Filter
+                    </button>
+                    <button className="px-4 py-2 bg-surface-container rounded-lg font-label-md text-sm text-on-surface flex items-center gap-2 hover:bg-surface-container-high transition-colors border border-outline-variant">
+                      <ArrowDownUp className="h-[18px] w-[18px]" />
+                      Sort
+                    </button>
+                  </div>
+                </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4 auto-rows-[240px]">
+                {/* Bento Grid for Pinned Items */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {items
                     .filter((item) => pinnedIds.includes(item.id))
                     .map((r, i) => {
@@ -3740,51 +3781,92 @@ export default function App() {
                       return (
                         <div 
                           key={r.id} 
-                          className={`${isLarge ? "md:col-span-2 md:row-span-2" : "col-span-1 row-span-1"} bg-surface-container-lowest rounded-2xl border border-outline-variant overflow-hidden hover:shadow-md transition-shadow group flex flex-col relative`}
+                          className={`${isLarge ? "md:col-span-2 lg:col-span-2 row-span-2" : "col-span-1 row-span-1"} bg-surface-container-lowest rounded-xl shadow-[0_4px_20px_-4px_rgba(1,114,90,0.08)] border border-outline-variant/30 overflow-hidden flex flex-col group relative transition-transform hover:-translate-y-1 duration-300 cursor-pointer`}
                           onClick={() => {
                             setSelectedItemId(r.id);
                             setActiveTab("itemDetail");
                           }}
                         >
-                          <div className={`${isLarge ? "h-3/5" : "h-1/2"} bg-surface-variant relative overflow-hidden`}>
-                            {r.image || r.imageUrl ? (
-                              <img src={r.image || r.imageUrl} alt="" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" referrerPolicy="no-referrer" />
-                            ) : (
-                              <div className="w-full h-full flex items-center justify-center text-outline">
-                                <Camera className="h-10 w-10 opacity-30" />
-                              </div>
-                            )}
-                            <div className="absolute top-3 left-3 flex gap-2">
-                              <span className={`px-2.5 py-1 text-xs font-bold rounded-full ${
-                                r.claimed ? 'bg-primary-container text-on-primary-container' : 
-                                r.type === 'found' ? 'bg-secondary-container text-on-secondary-container' : 'bg-error-container text-on-error-container'
-                              }`}>
-                                {r.claimed ? 'RESOLVED' : r.type === 'found' ? 'FOUND ITEM' : 'LOST ITEM'}
-                              </span>
-                            </div>
+                          <div className="absolute top-4 right-4 z-10 flex gap-2">
+                            <span className={`${r.claimed ? 'bg-secondary-container text-on-secondary-container' : r.type === 'found' ? 'bg-primary-container text-on-primary-container' : 'bg-tertiary-container text-on-tertiary-container'} px-3 py-1 rounded-full font-label-md text-[10px] font-bold tracking-wider uppercase shadow-sm`}>
+                              {r.claimed ? "Resolved" : r.type === "found" ? "Found" : "Lost"}
+                            </span>
                             <button
                               onClick={(e) => {
                                 e.stopPropagation();
                                 togglePin(r.id);
                               }}
-                              className="absolute top-3 right-3 p-2 rounded-full bg-tertiary-container text-on-tertiary-container backdrop-blur-md transition-colors hover:scale-110"
+                              className="bg-surface-container-lowest/80 backdrop-blur p-2 rounded-full text-primary hover:text-error transition-colors shadow-sm group/btn"
+                              title="Unpin Item"
                             >
-                              <MapPin className="h-4 w-4" fill="currentColor" />
+                              <MapPin className="h-4 w-4 fill-current group-hover/btn:hidden" />
+                              <X className="h-4 w-4 hidden group-hover/btn:block text-error" />
                             </button>
                           </div>
-                          <div className="p-4 flex-1 flex flex-col justify-between">
-                            <div>
-                              <h3 className={`font-headline-md font-bold text-on-surface mb-1 truncate ${isLarge ? "text-xl" : "text-base"}`}>
-                                {r.title}
-                              </h3>
-                              <p className="flex items-center text-xs text-on-surface-variant">
-                                <MapPin className="h-3 w-3 mr-1 text-outline shrink-0" />
-                                <span className="truncate">{r.location}</span>
-                              </p>
-                            </div>
-                            <div className="mt-2 text-xs text-on-surface-variant flex items-center justify-between">
-                              <span>{r.createdAt ? new Date(r.createdAt.seconds ? r.createdAt.seconds * 1000 : r.createdAt).toLocaleDateString() : 'Recent'}</span>
-                              <span className="font-bold text-primary">View Details &rarr;</span>
+                          
+                          <div className={`${isLarge ? "h-64" : "h-48"} relative w-full overflow-hidden bg-surface-variant flex items-center justify-center`}>
+                            {r.image || r.imageUrl ? (
+                              <>
+                                <img
+                                  src={r.image || r.imageUrl}
+                                  alt={r.title}
+                                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                                  referrerPolicy="no-referrer"
+                                />
+                                {isLarge && <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>}
+                              </>
+                            ) : (
+                              <div className="w-full h-full border-2 border-dashed border-outline-variant flex flex-col items-center justify-center text-outline-variant p-4 m-4 rounded-lg bg-surface-container-lowest">
+                                <ImageIcon className="h-10 w-10 mb-2 opacity-50" />
+                                <span className="font-label-md text-xs text-center opacity-70">No Image Available</span>
+                              </div>
+                            )}
+                            
+                            {isLarge && (r.image || r.imageUrl) && (
+                              <div className="absolute bottom-4 left-4 right-4 text-white">
+                                <div className="flex items-center gap-2 mb-1 text-sm opacity-90">
+                                  <MapPin className="h-[16px] w-[16px]" />
+                                  <span>{r.location || "Unknown"}</span>
+                                </div>
+                                <h3 className="font-headline-md text-2xl font-bold leading-tight line-clamp-1">{r.title}</h3>
+                              </div>
+                            )}
+                          </div>
+                          
+                          <div className="p-5 flex-1 flex flex-col">
+                            {(!isLarge || (!r.image && !r.imageUrl)) && (
+                              <h3 className="font-headline-sm text-xl font-bold text-on-surface mb-1 line-clamp-1 group-hover:text-primary transition-colors">{r.title}</h3>
+                            )}
+                            
+                            {(!isLarge || (!r.image && !r.imageUrl)) && (
+                              <div className="flex items-center gap-1 text-on-surface-variant text-sm mb-3">
+                                <MapPin className="h-[14px] w-[14px] text-primary" />
+                                <span className="truncate">{r.location || "Unknown"}</span>
+                              </div>
+                            )}
+                            
+                            <p className="font-body-md text-on-surface-variant line-clamp-3 mb-4 text-sm">
+                              {r.desc || r.description || "No description provided."}
+                            </p>
+                            
+                            <div className="mt-auto pt-4 border-t border-surface-variant flex justify-between items-center">
+                              {isLarge ? (
+                                <div className="flex items-center gap-2">
+                                  <div className="w-8 h-8 rounded-full bg-surface-container-high border border-outline-variant flex items-center justify-center text-xs font-bold text-on-surface">
+                                    {r.contactName ? r.contactName.charAt(0).toUpperCase() : "U"}
+                                  </div>
+                                  <span className="font-label-md text-xs text-on-surface">Reported by {r.contactName || "User"}</span>
+                                </div>
+                              ) : (
+                                <span className="font-label-md text-xs text-outline flex items-center gap-1">
+                                  <Clock className="h-3 w-3" />
+                                  Pinned {r.createdAt ? new Date(r.createdAt.seconds ? r.createdAt.seconds * 1000 : r.createdAt).toLocaleDateString() : 'Recently'}
+                                </span>
+                              )}
+                              
+                              <button className="text-primary font-label-md text-sm hover:underline flex items-center gap-1">
+                                View Details {isLarge && <ArrowRight className="h-4 w-4" />}
+                              </button>
                             </div>
                           </div>
                         </div>
@@ -3793,9 +3875,11 @@ export default function App() {
                   
                   {items.filter((item) => pinnedIds.includes(item.id)).length === 0 && (
                     <div className="col-span-full py-16 text-center border-2 border-dashed border-outline-variant rounded-2xl bg-surface-container-lowest">
-                      <MapPin className="h-12 w-12 text-outline mx-auto mb-4" />
+                      <div className="w-16 h-16 bg-surface-container rounded-full flex items-center justify-center mx-auto mb-4 border border-outline-variant">
+                        <MapPin className="h-8 w-8 text-outline" />
+                      </div>
                       <h3 className="font-headline-md text-lg font-bold text-on-surface mb-2">No pinned items</h3>
-                      <p className="text-on-surface-variant mb-6">You haven't bookmarked any items yet.</p>
+                      <p className="font-body-md text-on-surface-variant mb-6">You haven't bookmarked any items yet.</p>
                       <button 
                         onClick={() => setActiveTab("search")}
                         className="inline-flex items-center gap-2 px-6 py-2.5 font-label-md font-bold bg-primary text-on-primary rounded-lg shadow-sm hover:bg-primary-dim transition-colors"
@@ -3807,97 +3891,187 @@ export default function App() {
                 </div>
               </div>
             </section>
-
-            {/* PANEL: CATEGORIES BROWSER */}
+{/* PANEL: CATEGORIES BROWSER */}
             <section
               id="categories"
-              className={`${activeTab === "categories" ? "block" : "hidden"}`}
+              className={`${activeTab === "categories" ? "block" : "hidden"} flex-1 flex flex-col min-w-0`}
             >
-              <div className="max-w-6xl mx-auto space-y-8">
-                <header className="flex flex-col md:flex-row md:items-end justify-between gap-4">
-                  <div>
-                    <h2 className="font-headline-lg text-3xl font-bold text-on-surface">Browse Categories</h2>
-                    <p className="font-body-md text-on-surface-variant mt-2">Filter lost and found items by type.</p>
-                  </div>
-                </header>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                  {/* Category 1 */}
+              <div className="pt-8 px-4 md:px-8 pb-32 max-w-7xl mx-auto w-full">
+                {/* Page Header */}
+                <div className="mb-12">
+                  <h2 className="font-headline-lg text-4xl font-bold text-primary mb-2">Browse Categories</h2>
+                  <p className="font-body-lg text-on-surface-variant max-w-2xl">Find what you're looking for by exploring our organized categories. We've classified items to help you navigate through reports efficiently.</p>
+                </div>
+                
+                {/* Bento Grid for Categories */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 auto-rows-[200px]">
+                  {/* Electronics (Large Featured) */}
                   <div 
-                    className="bg-surface-container-lowest rounded-2xl p-6 border border-outline-variant hover:border-primary hover:shadow-md transition-all cursor-pointer group flex flex-col items-center text-center"
-                    onClick={() => {
-                      setCategoryKeywords(["bag", "backpack", "purse", "wallet", "luggage", "suitcase", "handbag"]);
-                      setActiveTab("search");
-                    }}
-                  >
-                    <div className="w-16 h-16 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center mb-4 text-3xl group-hover:scale-110 transition-transform">
-                      🎒
-                    </div>
-                    <h3 className="font-headline-md font-bold text-on-surface mb-2">Bags &amp; Backpacks</h3>
-                    <p className="text-sm text-on-surface-variant mb-4">Purses, wallets, luggage, etc.</p>
-                    <div className="mt-auto inline-flex items-center gap-1.5 px-3 py-1 bg-surface-variant text-on-surface-variant rounded-full text-xs font-bold">
-                      {items.filter(i => ["bag", "backpack", "purse", "wallet", "luggage", "suitcase", "handbag"].some(kw => i.title.toLowerCase().includes(kw) || i.desc?.toLowerCase().includes(kw))).length} Items Active
-                    </div>
-                  </div>
-
-                  {/* Category 2 */}
-                  <div 
-                    className="bg-surface-container-lowest rounded-2xl p-6 border border-outline-variant hover:border-primary hover:shadow-md transition-all cursor-pointer group flex flex-col items-center text-center"
+                    className="col-span-1 sm:col-span-2 lg:col-span-2 row-span-2 rounded-xl bg-surface-container-lowest shadow-[0_4px_20px_rgba(1,114,90,0.05)] hover:shadow-[0_8px_30px_rgba(1,114,90,0.1)] hover:-translate-y-1 p-8 flex flex-col justify-between group overflow-hidden relative border border-outline-variant/30 transition-all duration-300 cursor-pointer"
                     onClick={() => {
                       setCategoryKeywords(["phone", "laptop", "tablet", "charger", "headphone", "earphone", "computer", "iphone", "samsung", "ipad", "macbook"]);
                       setActiveTab("search");
                     }}
                   >
-                    <div className="w-16 h-16 rounded-full bg-secondary-container text-on-secondary-container flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                      <Smartphone className="h-8 w-8" />
+                    <div className="absolute -right-10 -bottom-10 opacity-5 group-hover:opacity-10 transition-opacity duration-500 pointer-events-none">
+                      <Smartphone className="w-[300px] h-[300px] text-primary" />
                     </div>
-                    <h3 className="font-headline-md font-bold text-on-surface mb-2">Electronics</h3>
-                    <p className="text-sm text-on-surface-variant mb-4">Phones, laptops, tablets, chargers</p>
-                    <div className="mt-auto inline-flex items-center gap-1.5 px-3 py-1 bg-surface-variant text-on-surface-variant rounded-full text-xs font-bold">
-                      {items.filter(i => ["phone", "laptop", "tablet", "charger", "headphone", "earphone", "computer", "iphone", "samsung", "ipad", "macbook"].some(kw => i.title.toLowerCase().includes(kw) || i.desc?.toLowerCase().includes(kw))).length} Items Active
+                    <div className="relative z-10 flex justify-between items-start">
+                      <div className="bg-primary-container p-3 rounded-lg inline-flex">
+                        <Smartphone className="text-on-primary-container h-8 w-8" />
+                      </div>
+                      <span className="bg-surface-variant text-on-surface-variant font-label-md text-xs px-3 py-1 rounded-full border border-outline-variant/20">
+                        {items.filter(i => ["phone", "laptop", "tablet", "charger", "headphone", "earphone", "computer", "iphone", "samsung", "ipad", "macbook"].some(kw => i.title.toLowerCase().includes(kw) || i.desc?.toLowerCase().includes(kw))).length} Active
+                      </span>
                     </div>
-                  </div>
-
-                  {/* Category 3 */}
-                  <div 
-                    className="bg-surface-container-lowest rounded-2xl p-6 border border-outline-variant hover:border-primary hover:shadow-md transition-all cursor-pointer group flex flex-col items-center text-center"
-                    onClick={() => {
-                      setCategoryKeywords(["book", "notebook", "textbook", "pen", "pencil", "id", "card", "stationery", "notes"]);
-                      setActiveTab("search");
-                    }}
-                  >
-                    <div className="w-16 h-16 rounded-full bg-tertiary-container text-on-tertiary-container flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                      <Info className="h-8 w-8" />
-                    </div>
-                    <h3 className="font-headline-md font-bold text-on-surface mb-2">Books &amp; Stationery</h3>
-                    <p className="text-sm text-on-surface-variant mb-4">Textbooks, IDs, pens, notes</p>
-                    <div className="mt-auto inline-flex items-center gap-1.5 px-3 py-1 bg-surface-variant text-on-surface-variant rounded-full text-xs font-bold">
-                      {items.filter(i => ["book", "notebook", "textbook", "pen", "pencil", "id", "card", "stationery", "notes"].some(kw => i.title.toLowerCase().includes(kw) || i.desc?.toLowerCase().includes(kw))).length} Items Active
+                    <div className="relative z-10 mt-auto">
+                      <h3 className="font-headline-md text-3xl font-bold text-primary mb-2 group-hover:text-primary-dim transition-colors">Electronics</h3>
+                      <p className="font-body-md text-base text-on-surface-variant max-w-sm">Phones, laptops, tablets, and other digital devices reported lost or found recently.</p>
                     </div>
                   </div>
 
-                  {/* Category 4 */}
+                  {/* Bags & Luggage */}
                   <div 
-                    className="bg-surface-container-lowest rounded-2xl p-6 border border-outline-variant hover:border-primary hover:shadow-md transition-all cursor-pointer group flex flex-col items-center text-center"
+                    className="col-span-1 rounded-xl bg-surface-container-lowest shadow-[0_4px_20px_rgba(1,114,90,0.05)] hover:shadow-[0_8px_30px_rgba(1,114,90,0.1)] hover:-translate-y-1 p-6 flex flex-col justify-between group relative overflow-hidden border border-outline-variant/30 transition-all duration-300 cursor-pointer"
                     onClick={() => {
-                      setCategoryKeywords(["jacket", "shirt", "pants", "uniform", "glasses", "watch", "coat", "shoes", "hat", "scarf"]);
+                      setCategoryKeywords(["bag", "backpack", "purse", "wallet", "luggage", "suitcase", "handbag"]);
                       setActiveTab("search");
                     }}
                   >
-                    <div className="w-16 h-16 rounded-full bg-error-container text-on-error-container flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                      <Tag className="h-8 w-8" />
+                    <div className="absolute -right-4 -bottom-4 opacity-5 group-hover:opacity-10 transition-opacity duration-500 pointer-events-none">
+                      <Package className="w-[150px] h-[150px] text-tertiary" />
                     </div>
-                    <h3 className="font-headline-md font-bold text-on-surface mb-2">Clothing &amp; Accs.</h3>
-                    <p className="text-sm text-on-surface-variant mb-4">Jackets, uniforms, glasses, watches</p>
-                    <div className="mt-auto inline-flex items-center gap-1.5 px-3 py-1 bg-surface-variant text-on-surface-variant rounded-full text-xs font-bold">
-                      {items.filter(i => ["jacket", "shirt", "pants", "uniform", "glasses", "watch", "coat", "shoes", "hat", "scarf"].some(kw => i.title.toLowerCase().includes(kw) || i.desc?.toLowerCase().includes(kw))).length} Items Active
+                    <div className="relative z-10 flex justify-between items-start">
+                      <div className="bg-tertiary-container p-2 rounded-lg inline-flex">
+                        <Package className="text-on-tertiary-container h-6 w-6" />
+                      </div>
+                      <span className="bg-surface-variant text-on-surface-variant font-label-md text-[10px] px-2 py-1 rounded-full">
+                        {items.filter(i => ["bag", "backpack", "purse", "wallet", "luggage", "suitcase", "handbag"].some(kw => i.title.toLowerCase().includes(kw) || i.desc?.toLowerCase().includes(kw))).length} Active
+                      </span>
+                    </div>
+                    <div className="relative z-10 mt-auto">
+                      <h3 className="font-body-lg text-lg font-bold text-on-surface mb-1 group-hover:text-tertiary transition-colors">Bags & Luggage</h3>
+                      <p className="font-body-md text-sm text-on-surface-variant line-clamp-2">Backpacks, purses, suitcases and other carry-ons.</p>
+                    </div>
+                  </div>
+
+                  {/* Pets */}
+                  <div 
+                    className="col-span-1 rounded-xl bg-surface-container-lowest shadow-[0_4px_20px_rgba(1,114,90,0.05)] hover:shadow-[0_8px_30px_rgba(1,114,90,0.1)] hover:-translate-y-1 p-6 flex flex-col justify-between group relative overflow-hidden border border-outline-variant/30 transition-all duration-300 cursor-pointer"
+                    onClick={() => {
+                      setCategoryKeywords(["dog", "cat", "pet", "bird", "animal", "puppy", "kitten", "collar"]);
+                      setActiveTab("search");
+                    }}
+                  >
+                    <div className="absolute -right-4 -bottom-4 opacity-5 group-hover:opacity-10 transition-opacity duration-500 pointer-events-none">
+                      <Heart className="w-[150px] h-[150px] text-error" />
+                    </div>
+                    <div className="relative z-10 flex justify-between items-start">
+                      <div className="bg-[#ffdcdc] p-2 rounded-lg inline-flex">
+                        <Heart className="text-error h-6 w-6" fill="currentColor" />
+                      </div>
+                      <span className="bg-surface-variant text-on-surface-variant font-label-md text-[10px] px-2 py-1 rounded-full">
+                        {items.filter(i => ["dog", "cat", "pet", "bird", "animal", "puppy", "kitten", "collar"].some(kw => i.title.toLowerCase().includes(kw) || i.desc?.toLowerCase().includes(kw))).length} Active
+                      </span>
+                    </div>
+                    <div className="relative z-10 mt-auto">
+                      <h3 className="font-body-lg text-lg font-bold text-on-surface mb-1 group-hover:text-error transition-colors">Pets & Animals</h3>
+                      <p className="font-body-md text-sm text-on-surface-variant line-clamp-2">Lost dogs, cats, and other companion animals.</p>
+                    </div>
+                  </div>
+
+                  {/* Documents (Tall) */}
+                  <div 
+                    className="col-span-1 sm:col-span-1 row-span-2 rounded-xl bg-surface-container-lowest shadow-[0_4px_20px_rgba(1,114,90,0.05)] hover:shadow-[0_8px_30px_rgba(1,114,90,0.1)] hover:-translate-y-1 p-6 flex flex-col justify-between group relative overflow-hidden border border-outline-variant/30 transition-all duration-300 cursor-pointer"
+                    onClick={() => {
+                      setCategoryKeywords(["document", "id", "passport", "license", "card", "paper", "folder"]);
+                      setActiveTab("search");
+                    }}
+                  >
+                    <div className="absolute top-0 right-0 w-full h-full opacity-[0.03] group-hover:opacity-[0.05] transition-opacity duration-500 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-primary via-transparent to-transparent pointer-events-none"></div>
+                    <div className="relative z-10 flex justify-between items-start mb-4">
+                      <div className="bg-secondary-container p-3 rounded-lg inline-flex">
+                        <FileText className="text-on-secondary-container h-8 w-8" />
+                      </div>
+                      <span className="bg-surface-variant text-on-surface-variant font-label-md text-[10px] px-2 py-1 rounded-full">
+                        {items.filter(i => ["document", "id", "passport", "license", "card", "paper", "folder"].some(kw => i.title.toLowerCase().includes(kw) || i.desc?.toLowerCase().includes(kw))).length} Active
+                      </span>
+                    </div>
+                    <div className="relative z-10 mt-auto">
+                      <h3 className="font-body-lg text-2xl font-bold text-secondary mb-2 group-hover:text-primary transition-colors">Documents & IDs</h3>
+                      <p className="font-body-md text-sm text-on-surface-variant mb-4">Passports, driver's licenses, IDs, and important paperwork.</p>
+                      <div className="flex items-center text-primary font-label-md text-xs group-hover:translate-x-1 transition-transform">
+                        Explore <ArrowRight className="h-4 w-4 ml-1" />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Clothing */}
+                  <div 
+                    className="col-span-1 sm:col-span-1 row-span-1 rounded-xl bg-surface-container-lowest shadow-[0_4px_20px_rgba(1,114,90,0.05)] hover:shadow-[0_8px_30px_rgba(1,114,90,0.1)] hover:-translate-y-1 p-6 flex flex-col justify-between group relative overflow-hidden border border-outline-variant/30 transition-all duration-300 cursor-pointer"
+                    onClick={() => {
+                      setCategoryKeywords(["jacket", "shirt", "pants", "uniform", "shoes", "hat", "scarf", "coat", "clothing"]);
+                      setActiveTab("search");
+                    }}
+                  >
+                    <div className="relative z-10 flex justify-between items-start">
+                      <div className="bg-surface-variant p-2 rounded-lg inline-flex">
+                        <Tag className="text-on-surface h-6 w-6" />
+                      </div>
+                      <span className="bg-surface-variant text-on-surface-variant font-label-md text-[10px] px-2 py-1 rounded-full">
+                        {items.filter(i => ["jacket", "shirt", "pants", "uniform", "shoes", "hat", "scarf", "coat", "clothing"].some(kw => i.title.toLowerCase().includes(kw) || i.desc?.toLowerCase().includes(kw))).length} Active
+                      </span>
+                    </div>
+                    <div className="relative z-10 mt-auto">
+                      <h3 className="font-body-lg text-lg font-bold text-on-surface mb-1 group-hover:text-primary transition-colors">Clothing</h3>
+                    </div>
+                  </div>
+
+                  {/* Jewelry & Watches */}
+                  <div 
+                    className="col-span-1 sm:col-span-1 row-span-1 rounded-xl bg-surface-container-lowest shadow-[0_4px_20px_rgba(1,114,90,0.05)] hover:shadow-[0_8px_30px_rgba(1,114,90,0.1)] hover:-translate-y-1 p-6 flex flex-col justify-between group relative overflow-hidden border border-outline-variant/30 transition-all duration-300 cursor-pointer"
+                    onClick={() => {
+                      setCategoryKeywords(["ring", "necklace", "bracelet", "watch", "earring", "jewelry", "diamond", "gold", "silver"]);
+                      setActiveTab("search");
+                    }}
+                  >
+                    <div className="relative z-10 flex justify-between items-start">
+                      <div className="bg-surface-variant p-2 rounded-lg inline-flex">
+                        <Clock className="text-on-surface h-6 w-6" />
+                      </div>
+                      <span className="bg-surface-variant text-on-surface-variant font-label-md text-[10px] px-2 py-1 rounded-full">
+                        {items.filter(i => ["ring", "necklace", "bracelet", "watch", "earring", "jewelry", "diamond", "gold", "silver"].some(kw => i.title.toLowerCase().includes(kw) || i.desc?.toLowerCase().includes(kw))).length} Active
+                      </span>
+                    </div>
+                    <div className="relative z-10 mt-auto">
+                      <h3 className="font-body-lg text-lg font-bold text-on-surface mb-1 group-hover:text-primary transition-colors">Jewelry & Watches</h3>
+                    </div>
+                  </div>
+
+                  {/* Keys */}
+                  <div 
+                    className="col-span-1 sm:col-span-1 row-span-1 rounded-xl bg-surface-container-lowest shadow-[0_4px_20px_rgba(1,114,90,0.05)] hover:shadow-[0_8px_30px_rgba(1,114,90,0.1)] hover:-translate-y-1 p-6 flex flex-col justify-between group relative overflow-hidden border border-outline-variant/30 transition-all duration-300 cursor-pointer"
+                    onClick={() => {
+                      setCategoryKeywords(["key", "keychain", "fob", "car key"]);
+                      setActiveTab("search");
+                    }}
+                  >
+                    <div className="relative z-10 flex justify-between items-start">
+                      <div className="bg-surface-variant p-2 rounded-lg inline-flex">
+                        <Key className="text-on-surface h-6 w-6" />
+                      </div>
+                      <span className="bg-surface-variant text-on-surface-variant font-label-md text-[10px] px-2 py-1 rounded-full">
+                        {items.filter(i => ["key", "keychain", "fob", "car key"].some(kw => i.title.toLowerCase().includes(kw) || i.desc?.toLowerCase().includes(kw))).length} Active
+                      </span>
+                    </div>
+                    <div className="relative z-10 mt-auto">
+                      <h3 className="font-body-lg text-lg font-bold text-on-surface mb-1 group-hover:text-primary transition-colors">Keys</h3>
                     </div>
                   </div>
                 </div>
               </div>
             </section>
-
-            {/* PANEL: ANALYTICS DESK */}
+{/* PANEL: ANALYTICS DESK */}
             <section
               id="analytics"
               className={`panel ${activeTab === "analytics" ? "active" : ""}`}

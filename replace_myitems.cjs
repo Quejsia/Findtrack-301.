@@ -12,117 +12,119 @@ if (startIndex === -1 || endIndex === -1) {
 const replacement = `{/* PANEL: MY ITEMS */}
             <section
               id="myitems"
-              className={\`\${activeTab === "myitems" ? "block" : "hidden"}\`}
+              className={\`\${activeTab === "myitems" ? "block" : "hidden"} flex-1 flex flex-col min-w-0 bg-background overflow-y-auto\`}
             >
-              <div className="max-w-6xl mx-auto space-y-8">
-                <header className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+              <div className="p-4 md:p-8">
+                {/* Dashboard Header */}
+                <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 space-y-4 md:space-y-0">
                   <div>
-                    <h2 className="font-headline-lg text-3xl font-bold text-on-surface">My Items</h2>
-                    <p className="font-body-md text-on-surface-variant mt-2">Manage your reported lost and found items.</p>
+                    <h2 className="font-headline-lg text-3xl font-bold text-on-background mb-1">My Items</h2>
+                    <p className="font-body-lg text-on-surface-variant">Manage and track your reported lost or found items.</p>
                   </div>
-                  <div className="flex gap-3">
-                    <button className="flex items-center gap-2 px-4 py-2 font-label-md font-bold border border-outline rounded-lg text-on-surface hover:bg-surface-variant transition-colors">
-                      <Filter className="h-4 w-4" /> Filter
-                    </button>
-                    <button 
-                      onClick={() => setActiveTab("report")}
-                      className="flex items-center gap-2 px-4 py-2 font-label-md font-bold bg-primary text-on-primary rounded-lg shadow-sm hover:bg-primary-dim transition-colors"
-                    >
-                      <PlusCircle className="h-4 w-4" /> Report New
-                    </button>
-                  </div>
-                </header>
+                  <button 
+                    onClick={() => setActiveTab("report")}
+                    className="flex items-center gap-2 px-4 py-2 font-label-md font-bold bg-primary text-on-primary rounded-lg shadow-sm hover:bg-primary-dim transition-colors"
+                  >
+                    <PlusCircle className="h-4 w-4" /> Report New
+                  </button>
+                </div>
 
                 {/* Tabs */}
-                <div className="flex gap-2 overflow-x-auto pb-2 border-b border-outline-variant">
-                  <button className="px-4 py-2 font-label-md font-bold text-primary border-b-2 border-primary whitespace-nowrap">
+                <div className="flex space-x-8 border-b border-outline-variant mb-8 overflow-x-auto pb-px">
+                  <button className="font-label-md text-sm text-primary border-b-2 border-primary pb-3 px-1 whitespace-nowrap">
                     Active ({items.filter(i => i.userId === auth.currentUser?.uid && !i.claimed).length})
                   </button>
-                  <button className="px-4 py-2 font-label-md font-medium text-on-surface-variant hover:text-on-surface whitespace-nowrap">
+                  <button className="font-label-md text-sm text-on-surface-variant hover:text-primary transition-colors pb-3 px-1 whitespace-nowrap">
                     Resolved ({items.filter(i => i.userId === auth.currentUser?.uid && i.claimed).length})
                   </button>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                {/* Bento Grid List */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
                   {items
                     .filter((item) => item.userId === auth.currentUser?.uid)
                     .map((r) => {
-                      const pinned = pinnedIds.includes(r.id);
                       return (
-                        <div key={r.id} className="bg-surface-container-lowest rounded-xl border border-outline-variant overflow-hidden hover:shadow-md transition-shadow group flex flex-col">
+                        <article key={r.id} className="bg-surface-container-lowest rounded-[16px] p-4 md:p-6 shadow-[0_4px_24px_rgba(1,114,90,0.08)] hover:shadow-[0_8px_32px_rgba(1,114,90,0.12)] hover:-translate-y-0.5 transition-all duration-200 flex flex-col h-full border border-surface-variant group">
+                          <div className="flex justify-between items-start mb-4">
+                            <div className="flex items-center space-x-2">
+                              {r.claimed ? (
+                                <span className="bg-secondary-container text-on-secondary-container px-2 py-1 rounded-full font-label-md text-[10px] uppercase tracking-wider flex items-center space-x-1">
+                                  <CheckCircle2 className="h-[14px] w-[14px]" />
+                                  <span>Match Found</span>
+                                </span>
+                              ) : r.type === "found" ? (
+                                <span className="bg-primary-container text-on-primary-container px-2 py-1 rounded-full font-label-md text-[10px] uppercase tracking-wider flex items-center space-x-1">
+                                  <Hand className="h-[14px] w-[14px]" />
+                                  <span>Found</span>
+                                </span>
+                              ) : (
+                                <span className="bg-tertiary-container text-on-tertiary-container px-2 py-1 rounded-full font-label-md text-[10px] uppercase tracking-wider flex items-center space-x-1">
+                                  <Search className="h-[14px] w-[14px] animate-pulse" />
+                                  <span>Searching</span>
+                                </span>
+                              )}
+                              <span className="text-on-surface-variant font-label-md text-xs">
+                                {r.type === 'found' ? 'Found' : 'Lost'} • {r.createdAt ? new Date(r.createdAt.seconds ? r.createdAt.seconds * 1000 : r.createdAt).toLocaleDateString() : 'Recent'}
+                              </span>
+                            </div>
+                            <button 
+                              onClick={() => deleteItem(r.id)}
+                              className="text-on-surface-variant hover:text-error transition-colors"
+                            >
+                              <X className="h-5 w-5" />
+                            </button>
+                          </div>
+                          
                           <div 
-                            className="relative h-48 bg-surface-variant overflow-hidden cursor-pointer"
+                            className="flex space-x-4 mb-4 flex-1 cursor-pointer"
                             onClick={() => {
                               setSelectedItemId(r.id);
                               setActiveTab("itemDetail");
                             }}
                           >
-                            {r.image || r.imageUrl ? (
-                              <img src={r.image || r.imageUrl} alt="" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" referrerPolicy="no-referrer" />
-                            ) : (
-                              <div className="w-full h-full flex items-center justify-center text-outline">
-                                <Camera className="h-10 w-10 opacity-30" />
+                            <div className="w-24 h-24 rounded-lg overflow-hidden flex-shrink-0 bg-surface-container flex items-center justify-center text-outline-variant">
+                              {r.image || r.imageUrl ? (
+                                <img src={r.image || r.imageUrl} alt="" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" referrerPolicy="no-referrer" />
+                              ) : (
+                                <Image className="h-10 w-10 opacity-30" />
+                              )}
+                            </div>
+                            <div>
+                              <h3 className="font-headline-md text-lg font-bold text-on-surface mb-1 leading-tight group-hover:text-primary transition-colors line-clamp-2">
+                                {r.title}
+                              </h3>
+                              <div className="flex items-center space-x-1 mt-2 text-primary">
+                                <MapPin className="h-4 w-4 shrink-0" />
+                                <span className="font-label-md text-[11px] truncate">{r.location}</span>
                               </div>
+                            </div>
+                          </div>
+                          
+                          <div className="pt-4 border-t border-outline-variant flex space-x-3 mt-auto">
+                            {r.claimed ? (
+                              <>
+                                <button className="flex-1 bg-primary text-on-primary py-2 rounded-lg font-label-md text-sm hover:bg-primary-dim transition-colors flex items-center justify-center space-x-2">
+                                  <MessageSquare className="h-[18px] w-[18px]" />
+                                  <span>Message Finder</span>
+                                </button>
+                              </>
+                            ) : (
+                              <>
+                                <button 
+                                  onClick={() => {
+                                    setSelectedItemId(r.id);
+                                    setActiveTab("itemDetail");
+                                  }}
+                                  className="flex-1 border border-primary text-primary py-2 rounded-lg font-label-md text-sm hover:bg-surface-container transition-colors flex items-center justify-center space-x-2"
+                                >
+                                  <Eye className="h-[18px] w-[18px]" />
+                                  <span>View Details</span>
+                                </button>
+                              </>
                             )}
-                            <div className="absolute top-3 left-3 flex gap-2">
-                              <span className={\`px-2.5 py-1 text-xs font-bold rounded-full \${
-                                r.claimed ? 'bg-primary-container text-on-primary-container' : 
-                                r.type === 'found' ? 'bg-secondary-container text-on-secondary-container' : 'bg-error-container text-on-error-container'
-                              }\`}>
-                                {r.claimed ? 'RESOLVED' : r.type === 'found' ? 'FOUND ITEM' : 'LOST ITEM'}
-                              </span>
-                            </div>
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                togglePin(r.id);
-                              }}
-                              className={\`absolute top-3 right-3 p-2 rounded-full backdrop-blur-md transition-colors \${
-                                pinned ? "bg-tertiary-container text-on-tertiary-container" : "bg-black/30 text-white hover:bg-black/50"
-                              }\`}
-                            >
-                              <MapPin className="h-4 w-4" fill={pinned ? "currentColor" : "none"} />
-                            </button>
                           </div>
-                          <div className="p-5 flex-1 flex flex-col">
-                            <h3 
-                              className="font-headline-md text-lg font-bold text-on-surface mb-2 cursor-pointer hover:text-primary transition-colors line-clamp-1"
-                              onClick={() => {
-                                setSelectedItemId(r.id);
-                                setActiveTab("itemDetail");
-                              }}
-                            >
-                              {r.title}
-                            </h3>
-                            <div className="space-y-1.5 mb-4 flex-1">
-                              <p className="flex items-center text-sm text-on-surface-variant">
-                                <MapPin className="h-4 w-4 mr-2 text-outline shrink-0" />
-                                <span className="truncate">{r.location}</span>
-                              </p>
-                              <p className="flex items-center text-sm text-on-surface-variant">
-                                <Clock className="h-4 w-4 mr-2 text-outline shrink-0" />
-                                <span>{r.createdAt ? new Date(r.createdAt.seconds ? r.createdAt.seconds * 1000 : r.createdAt).toLocaleDateString() : 'Recent'}</span>
-                              </p>
-                            </div>
-                            <div className="pt-4 border-t border-outline-variant flex justify-between items-center">
-                              <button 
-                                onClick={() => {
-                                  setSelectedItemId(r.id);
-                                  setActiveTab("itemDetail");
-                                }}
-                                className="text-sm font-bold text-primary hover:text-primary-dim"
-                              >
-                                View Details
-                              </button>
-                              <button 
-                                onClick={() => handleDelete(r.id)}
-                                className="text-sm font-bold text-error hover:text-error-container"
-                              >
-                                Delete
-                              </button>
-                            </div>
-                          </div>
-                        </div>
+                        </article>
                       );
                     })}
                   
@@ -130,7 +132,7 @@ const replacement = `{/* PANEL: MY ITEMS */}
                     <div className="col-span-full py-16 text-center border-2 border-dashed border-outline-variant rounded-2xl bg-surface-container-lowest">
                       <Inbox className="h-12 w-12 text-outline mx-auto mb-4" />
                       <h3 className="font-headline-md text-lg font-bold text-on-surface mb-2">No items yet</h3>
-                      <p className="text-on-surface-variant mb-6">You haven't reported any lost or found items.</p>
+                      <p className="font-body-md text-on-surface-variant mb-6">You haven't reported any lost or found items.</p>
                       <button 
                         onClick={() => setActiveTab("report")}
                         className="inline-flex items-center gap-2 px-6 py-2.5 font-label-md font-bold bg-primary text-on-primary rounded-lg shadow-sm hover:bg-primary-dim transition-colors"
@@ -142,9 +144,8 @@ const replacement = `{/* PANEL: MY ITEMS */}
                 </div>
               </div>
             </section>
-
-            `;
+`;
 
 code = code.substring(0, startIndex) + replacement + code.substring(endIndex);
 fs.writeFileSync('src/App.tsx', code);
-console.log('Replaced my items layout.');
+console.log('Replaced myitems');
