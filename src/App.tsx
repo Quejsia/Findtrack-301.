@@ -22,6 +22,13 @@ import {
 import { auth, db, loginWithGoogle, registerWithEmail, loginWithEmail, logOut, OperationType, handleFirestoreError } from './firebase';
 
 export default function App() {
+  const [user, setUser] = useState<User | null>(null);
+  const [currentView, setCurrentView] = useState<string>('landing');
+  const [loadingAuth, setLoadingAuth] = useState(true);
+  const [authEmail, setAuthEmail] = useState('');
+  const [authPassword, setAuthPass] = useState('');
+  const [signupFirst, setSignupFirst] = useState('');
+  const [signupLast, setSignupLast] = useState('');
   const [signupContact, setSignupContact] = useState('');
   
   // App alerts, loading states & real-time sync list
