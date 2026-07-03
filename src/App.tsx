@@ -19,61 +19,9 @@ import {
   where,
   orderBy
 } from 'firebase/firestore';
-import { 
-  auth, 
-            <div className="auth-card bg-surface relative p-6 rounded-xl">
-              <div>
-                <h2 className="mt-0 font-headline-lg text-headline-lg text-on-surface">Create an account</h2>
-                <p className="mt-2 font-body-md text-body-md text-on-surface-variant">Already a member? <button onClick={() => setCurrentView('login')} className="font-label-md text-label-md font-semibold text-primary hover:text-primary-dim transition-colors">Login here</button></p>
-              </div>
+import { auth, db, loginWithGoogle, registerWithEmail, loginWithEmail, logOut, OperationType, handleFirestoreError } from './firebase';
 
-              <div className="mt-6">
-                <form onSubmit={handleSignupSubmit} className="space-y-6">
-                  <div>
-                    <label className="block font-label-md text-label-md text-on-surface" htmlFor="first">First Name</label>
-                    <div className="mt-2">
-                      <input id="first" name="first" type="text" required className="block w-full rounded-lg border-0 py-3 px-4 text-on-surface bg-surface-container-low shadow-sm ring-1 ring-inset ring-outline-variant placeholder:text-outline focus:ring-2 focus:ring-inset focus:ring-primary sm:text-body-md font-body-md" placeholder="First name" value={signupFirst} onChange={(e) => setSignupFirst(e.target.value)} />
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block font-label-md text-label-md text-on-surface" htmlFor="last">Last Name</label>
-                    <div className="mt-2">
-                      <input id="last" name="last" type="text" required className="block w-full rounded-lg border-0 py-3 px-4 text-on-surface bg-surface-container-low shadow-sm ring-1 ring-inset ring-outline-variant placeholder:text-outline focus:ring-2 focus:ring-inset focus:ring-primary sm:text-body-md font-body-md" placeholder="Last name" value={signupLast} onChange={(e) => setSignupLast(e.target.value)} />
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block font-label-md text-label-md text-on-surface" htmlFor="email-signup">Email address</label>
-                    <div className="mt-2">
-                      <input id="email-signup" name="email" type="email" required className="block w-full rounded-lg border-0 py-3 px-4 text-on-surface bg-surface-container-low shadow-sm ring-1 ring-inset ring-outline-variant placeholder:text-outline focus:ring-2 focus:ring-inset focus:ring-primary sm:text-body-md font-body-md" placeholder="you@example.com" value={authEmail} onChange={(e) => setAuthEmail(e.target.value)} />
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block font-label-md text-label-md text-on-surface" htmlFor="contact">Contact (optional)</label>
-                    <div className="mt-2">
-                      <input id="contact" name="contact" type="text" className="block w-full rounded-lg border-0 py-3 px-4 text-on-surface bg-surface-container-low shadow-sm ring-1 ring-inset ring-outline-variant placeholder:text-outline focus:ring-2 focus:ring-inset focus:ring-primary sm:text-body-md font-body-md" placeholder="+63 912 345 6789" value={signupContact} onChange={(e) => setSignupContact(e.target.value)} />
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block font-label-md text-label-md text-on-surface" htmlFor="password-signup">Password</label>
-                    <div className="mt-2">
-                      <input id="password-signup" name="password" type={showPass ? 'text' : 'password'} required className="block w-full rounded-lg border-0 py-3 px-4 text-on-surface bg-surface-container-low shadow-sm ring-1 ring-inset ring-outline-variant placeholder:text-outline focus:ring-2 focus:ring-inset focus:ring-primary sm:text-body-md font-body-md" placeholder="Create a secure password" value={authPassword} onChange={(e) => setAuthPass(e.target.value)} />
-                    </div>
-                  </div>
-
-                  <div className="flex items-center">
-                    <input id="terms" name="terms" type="checkbox" required className="h-4 w-4 rounded border-outline-variant text-primary focus:ring-primary bg-surface-container-low" />
-                    <label htmlFor="terms" className="ml-3 block font-body-md text-body-md text-on-surface-variant">I agree to the <button type="button" className="text-primary hover:underline">Terms of Service</button> and <button type="button" className="text-primary hover:underline">Privacy Policy</button>.</label>
-                  </div>
-
-                  <div>
-                    <button type="submit" className="flex w-full justify-center rounded-lg bg-primary-container px-3 py-3 font-label-md text-label-md font-semibold text-on-primary-container shadow-sm hover:bg-primary-fixed">Create Account</button>
-                  </div>
-                </form>
-              </div>
+export default function App() {
   const [signupContact, setSignupContact] = useState('');
   
   // App alerts, loading states & real-time sync list
