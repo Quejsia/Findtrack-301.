@@ -1675,6 +1675,20 @@ export default function App() {
               >
                 Change Email Address
               </button>
+
+              <div className="mt-6 pt-4 border-t border-slate-100 text-left">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setRefererBlockedDomain(window.location.hostname);
+                    setShowRefererModal(true);
+                  }}
+                  className="w-full flex items-center justify-center gap-2 p-3 bg-amber-50 hover:bg-amber-100 border border-amber-200 text-amber-900 rounded-xl text-xs transition-colors font-medium shadow-sm"
+                >
+                  <span className="text-sm">❓</span>
+                  <span>Link says "Expired or already used"? Click here!</span>
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -4635,31 +4649,51 @@ export default function App() {
                 </a>
               </div>
 
-              <div className="space-y-3 text-left">
-                <p className="font-semibold text-slate-900">🛠️ Step-by-Step Developer Guide:</p>
-                <p>If this is your own Firebase project, you must register your domain in your Firebase project console to allow authentication requests:</p>
-                
-                <ol className="list-decimal pl-5 space-y-2.5">
-                  <li>
-                    Go to the <strong><a href="https://console.firebase.google.com/" target="_blank" rel="noopener noreferrer" className="text-teal-600 font-semibold underline hover:text-teal-800">Firebase Console</a></strong> and select your project.
-                  </li>
-                  <li>
-                    In the sidebar, go to <strong>Authentication</strong>, then click the <strong>Settings</strong> tab.
-                  </li>
-                  <li>
-                    In the left settings list, click <strong>Authorized Domains</strong>.
-                  </li>
-                  <li>
-                    Click <strong>Add domain</strong> and enter: <code className="bg-slate-100 px-1.5 py-0.5 rounded font-mono text-xs">{refererBlockedDomain || window.location.hostname}</code>
-                  </li>
-                  <li>
-                    <strong>GCP API Key restriction (Optional):</strong> If you restricted your API Key in the <a href="https://console.cloud.google.com/apis/credentials" target="_blank" rel="noopener noreferrer" className="text-teal-600 font-semibold underline hover:text-teal-800">Google Cloud Console</a> by HTTP Referer, make sure to add <code className="bg-slate-100 px-1.5 py-0.5 rounded font-mono text-xs">https://{refererBlockedDomain || window.location.hostname}/*</code> to your allowed HTTP referers.
-                  </li>
-                </ol>
-              </div>
+              <div className="space-y-4 text-left">
+                <div className="bg-amber-50 border border-amber-200 p-4 rounded-xl text-amber-900 text-xs">
+                  <p className="font-bold text-sm mb-1.5 flex items-center gap-1.5 text-amber-950">
+                    <span>📧</span> Fix "Link expired or already used" email verification error:
+                  </p>
+                  <p className="mb-2 leading-relaxed">
+                    If you successfully got the verification email, but clicking the link immediately shows <strong>"Your request to verify your email has expired or the link has already been used"</strong>:
+                  </p>
+                  <p className="mb-2 leading-relaxed font-semibold text-amber-950">
+                    This is caused by restricting your Google Cloud API Key to your custom domain without also authorizing Firebase's default handler domains!
+                  </p>
+                  <p className="mb-1 leading-relaxed">To resolve this:</p>
+                  <ol className="list-decimal pl-4 space-y-1">
+                    <li>Go to the <a href="https://console.cloud.google.com/apis/credentials" target="_blank" rel="noopener noreferrer" className="underline font-bold hover:text-amber-950">Google Cloud Credentials Console</a>.</li>
+                    <li>Click your <strong>Browser/Web API Key</strong> to edit its settings.</li>
+                    <li>In the <strong>HTTP Referrers (Website restrictions)</strong> list, you must add these three entries:
+                      <ul className="list-disc pl-4 mt-1 space-y-0.5 font-mono text-[11px] bg-amber-100/50 p-2 rounded">
+                        <li><code>https://findtrack-17dee.firebaseapp.com/*</code> (Your Firebase Domain)</li>
+                        <li><code>https://findtrack-17dee.web.app/*</code> (Your Firebase Domain)</li>
+                        <li><code>https://{window.location.hostname}/*</code> (Your Custom Domain)</li>
+                      </ul>
+                    </li>
+                    <li>Save settings. It may take 1-2 minutes for Google Cloud to apply the updated key restrictions.</li>
+                  </ol>
+                </div>
 
-              <div className="p-3 bg-slate-50 border border-slate-100 rounded-lg text-slate-500 text-xs text-left">
-                Once added, Firebase propagates changes within 30-60 seconds. You will then be able to register and login securely from this custom domain!
+                <div>
+                  <p className="font-semibold text-slate-900">🛠️ General Domain Setup (For Signup Block):</p>
+                  <p className="text-xs text-slate-500 mb-2">If you cannot register or login because the domain is blocked:</p>
+                  
+                  <ol className="list-decimal pl-5 space-y-2 text-xs">
+                    <li>
+                      Go to the <strong><a href="https://console.firebase.google.com/" target="_blank" rel="noopener noreferrer" className="text-teal-600 font-semibold underline hover:text-teal-800">Firebase Console</a></strong> and select your project.
+                    </li>
+                    <li>
+                      In the sidebar, go to <strong>Authentication</strong>, then click the <strong>Settings</strong> tab.
+                    </li>
+                    <li>
+                      In the left settings list, click <strong>Authorized Domains</strong>.
+                    </li>
+                    <li>
+                      Click <strong>Add domain</strong> and enter: <code className="bg-slate-100 px-1.5 py-0.5 rounded font-mono">{refererBlockedDomain || window.location.hostname}</code>
+                    </li>
+                  </ol>
+                </div>
               </div>
             </div>
 
