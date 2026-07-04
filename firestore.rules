@@ -109,6 +109,36 @@ service cloud.firestore {
         && existing().userId == request.auth.uid;
     }
 
+    // --- Private Item Secrets Rules ---
+    match /itemSecrets/{itemId} {
+      // Clients can NEVER read secret answers directly. Only verified via secure admin SDK.
+      allow read: if false;
+
+      // Allow creating secret verification answers
+      allow create: if isSignedIn()
+        && isEmailVerified()
+        && isValidId(itemId)
+        && incoming().itemId == itemId
+        && incoming().userId == request.auth.uid
+        && incoming().securityAnswer is string
+        && incoming().securityAnswer.size() <= 200;
+
+      // Allow updating secret verification answers
+      allow update: if isSignedIn()
+        && isEmailVerified()
+        && isValidId(itemId)
+        && existing().userId == request.auth.uid
+        && incoming().userId == existing().userId
+        && incoming().itemId == existing().itemId
+        && incoming().securityAnswer is string
+        && incoming().securityAnswer.size() <= 200;
+
+      // Allow deleting secret verification answers
+      allow delete: if isSignedIn()
+        && isEmailVerified()
+        && existing().userId == request.auth.uid;
+    }
+
     // --- Claims Collection Rules ---
     match /claims/{claimId} {
       allow read: if isSignedIn()

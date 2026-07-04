@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Item, Match } from '../types';
 import { motion, AnimatePresence } from 'motion/react';
 import { Sparkles, BrainCircuit, CheckSquare, XCircle, AlertCircle, RefreshCw, Check } from 'lucide-react';
+import { auth } from '../firebase';
 
 interface MatchmakerProps {
   item: Item;
@@ -33,10 +34,12 @@ export default function Matchmaker({ item, allOppositeItems, onResolveItem, user
     setError(null);
 
     try {
+      const token = await auth.currentUser?.getIdToken();
       const response = await fetch('/api/ai-matchmaker', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': token ? `Bearer ${token}` : '',
         },
         body: JSON.stringify({
           itemToMatch: item,

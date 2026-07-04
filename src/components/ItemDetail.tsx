@@ -158,9 +158,9 @@ export default function ItemDetail({
     try {
       let autoApproved = false;
       const normalizedUserAnswer = answer.trim().toLowerCase();
-      const normalizedCorrectAnswer = item.securityAnswer?.trim().toLowerCase() || '';
+      const hasSecurityQuestion = !!item.securityQuestion && item.securityQuestion.trim().length > 0;
 
-      if (normalizedCorrectAnswer) {
+      if (hasSecurityQuestion) {
         try {
           const token = await auth.currentUser?.getIdToken();
           const response = await fetch('/api/verify-claim', {
@@ -170,7 +170,9 @@ export default function ItemDetail({
               'Authorization': `Bearer ${token}`
             },
             body: JSON.stringify({
+              itemId: item.id,
               claimerAnswer: answer.trim(),
+              // Legacy fallbacks:
               secretAnswer: item.securityAnswer?.trim() || '',
               securityQuestion: item.securityQuestion || ''
             })
@@ -187,11 +189,20 @@ export default function ItemDetail({
             }
             
             autoApproved = !!data.match; // set true if match
+          } else {
+            throw new Error('API server returned error status.');
           }
         } catch (e) {
           console.error("AI Verification Error:", e);
-          // Fallback to exact match if API fails
-          autoApproved = normalizedUserAnswer === normalizedCorrectAnswer;
+          // Fallback to exact match if API fails and we have local securityAnswer (legacy items)
+          const normalizedCorrectAnswer = item.securityAnswer?.trim().toLowerCase() || '';
+          if (normalizedCorrectAnswer) {
+            autoApproved = normalizedUserAnswer === normalizedCorrectAnswer;
+          } else {
+            setClaimErrorObj("Verification could not be processed due to a secure backend connection error. Please try again.");
+            setSubmittingClaim(false);
+            return;
+          }
         }
       }
 

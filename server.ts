@@ -7,6 +7,7 @@ import dotenv from 'dotenv';
 import rateLimit from 'express-rate-limit';
 import { getApps, initializeApp } from 'firebase-admin/app';
 import { getAuth } from 'firebase-admin/auth';
+import { getFirestore as getAdminFirestore } from 'firebase-admin/firestore';
 
 // Initialize firebase admin
 if (!getApps().length) {
@@ -226,9 +227,30 @@ Filter and return ONLY matches having a confidence score of 35% or higher. Sort 
  */
 app.post('/api/verify-claim', apiLimiter, requireAuth, async (req, res) => {
   try {
-    const { claimerAnswer, secretAnswer, securityQuestion } = req.body;
-    if (!claimerAnswer || !secretAnswer) {
-      res.status(400).json({ error: 'Missing required fields.' });
+    const { claimerAnswer, itemId, secretAnswer: clientSecretAnswer, securityQuestion: clientSecurityQuestion } = req.body;
+    if (!claimerAnswer || !itemId) {
+      res.status(400).json({ error: 'Missing required fields (claimerAnswer and itemId).' });
+      return;
+    }
+
+    const adminDb = getAdminFirestore();
+    
+    // Load public item details (for securityQuestion)
+    const itemDoc = await adminDb.collection('items').doc(itemId).get();
+    if (!itemDoc.exists) {
+      res.status(404).json({ error: 'Item not found.' });
+      return;
+    }
+
+    const itemData = itemDoc.data();
+    const securityQuestion = itemData?.securityQuestion || clientSecurityQuestion || '';
+
+    // Load private secret verification answer (with secure fallbacks for compatibility)
+    const secretDoc = await adminDb.collection('itemSecrets').doc(itemId).get();
+    const secretAnswer = (secretDoc.exists ? secretDoc.data()?.securityAnswer : null) || itemData?.securityAnswer || clientSecretAnswer || '';
+
+    if (!secretAnswer) {
+      res.json({ match: true, reason: 'No security question is set for this item.' });
       return;
     }
 

@@ -1,6 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { Category, ItemType } from '../types';
 import { Camera, RefreshCw, Sparkles, Upload, Loader2, AlertCircle, Key } from 'lucide-react';
+import { auth } from '../firebase';
 
 interface SubmissionFormProps {
   onSubmit: (itemData: {
@@ -69,10 +70,12 @@ export default function SubmissionForm({ onSubmit, onClose, defaultContactName =
         const mimeType = resultStr.substring(resultStr.indexOf("data:") + 5, resultStr.indexOf(";"));
 
         try {
+          const token = await auth.currentUser?.getIdToken();
           const response = await fetch('/api/analyze-image', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
+              'Authorization': token ? `Bearer ${token}` : '',
             },
             body: JSON.stringify({
               imageBase64: rawBase64,

@@ -808,11 +808,21 @@ export default function App() {
       updatedAt: serverTimestamp(),
       claimed: false,
       securityQuestion: reportSecurityQuestion.trim(),
-      securityAnswer: reportSecurityAnswer.trim().toLowerCase(),
     };
 
     try {
       await setDoc(doc(db, "items", payloadId), reportData);
+
+      // Save secret verification answer in a separate private collection 'itemSecrets'
+      if (reportSecurityAnswer.trim()) {
+        await setDoc(doc(db, "itemSecrets", payloadId), {
+          itemId: payloadId,
+          userId: auth.currentUser?.uid || "anonymous_uid",
+          securityAnswer: reportSecurityAnswer.trim().toLowerCase(),
+          createdAt: serverTimestamp(),
+        });
+      }
+
       triggerToast("✅ Report submitted successfully!", "success");
 
       // Reset form variables
@@ -895,6 +905,14 @@ export default function App() {
 
     try {
       await deleteDoc(doc(db, "items", itemId));
+      
+      // Delete from itemSecrets private collection as well
+      try {
+        await deleteDoc(doc(db, "itemSecrets", itemId));
+      } catch (secErr) {
+        console.error("Failed to delete item secrets:", secErr);
+      }
+
       setPinnedIds((prev) => prev.filter((id) => id !== itemId));
       triggerToast("🗑️ Item deleted", "error");
       setActiveTab("search");
