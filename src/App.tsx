@@ -119,7 +119,7 @@ const ONBOARD_STEPS = [
 ];
 
 export default function App() {
-  // Navigation layout state: 'landing' | 'login' | 'signup' | 'dashboard' | 'verify-email' | 'privacy' | 'terms'
+  // Navigation layout state: 'landing' | 'login' | 'signup' | 'dashboard' | 'verify-email' | 'privacy' | 'terms' | 'verification-success'
   const [currentView, setCurrentView] = useState<
     | "landing"
     | "login"
@@ -128,6 +128,7 @@ export default function App() {
     | "verify-email"
     | "privacy"
     | "terms"
+    | "verification-success"
   >(() => {
     const path = window.location.pathname;
     if (path === "/privacy") return "privacy";
@@ -160,6 +161,23 @@ export default function App() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [showPass, setShowPass] = useState(false);
   const [resendCooldown, setResendCooldown] = useState(0);
+  const [confetti, setConfetti] = useState<any[]>([]);
+
+  useEffect(() => {
+    if (currentView === "verification-success") {
+      const colors = ["#9af4d6", "#01725a", "#fab83f", "#b5eedb"];
+      const pieces = Array.from({ length: 50 }).map((_, i) => ({
+        id: i,
+        color: colors[Math.floor(Math.random() * colors.length)],
+        left: `${Math.random() * 100}%`,
+        duration: `${Math.random() * 3 + 2}s`,
+        delay: `${Math.random() * 2}s`,
+      }));
+      setConfetti(pieces);
+    } else {
+      setConfetti([]);
+    }
+  }, [currentView]);
 
   useEffect(() => {
     if (resendCooldown > 0) {
@@ -399,7 +417,7 @@ export default function App() {
           if (auth.currentUser.emailVerified) {
             await auth.currentUser.getIdToken(true);
             triggerToast("✅ Email verified automatically!", "success");
-            setCurrentView("dashboard");
+            setCurrentView("verification-success");
           }
         }
       } catch (e) {
@@ -1722,128 +1740,157 @@ export default function App() {
 
       {/* ── VIEW 5: VERIFY EMAIL SCREEN ── */}
       {currentView === "verify-email" && (
-        <div className="min-h-screen flex items-center justify-center bg-[#F9F8F4] text-slate-900 font-sans p-4">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-8 md:p-10 text-center border border-slate-100">
-            <div className="w-24 h-24 mx-auto mb-6 bg-teal-50 rounded-full flex items-center justify-center">
-              <Mail className="w-12 h-12 text-[#1A7B72]" strokeWidth={1.5} />
+        <div className="min-h-screen flex flex-col bg-surface-container text-on-surface">
+          {/* Header */}
+          <header className="w-full bg-surface shadow-sm border-b border-outline-variant/20 py-4 px-6 flex justify-between items-center shrink-0">
+            <div className="flex items-center gap-2">
+              <span className="material-symbols-outlined text-primary" style={{ fontVariationSettings: "'FILL' 1" }}>eco</span>
+              <span className="font-headline-md text-lg font-bold text-primary tracking-tight">FindTrack</span>
             </div>
+            <button 
+              onClick={() => {
+                setRefererBlockedDomain(window.location.hostname);
+                setShowRefererModal(true);
+              }}
+              className="text-on-surface-variant hover:text-primary transition-colors cursor-pointer"
+            >
+              <span className="material-symbols-outlined">help</span>
+            </button>
+          </header>
 
-            <h2 className="text-2xl font-bold text-[#1A7B72] mb-4">
-              Verify your email address
-            </h2>
-            <p className="text-slate-600 mb-2">
-              We've sent a verification link to{" "}
-              <strong className="text-slate-900">
-                {auth.currentUser?.email ||
-                  profileEmail ||
-                  "your email address"}
-              </strong>
-              .
-            </p>
-            <p className="text-slate-600 mb-8">
-              Please click the link to confirm your account.
-            </p>
+          {/* Main Content */}
+          <div className="flex-grow flex items-center justify-center p-4">
+            <div className="bg-surface w-full max-w-md rounded-2xl shadow-[0_8px_32px_rgba(1,114,90,0.06)] p-8 md:p-10 flex flex-col items-center text-center border border-outline-variant/30 animate-[fadeInUp_0.8s_ease_forwards]">
+              {/* Icon */}
+              <div className="w-16 h-16 bg-primary-container rounded-full flex items-center justify-center mb-6 shadow-sm">
+                <span className="material-symbols-outlined text-3xl text-on-primary-container" style={{ fontVariationSettings: "'FILL' 1" }}>mark_email_read</span>
+              </div>
 
-            <div className="space-y-4">
-              <button
-                onClick={async () => {
-                  try {
-                    if (auth.currentUser) {
-                      await auth.currentUser.reload();
-                      if (auth.currentUser.emailVerified) {
-                        await auth.currentUser.getIdToken(true);
-                        triggerToast(
-                          "✅ Verification successful! Welcome to FindTrack.",
-                          "success",
-                        );
-                        setCurrentView("dashboard");
+              {/* Heading */}
+              <h1 className="font-sans text-2xl font-bold text-on-surface mb-3">Verify Your Email</h1>
+              <p className="font-body-lg text-sm text-on-surface-variant mb-6 px-2 leading-relaxed">
+                We've sent a verification link to{" "}
+                <strong className="text-on-surface font-semibold">
+                  {auth.currentUser?.email || profileEmail || "your email address"}
+                </strong>
+                . Please click the link to activate your account.
+              </p>
+
+              {/* Helper Box */}
+              <div className="w-full mb-8">
+                <p className="font-body-md text-xs text-on-surface-variant bg-surface-container-low p-4 rounded-xl border border-outline-variant/40 leading-relaxed text-left">
+                  Check your inbox and click the link to verify your account. Once verified, click below to continue.
+                </p>
+              </div>
+
+              {/* Buttons */}
+              <div className="w-full space-y-4">
+                <button
+                  onClick={async () => {
+                    try {
+                      if (auth.currentUser) {
+                        await auth.currentUser.reload();
+                        if (auth.currentUser.emailVerified) {
+                          await auth.currentUser.getIdToken(true);
+                          triggerToast(
+                            "✅ Verification successful! Welcome to FindTrack.",
+                            "success",
+                          );
+                          setCurrentView("verification-success");
+                        } else {
+                          triggerToast(
+                            "ℹ️ Email is not verified yet. Please check your inbox.",
+                            "error",
+                          );
+                        }
                       } else {
                         triggerToast(
-                          "ℹ️ Email is not verified yet. Please check your inbox.",
+                          "❌ Session lost. Please log in again.",
+                          "error",
+                        );
+                        setCurrentView("login");
+                      }
+                    } catch (e: any) {
+                      console.error(e);
+                      triggerToast(
+                        "❌ " + (e.message || "Failed to check status."),
+                        "error",
+                      );
+                    }
+                  }}
+                  className="w-full bg-primary hover:bg-primary-dim text-white font-semibold py-3.5 px-4 rounded-xl shadow-sm hover:shadow transition-all duration-200 active:scale-95 flex items-center justify-center gap-2 cursor-pointer"
+                >
+                  Check Verification Status
+                  <ArrowRight className="h-4 w-4" />
+                </button>
+
+                <button
+                  onClick={async () => {
+                    if (resendCooldown > 0) return;
+                    try {
+                      if (auth.currentUser) {
+                        const actionCodeSettings = {
+                          url: window.location.origin,
+                          handleCodeInApp: false,
+                        };
+                        await sendEmailVerification(
+                          auth.currentUser,
+                          actionCodeSettings,
+                        );
+                        triggerToast("✅ Verification email resent!", "success");
+                        setResendCooldown(30);
+                      } else {
+                        triggerToast(
+                          "❌ Session lost. Please log in again.",
+                          "error",
+                        );
+                        setCurrentView("login");
+                      }
+                    } catch (e: any) {
+                      console.error("Resend error:", e);
+                      if (e.message?.includes("too-many-requests")) {
+                        triggerToast(
+                          "❌ Too many requests. Please wait a minute and try again.",
+                          "error",
+                        );
+                        setResendCooldown(60);
+                      } else {
+                        triggerToast(
+                          "❌ Failed to resend. Please try again later.",
                           "error",
                         );
                       }
-                    } else {
-                      triggerToast(
-                        "❌ Session lost. Please log in again.",
-                        "error",
-                      );
-                      setCurrentView("login");
                     }
-                  } catch (e: any) {
-                    console.error(e);
-                    triggerToast(
-                      "❌ " + (e.message || "Failed to check status."),
-                      "error",
-                    );
-                  }
-                }}
-                className="w-full bg-[#B2D235] hover:bg-[#A1C124] text-slate-900 py-3.5 rounded-xl font-semibold transition-colors shadow-sm"
-              >
-                Check Verification Status
-              </button>
+                  }}
+                  disabled={resendCooldown > 0}
+                  className={`w-full py-3 px-4 rounded-xl font-semibold transition-all duration-200 border flex items-center justify-center gap-2 cursor-pointer ${
+                    resendCooldown > 0
+                      ? "bg-surface-container-low text-on-surface-variant/40 border-outline-variant/30 cursor-not-allowed"
+                      : "text-primary hover:bg-primary/5 border-primary"
+                  }`}
+                >
+                  {resendCooldown > 0
+                    ? `Resend Available in ${resendCooldown}s`
+                    : "Resend Verification Email"}
+                </button>
+              </div>
 
-              <button
-                onClick={async () => {
-                  if (resendCooldown > 0) return;
-                  try {
-                    if (auth.currentUser) {
-                      const actionCodeSettings = {
-                        url: window.location.origin,
-                        handleCodeInApp: false,
-                      };
-                      await sendEmailVerification(
-                        auth.currentUser,
-                        actionCodeSettings,
-                      );
-                      triggerToast("✅ Verification email resent!", "success");
-                      setResendCooldown(30);
-                    } else {
-                      triggerToast(
-                        "❌ Session lost. Please log in again.",
-                        "error",
-                      );
-                      setCurrentView("login");
-                    }
-                  } catch (e: any) {
-                    console.error("Resend error:", e);
-                    if (e.message?.includes("too-many-requests")) {
-                      triggerToast(
-                        "❌ Too many requests. Please wait a minute and try again.",
-                        "error",
-                      );
-                      setResendCooldown(60);
-                    } else {
-                      triggerToast(
-                        "❌ Failed to resend. Please try again later.",
-                        "error",
-                      );
-                    }
-                  }
-                }}
-                disabled={resendCooldown > 0}
-                className={`w-full py-3.5 rounded-xl font-semibold transition-colors border-2 ${
-                  resendCooldown > 0
-                    ? "border-slate-200 text-slate-400 cursor-not-allowed bg-slate-50"
-                    : "border-[#1A7B72] text-[#1A7B72] hover:bg-[#1A7B72]/10"
-                }`}
-              >
-                {resendCooldown > 0
-                  ? `Resend Available in ${resendCooldown}s`
-                  : "Resend Email"}
-              </button>
+              {/* Back to Login */}
+              <div className="mt-8 flex justify-center w-full">
+                <button
+                  onClick={async () => {
+                    await logOut();
+                    setCurrentView("login");
+                  }}
+                  className="text-on-surface-variant hover:text-primary font-body-md text-sm flex items-center gap-1.5 transition-colors cursor-pointer"
+                >
+                  <ArrowLeft className="h-4 w-4" />
+                  Back to login
+                </button>
+              </div>
 
-              <button
-                onClick={async () => {
-                  await logOut();
-                  setCurrentView("landing");
-                }}
-                className="w-full py-3 text-sm font-medium text-[#1A7B72] hover:text-[#15605A] underline transition-colors mt-2"
-              >
-                Change Email Address
-              </button>
-
-              <div className="mt-6 pt-4 border-t border-slate-100 text-left">
+              {/* Expired link help */}
+              <div className="mt-6 pt-4 border-t border-outline-variant/20 w-full">
                 <button
                   type="button"
                   onClick={() => {
@@ -1856,6 +1903,80 @@ export default function App() {
                   <span>Link says "Expired or already used"? Click here!</span>
                 </button>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── VIEW 5.5: VERIFICATION SUCCESS SCREEN ── */}
+      {currentView === "verification-success" && (
+        <div className="min-h-screen bg-surface-container text-on-surface flex items-center justify-center relative overflow-hidden font-body-lg p-4">
+          <style>{`
+            @keyframes fall {
+              0% {
+                transform: translateY(-100vh) rotate(0deg);
+                opacity: 1;
+              }
+              100% {
+                transform: translateY(100vh) rotate(360deg);
+                opacity: 0;
+              }
+            }
+          `}</style>
+          
+          {/* Confetti pieces */}
+          <div className="absolute inset-0 pointer-events-none z-10 overflow-hidden">
+            {confetti.map((piece) => (
+              <div
+                key={piece.id}
+                className="absolute w-2.5 h-5 rounded-sm"
+                style={{
+                  backgroundColor: piece.color,
+                  left: piece.left,
+                  animationName: "fall",
+                  animationDuration: piece.duration,
+                  animationDelay: piece.delay,
+                  animationTimingFunction: "linear",
+                  animationIterationCount: "infinite",
+                  opacity: 0.85,
+                }}
+              />
+            ))}
+          </div>
+
+          <div className="w-full max-w-md px-4 z-20">
+            <div className="bg-surface rounded-2xl shadow-xl p-8 md:p-10 text-center flex flex-col items-center border border-surface-variant/50 animate-[fadeInUp_0.8s_ease_forwards]">
+              {/* Success Icon */}
+              <div className="w-20 h-20 rounded-full bg-primary-container flex items-center justify-center mb-6 shadow-sm relative">
+                <div className="absolute inset-0 rounded-full bg-primary-container animate-ping opacity-25"></div>
+                <CheckCircle2 className="h-10 w-10 text-primary" strokeWidth={2.5} />
+              </div>
+
+              {/* Typography */}
+              <h1 className="font-sans text-2xl font-bold text-on-surface mb-3 animate-[scaleIn_0.6s_ease_forwards]">
+                Verification Successful!
+              </h1>
+              <p className="font-body-md text-sm text-on-surface-variant mb-8 px-4 leading-relaxed">
+                Your account is now active. You can now start reporting lost items or searching for your belongings.
+              </p>
+
+              {/* Action Button */}
+              <button
+                onClick={() => {
+                  setCurrentView("dashboard");
+                }}
+                className="w-full bg-primary hover:bg-primary-dim text-white font-semibold py-3.5 px-6 rounded-xl shadow-md hover:shadow-lg transition-all duration-200 active:scale-95 flex items-center justify-center gap-2 cursor-pointer"
+              >
+                Go to Dashboard
+                <ArrowRight className="h-5 w-5" />
+              </button>
+            </div>
+
+            {/* Brand Footer */}
+            <div className="mt-6 text-center opacity-75">
+              <p className="font-sans font-extrabold text-primary tracking-wider text-sm flex items-center justify-center gap-1.5">
+                <span className="material-symbols-outlined text-sm">eco</span> FindTrack
+              </p>
             </div>
           </div>
         </div>
@@ -4837,31 +4958,56 @@ export default function App() {
 </main>
 
           {/* MOBILE HUD BOTTOM NAV */}
-          <nav className="bottom-nav" id="bottomNav">
+          <nav className="fixed bottom-0 left-0 right-0 z-[199] bg-surface/95 backdrop-blur-md border-t border-outline-variant/30 flex justify-around items-center px-4 py-2 pb-[calc(10px+env(safe-area-inset-bottom))] shadow-[0_-8px_30px_rgba(1,114,90,0.06)] md:hidden" id="bottomNav">
             <button
               onClick={() => {
                 setActiveTab("home");
                 setCategoryKeywords(null);
               }}
-              className={`bnav-btn ${activeTab === "home" ? "active" : ""}`}
+              className={`flex-1 flex flex-col items-center justify-center gap-1 py-1 transition-all duration-200 active:scale-95 cursor-pointer relative ${
+                activeTab === "home" ? "text-primary" : "text-on-surface-variant/70 hover:text-primary/80"
+              }`}
             >
-              <span className="bnav-icon">
+              <div className={`p-1.5 rounded-xl transition-all duration-200 ${activeTab === 'home' ? 'bg-primary-container text-primary shadow-sm' : ''}`}>
                 <Home className="h-5 w-5" />
-              </span>
-              Home
+              </div>
+              <span className="text-[10px] font-semibold tracking-wide">Home</span>
             </button>
+
             <button
               onClick={() => {
                 setActiveTab("search");
                 setCategoryKeywords(null);
               }}
-              className={`bnav-btn ${activeTab === "search" ? "active" : ""}`}
+              className={`flex-1 flex flex-col items-center justify-center gap-1 py-1 transition-all duration-200 active:scale-95 cursor-pointer relative ${
+                activeTab === "search" ? "text-primary" : "text-on-surface-variant/70 hover:text-primary/80"
+              }`}
             >
-              <span className="bnav-icon">
+              <div className={`p-1.5 rounded-xl transition-all duration-200 ${activeTab === 'search' ? 'bg-primary-container text-primary shadow-sm' : ''}`}>
                 <Search className="h-5 w-5" />
-              </span>
-              Search
+              </div>
+              <span className="text-[10px] font-semibold tracking-wide">Search</span>
             </button>
+
+            {/* CENTRALLY INTEGRATED REPORT TAB */}
+            <button
+              onClick={() => {
+                if (profileName === "Guest") {
+                  setShowGuestModal(true);
+                } else {
+                  setActiveTab("report");
+                }
+              }}
+              className={`flex-1 flex flex-col items-center justify-center gap-1 py-1 transition-all duration-200 active:scale-95 cursor-pointer relative ${
+                activeTab === "report" ? "text-primary" : "text-on-surface-variant/70 hover:text-primary/80"
+              }`}
+            >
+              <div className={`p-1.5 rounded-xl transition-all duration-200 ${activeTab === 'report' ? 'bg-primary-container text-primary shadow-sm' : 'bg-surface-container-high border border-outline-variant/30 text-on-surface-variant'}`}>
+                <PlusCircle className="h-5 w-5" />
+              </div>
+              <span className="text-[10px] font-semibold tracking-wide">Report</span>
+            </button>
+
             <button
               onClick={() => {
                 if (profileName === "Guest") {
@@ -4870,40 +5016,30 @@ export default function App() {
                   setActiveTab("notifications");
                 }
               }}
-              className={`bnav-btn ${activeTab === "notifications" ? "active" : ""}`}
+              className={`flex-1 flex flex-col items-center justify-center gap-1 py-1 transition-all duration-200 active:scale-95 cursor-pointer relative ${
+                activeTab === "notifications" ? "text-primary" : "text-on-surface-variant/70 hover:text-primary/80"
+              }`}
             >
-              <span className="bnav-icon">
+              <div className={`p-1.5 rounded-xl transition-all duration-200 ${activeTab === 'notifications' ? 'bg-primary-container text-primary shadow-sm' : ''}`}>
                 <Bell className="h-5 w-5" />
-              </span>
-              Alerts
+              </div>
+              <span className="text-[10px] font-semibold tracking-wide">Alerts</span>
             </button>
+
             <button
               onClick={() => {
                 setActiveTab("profile");
               }}
-              className={`bnav-btn ${activeTab === "profile" ? "active" : ""}`}
+              className={`flex-1 flex flex-col items-center justify-center gap-1 py-1 transition-all duration-200 active:scale-95 cursor-pointer relative ${
+                activeTab === "profile" ? "text-primary" : "text-on-surface-variant/70 hover:text-primary/80"
+              }`}
             >
-              <span className="bnav-icon">
+              <div className={`p-1.5 rounded-xl transition-all duration-200 ${activeTab === 'profile' ? 'bg-primary-container text-primary shadow-sm' : ''}`}>
                 <UserIcon className="h-5 w-5" />
-              </span>
-              Profile
+              </div>
+              <span className="text-[10px] font-semibold tracking-wide">Profile</span>
             </button>
           </nav>
-
-          {/* MOBILE REPORT INSTANT FAB */}
-          <button
-            onClick={() => {
-              if (profileName === "Guest") {
-                setShowGuestModal(true);
-              } else {
-                setActiveTab("report");
-              }
-            }}
-            className="report-fab"
-            title="Report Item"
-          >
-            <Package className="h-6 w-6 text-white" />
-          </button>
           </div>
         </div>
       )}
