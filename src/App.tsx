@@ -992,6 +992,172 @@ export default function App() {
     };
   }, [items]);
 
+  // Analytics month and year extractor helper
+  const getItemMonthAndYear = (item: ItemReport) => {
+    let date: Date | null = null;
+    if (item.createdAt) {
+      if (typeof item.createdAt.toDate === "function") {
+        date = item.createdAt.toDate();
+      } else if (typeof item.createdAt.seconds === "number") {
+        date = new Date(item.createdAt.seconds * 1000);
+      } else {
+        date = new Date(item.createdAt);
+      }
+    }
+    
+    if (!date || isNaN(date.getTime())) {
+      return null;
+    }
+    return {
+      year: date.getFullYear(),
+      month: date.getMonth(),
+    };
+  };
+
+  // Analytics dynamic recovery trends over last 6 months
+  const monthlyStats = useMemo(() => {
+    const monthsData = [];
+    const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    const now = new Date();
+
+    for (let i = 5; i >= 0; i--) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      monthsData.push({
+        year: d.getFullYear(),
+        month: d.getMonth(),
+        name: `${monthNames[d.getMonth()]} ${String(d.getFullYear()).slice(-2)}`,
+        reported: 0,
+        resolved: 0,
+      });
+    }
+
+    items.forEach((item) => {
+      const mInfo = getItemMonthAndYear(item);
+      if (!mInfo) return;
+
+      const bucket = monthsData.find(
+        (m) => m.year === mInfo.year && m.month === mInfo.month
+      );
+      if (bucket) {
+        bucket.reported++;
+        if (item.claimed) {
+          bucket.resolved++;
+        }
+      }
+    });
+
+    return monthsData;
+  }, [items]);
+
+  // Max value in monthly trend to scale chart height
+  const maxChartValue = useMemo(() => {
+    let max = 10;
+    monthlyStats.forEach((m) => {
+      if (m.reported > max) max = m.reported;
+      if (m.resolved > max) max = m.resolved;
+    });
+    return max;
+  }, [monthlyStats]);
+
+  // Dynamic Item Categories based on keywords matching
+  const categoryStats = useMemo(() => {
+    const counts: { [key: string]: { count: number; color: string } } = {
+      "Electronics": { count: 0, color: "#01725a" },
+      "Wallets & Bags": { count: 0, color: "#336dbe" },
+      "Pets": { count: 0, color: "#fab83f" },
+      "Documents & Books": { count: 0, color: "#8b5cf6" },
+      "Clothing": { count: 0, color: "#ec4899" },
+      "Jewelry": { count: 0, color: "#376e5e" },
+      "Keys": { count: 0, color: "#f97316" },
+      "Others": { count: 0, color: "#64748b" },
+    };
+
+    items.forEach((item) => {
+      const text = `${item.title} ${item.desc || item.description || ""}`.toLowerCase();
+      
+      let cat = "Others";
+      if (["phone", "laptop", "tablet", "charger", "headphone", "earphone", "computer", "iphone", "samsung", "ipad", "macbook", "gadget", "screen", "wire", "cable"].some(k => text.includes(k))) {
+        cat = "Electronics";
+      } else if (["bag", "backpack", "purse", "wallet", "luggage", "suitcase", "handbag", "pouch", "cardholder"].some(k => text.includes(k))) {
+        cat = "Wallets & Bags";
+      } else if (["dog", "cat", "pet", "bird", "animal", "puppy", "kitten", "collar", "leash"].some(k => text.includes(k))) {
+        cat = "Pets";
+      } else if (["document", "id", "passport", "license", "card", "paper", "folder", "book", "notebook", "national id", "student id", "voter id", "atm"].some(k => text.includes(k))) {
+        cat = "Documents & Books";
+      } else if (["jacket", "shirt", "pants", "uniform", "shoes", "hat", "scarf", "coat", "clothing", "socks", "cap", "t-shirt"].some(k => text.includes(k))) {
+        cat = "Clothing";
+      } else if (["ring", "necklace", "bracelet", "watch", "earring", "jewelry", "diamond", "gold", "silver"].some(k => text.includes(k))) {
+        cat = "Jewelry";
+      } else if (["key", "keychain", "fob", "car key"].some(k => text.includes(k))) {
+        cat = "Keys";
+      }
+
+      counts[cat].count++;
+    });
+
+    const total = items.length;
+    return Object.keys(counts).map((key) => {
+      const item = counts[key];
+      const pct = total > 0 ? Math.round((item.count / total) * 100) : 0;
+      return {
+        name: key,
+        count: item.count,
+        percentage: pct,
+        color: item.color,
+      };
+    });
+  }, [items]);
+
+  // Dynamic Location statistics based on reported location grouping
+  const locationStats = useMemo(() => {
+    const groups: { [key: string]: { total: number; resolved: number; name: string } } = {};
+    items.forEach((item) => {
+      let loc = (item.location || "Unknown").trim();
+      loc = loc.split(",")[0].trim();
+      if (!loc) loc = "General";
+      
+      const key = loc.toLowerCase().replace(/\b\w/g, c => c.toUpperCase());
+      
+      if (!groups[key]) {
+        groups[key] = { total: 0, resolved: 0, name: key };
+      }
+      groups[key].total++;
+      if (item.claimed) {
+        groups[key].resolved++;
+      }
+    });
+
+    return Object.values(groups)
+      .sort((a, b) => b.total - a.total)
+      .slice(0, 5)
+      .map((g) => {
+        const rate = g.total > 0 ? Math.round((g.resolved / g.total) * 100) : 0;
+        let trendIcon = "trending_flat";
+        let trendColor = "text-on-surface-variant bg-surface-variant";
+        let trendText = "0%";
+        if (rate >= 75) {
+          trendIcon = "trending_up";
+          trendColor = "text-[#01725a] bg-[#9af4d6]/30";
+          trendText = "+5%";
+        } else if (rate >= 50) {
+          trendIcon = "trending_up";
+          trendColor = "text-[#336dbe] bg-[#ccdaee]/30";
+          trendText = "+2%";
+        } else if (rate < 30 && g.total > 1) {
+          trendIcon = "trending_down";
+          trendColor = "text-[#af3d3b] bg-[#fa746f]/20";
+          trendText = "-3%";
+        }
+        return {
+          ...g,
+          rate,
+          trendIcon,
+          trendColor,
+          trendText,
+        };
+      });
+  }, [items]);
+
   // In memory dynamic listing filter
   const filteredSearchList = useMemo(() => {
     return items.filter((r) => {
@@ -4159,68 +4325,318 @@ export default function App() {
               id="analytics"
               className={`panel ${activeTab === "analytics" ? "active" : ""}`}
             >
-              <div className="section-title">📊 Analytics Dashboard</div>
-              <p className="section-subtitle">
-                Visual overview of all reported items
-              </p>
+              {/* Header */}
+              <div className="flex flex-col gap-1 mb-6 border-b border-gray-100 pb-4">
+                <h2 className="text-2xl font-bold tracking-tight text-[#01725a] font-sans flex items-center gap-2">
+                  <BarChart2 className="h-6 w-6 text-[#01725a]" /> Analytics Dashboard
+                </h2>
+                <p className="text-sm text-gray-500">
+                  Real-time visual metrics and recovery performance of reported items from Firestore.
+                </p>
+              </div>
 
-              <div className="analytics-grid" id="analyticsGrid">
-                <div className="analytics-card">
-                  <div className="big-num" style={{ color: "#ef4444" }}>
-                    {stats.lost}
+              {/* Bento Grid Stats */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all duration-200 flex flex-col justify-between">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Active Lost Reports</span>
+                    <span className="p-2 rounded-xl bg-red-50 text-red-500">
+                      <Archive className="h-4 w-4" />
+                    </span>
                   </div>
-                  <div className="big-label">Active Lost</div>
+                  <div>
+                    <div className="text-3xl font-extrabold text-gray-800 tracking-tight font-sans">
+                      {stats.lost}
+                    </div>
+                    <p className="text-xs text-gray-400 mt-1 flex items-center gap-1">
+                      <span className="font-semibold text-red-500">Currently active</span> lost items
+                    </p>
+                  </div>
                 </div>
-                <div className="analytics-card">
-                  <div className="big-num" style={{ color: "#0ea5e9" }}>
-                    {stats.found}
+
+                <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all duration-200 flex flex-col justify-between">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Active Found Reports</span>
+                    <span className="p-2 rounded-xl bg-sky-50 text-sky-500">
+                      <Search className="h-4 w-4" />
+                    </span>
                   </div>
-                  <div className="big-label">Found Items</div>
+                  <div>
+                    <div className="text-3xl font-extrabold text-gray-800 tracking-tight font-sans">
+                      {stats.found}
+                    </div>
+                    <p className="text-xs text-gray-400 mt-1 flex items-center gap-1">
+                      <span className="font-semibold text-sky-500">Awaiting claim</span> validation
+                    </p>
+                  </div>
                 </div>
-                <div className="analytics-card">
-                  <div className="big-num" style={{ color: "#10b981" }}>
-                    {stats.claimed}
+
+                <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all duration-200 flex flex-col justify-between">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Resolved Cases</span>
+                    <span className="p-2 rounded-xl bg-[#9af4d6]/50 text-[#00654f]">
+                      <CheckCircle2 className="h-4 w-4" />
+                    </span>
                   </div>
-                  <div className="big-label">Claimed</div>
+                  <div>
+                    <div className="text-3xl font-extrabold text-gray-800 tracking-tight font-sans">
+                      {stats.claimed}
+                    </div>
+                    <p className="text-xs text-gray-400 mt-1 flex items-center gap-1">
+                      <span className="font-semibold text-emerald-600">Reunited</span> with rightful owners
+                    </p>
+                  </div>
                 </div>
-                <div className="analytics-card">
-                  <div className="big-num" style={{ color: "#8b5cf6" }}>
-                    {items.length}
+
+                <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all duration-200 flex flex-col justify-between">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Success Rate</span>
+                    <span className="p-2 rounded-xl bg-amber-50 text-amber-500">
+                      <TrendingUp className="h-4 w-4" />
+                    </span>
                   </div>
-                  <div className="big-label">Total Reports</div>
+                  <div>
+                    <div className="text-3xl font-extrabold text-gray-800 tracking-tight font-sans">
+                      {items.length > 0 ? Math.round((stats.claimed / items.length) * 100) : 0}%
+                    </div>
+                    <p className="text-xs text-gray-400 mt-1 flex items-center gap-1">
+                      <span className="font-semibold text-amber-600">
+                        {items.length > 0 && Math.round((stats.claimed / items.length) * 100) >= 50 ? "High performance" : "Steady growth"}
+                      </span>{" "}
+                      across {items.length} total reports
+                    </p>
+                  </div>
                 </div>
               </div>
 
-              <div
-                style={{
-                  background: "white",
-                  padding: "24px",
-                  borderRadius: "20px",
-                  boxShadow: "var(--shadow-sm)",
-                  border: "1px solid var(--border)",
-                }}
-              >
-                <canvas
-                  ref={canvasRef}
-                  id="chartCanvas"
-                  width={400}
-                  height={220}
-                  style={{
-                    maxWidth: "100%",
-                    display: "block",
-                    margin: "0 auto",
-                  }}
-                ></canvas>
-                <p
-                  style={{
-                    textAlign: "center",
-                    color: "var(--muted)",
-                    fontSize: "13px",
-                    marginTop: "14px",
-                  }}
-                >
-                  Item distribution by status
-                </p>
+              {/* Dynamic Charts Section */}
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+                {/* Chart 1: Recovery Trends (Col-span 2) */}
+                <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm lg:col-span-2">
+                  <div className="flex items-center justify-between mb-4">
+                    <div>
+                      <h3 className="font-bold text-gray-800 text-sm tracking-tight font-sans uppercase">Recovery Trends</h3>
+                      <p className="text-xs text-gray-400">Monthly breakdown of reported vs resolved items</p>
+                    </div>
+                    {/* Legend */}
+                    <div className="flex items-center gap-3 text-xs font-medium">
+                      <div className="flex items-center gap-1.5">
+                        <span className="w-2.5 h-2.5 bg-[#9af4d6] rounded"></span>
+                        <span className="text-gray-500">Reported</span>
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        <span className="w-2.5 h-2.5 bg-[#01725a] rounded"></span>
+                        <span className="text-gray-500">Resolved</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* SVG Bar Chart */}
+                  <div className="w-full h-64 flex flex-col mt-4">
+                    <div className="flex-1 flex items-end gap-2 sm:gap-4 relative pt-6 border-b border-gray-100 pb-2 h-48">
+                      {/* Y-Axis Labels */}
+                      <div className="absolute left-0 top-0 bottom-6 w-8 flex flex-col justify-between text-[10px] text-gray-400 font-medium select-none pointer-events-none">
+                        <span>{maxChartValue}</span>
+                        <span>{Math.round(maxChartValue * 0.75)}</span>
+                        <span>{Math.round(maxChartValue * 0.5)}</span>
+                        <span>{Math.round(maxChartValue * 0.25)}</span>
+                        <span>0</span>
+                      </div>
+
+                      {/* Chart Bars Grid */}
+                      <div className="flex-1 flex items-end justify-between ml-10 h-full relative">
+                        {/* Horizontal Grid lines */}
+                        <div className="absolute inset-0 flex flex-col justify-between pointer-events-none pb-6">
+                          <div className="w-full border-t border-gray-50"></div>
+                          <div className="w-full border-t border-gray-50"></div>
+                          <div className="w-full border-t border-gray-50"></div>
+                          <div className="w-full border-t border-gray-50"></div>
+                          <div className="w-full border-t border-gray-50"></div>
+                        </div>
+
+                        {/* Month Bars */}
+                        {monthlyStats.map((m, idx) => {
+                          const reportedHeight = maxChartValue > 0 ? (m.reported / maxChartValue) * 80 : 0;
+                          const resolvedHeight = maxChartValue > 0 ? (m.resolved / maxChartValue) * 80 : 0;
+
+                          return (
+                            <div key={idx} className="flex flex-col items-center gap-2 z-10 w-full group">
+                              <div className="flex items-end justify-center gap-1 sm:gap-1.5 w-full h-40">
+                                {/* Reported Bar */}
+                                <div
+                                  className="w-3 sm:w-5 bg-[#9af4d6] rounded-t-sm relative hover:bg-[#83ebd0] transition-all duration-300 shadow-sm"
+                                  style={{ height: `${Math.max(reportedHeight, 2)}%` }}
+                                >
+                                  <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-gray-800 text-white text-[10px] font-bold px-2 py-1 rounded shadow-md opacity-0 group-hover:opacity-100 transition-opacity z-20 whitespace-nowrap pointer-events-none">
+                                    Reported: {m.reported}
+                                  </div>
+                                </div>
+                                {/* Resolved Bar */}
+                                <div
+                                  className="w-3 sm:w-5 bg-[#01725a] rounded-t-sm relative hover:bg-[#00654f] transition-all duration-300 shadow-sm"
+                                  style={{ height: `${Math.max(resolvedHeight, 2)}%` }}
+                                >
+                                  <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-gray-800 text-white text-[10px] font-bold px-2 py-1 rounded shadow-md opacity-0 group-hover:opacity-100 transition-opacity z-20 whitespace-nowrap pointer-events-none">
+                                    Resolved: {m.resolved}
+                                  </div>
+                                </div>
+                              </div>
+                              <span className="text-[10px] font-medium text-gray-400">{m.name}</span>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Chart 2: Categories (Col-span 1) */}
+                <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm flex flex-col">
+                  <div>
+                    <h3 className="font-bold text-gray-800 text-sm tracking-tight font-sans uppercase mb-1">Categories</h3>
+                    <p className="text-xs text-gray-400 mb-4">Distribution by matched keywords</p>
+                  </div>
+
+                  {/* SVG Donut */}
+                  <div className="flex-1 flex flex-col justify-center">
+                    {(() => {
+                      const activeCategories = categoryStats.filter((c) => c.count > 0);
+                      if (activeCategories.length === 0) {
+                        return (
+                          <div className="flex flex-col items-center justify-center h-48 text-gray-300">
+                            <span className="text-4xl mb-2">📊</span>
+                            <p className="text-xs text-gray-400">No reported data yet</p>
+                          </div>
+                        );
+                      }
+
+                      const radius = 45;
+                      const strokeWidth = 10;
+                      const circumference = 2 * Math.PI * radius;
+                      let accumulatedPercentage = 0;
+
+                      return (
+                        <div className="relative w-40 h-40 mx-auto mb-4">
+                          <svg viewBox="0 0 100 100" className="w-full h-full transform -rotate-90">
+                            <circle
+                              cx="50"
+                              cy="50"
+                              r={radius}
+                              fill="transparent"
+                              stroke="#f3f4f6"
+                              strokeWidth={strokeWidth}
+                            />
+                            {categoryStats.map((cat) => {
+                              if (cat.count === 0) return null;
+                              const strokeLength = (cat.percentage / 100) * circumference;
+                              const strokeOffset = circumference - (accumulatedPercentage / 100) * circumference;
+                              accumulatedPercentage += cat.percentage;
+
+                              return (
+                                <circle
+                                  key={cat.name}
+                                  cx="50"
+                                  cy="50"
+                                  r={radius}
+                                  fill="transparent"
+                                  stroke={cat.color}
+                                  strokeWidth={strokeWidth}
+                                  strokeDasharray={`${strokeLength} ${circumference}`}
+                                  strokeDashoffset={strokeOffset}
+                                  strokeLinecap="round"
+                                  className="transition-all duration-300 hover:stroke-[12px] cursor-pointer"
+                                />
+                              );
+                            })}
+                          </svg>
+                          <div className="absolute inset-0 flex flex-col items-center justify-center">
+                            <span className="text-2xl font-extrabold text-gray-800 font-sans">{items.length}</span>
+                            <span className="text-[9px] text-gray-400 font-bold uppercase tracking-wider">Reports</span>
+                          </div>
+                        </div>
+                      );
+                    })()}
+
+                    {/* Scrollable category list legend */}
+                    <div className="max-h-24 overflow-y-auto pr-1 flex flex-col gap-1 text-[11px]">
+                      {categoryStats.map((cat) => {
+                        if (cat.count === 0) return null;
+                        return (
+                          <div key={cat.name} className="flex items-center justify-between text-gray-500">
+                            <div className="flex items-center gap-1.5 min-w-0">
+                              <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: cat.color }}></span>
+                              <span className="truncate">{cat.name}</span>
+                            </div>
+                            <span className="font-semibold text-gray-700 ml-1 shrink-0">{cat.percentage}% ({cat.count})</span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Data Table: Top Performing Areas */}
+              <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+                <div className="flex items-center justify-between mb-4">
+                  <div>
+                    <h3 className="font-bold text-gray-800 text-sm tracking-tight font-sans uppercase">Top Performing Areas</h3>
+                    <p className="text-xs text-gray-400">Locations sorted by total database activity</p>
+                  </div>
+                  <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-[#9af4d6]/50 text-[#00654f]">
+                    Live
+                  </span>
+                </div>
+
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left text-xs text-gray-500 border-collapse">
+                    <thead>
+                      <tr className="border-b border-gray-100 text-[10px] text-gray-400 uppercase font-semibold">
+                        <th className="py-2.5 pb-2">Area / Location</th>
+                        <th className="py-2.5 pb-2 text-center">Total Reported</th>
+                        <th className="py-2.5 pb-2 text-center">Recovered / Claimed</th>
+                        <th className="py-2.5 pb-2 text-center">Success Rate</th>
+                        <th className="py-2.5 pb-2 text-right">Trend</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {locationStats.length === 0 ? (
+                        <tr>
+                          <td colSpan={5} className="py-8 text-center text-gray-400">
+                            No locations reported yet. Submit items on the Report tab to populate statistics!
+                          </td>
+                        </tr>
+                      ) : (
+                        locationStats.map((loc, idx) => (
+                          <tr key={idx} className="border-b border-gray-50 hover:bg-gray-50/50 transition-colors">
+                            <td className="py-3 font-semibold text-gray-700 flex items-center gap-2">
+                              <MapPin className="h-3.5 w-3.5 text-gray-400" />
+                              {loc.name}
+                            </td>
+                            <td className="py-3 text-center text-gray-600 font-medium">{loc.total}</td>
+                            <td className="py-3 text-center text-gray-600 font-medium">{loc.resolved}</td>
+                            <td className="py-3 text-center">
+                              <div className="inline-flex items-center gap-1.5 font-bold text-gray-800">
+                                <div className="w-12 bg-gray-100 rounded-full h-1.5 overflow-hidden">
+                                  <div
+                                    className="bg-[#01725a] h-full rounded-full"
+                                    style={{ width: `${loc.rate}%` }}
+                                  ></div>
+                                </div>
+                                <span>{loc.rate}%</span>
+                              </div>
+                            </td>
+                            <td className="py-3 text-right">
+                              <span className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold ${loc.trendColor}`}>
+                                {loc.trendText}
+                              </span>
+                            </td>
+                          </tr>
+                        ))
+                      )}
+                    </tbody>
+                  </table>
+                </div>
               </div>
             </section>
 
