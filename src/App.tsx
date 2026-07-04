@@ -73,6 +73,7 @@ import {
   Filter,
   Clock,
   Menu, Grid,
+  Archive, Pin, Shapes, BarChart2, HeartHandshake, HelpCircle,
   ArrowLeft, Share, Bot, RefreshCw, BadgeCheck, MessageSquare, Gavel, Shield , Scan , Settings , AlertTriangle, Star, Heart, TrendingUp, ArrowDownUp, FileText, Image as ImageIcon } from "lucide-react"
 import { uploadToCloudinary } from "./lib/cloudinary";
 
@@ -2343,98 +2344,100 @@ export default function App() {
             />
           )}
           {/* SIDEBAR (Desktop) */}
-          <aside className={`fixed md:relative z-50 flex flex-col w-64 h-full bg-primary text-on-primary shadow-md transition-transform transform ${sidebarOpen ? "translate-x-0" : "-translate-x-full"} md:translate-x-0`}>
-            {/* Brand Header & Avatar */}
-            <div className="p-6 shrink-0 space-y-4">
+          <aside className={`fixed md:relative z-50 flex flex-col w-64 h-full bg-[#00725a] text-white shadow-md transition-transform transform ${sidebarOpen ? "translate-x-0" : "-translate-x-full"} md:translate-x-0`}>
+            {/* Brand Header */}
+            <div className="pt-8 pb-6 px-7 shrink-0">
               <div className="flex justify-between items-start">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center font-bold text-lg overflow-hidden shrink-0 shadow-sm border border-white/10">
-                    {profileName === "Guest" ? "G" : profileName.charAt(0).toUpperCase()}
-                  </div>
-                  <div>
-                    <h1 className="font-headline-lg text-xl font-bold tracking-tight leading-none">FindTrack</h1>
-                    <p className="font-label-md text-on-primary/80 text-[10px] uppercase tracking-wider mt-1">Premium Community</p>
-                  </div>
+                <div>
+                  <h1 className="text-[28px] font-bold tracking-tight text-white font-sans leading-none">FindTrack</h1>
+                  <p className="text-xs font-medium tracking-wide text-white/75 mt-2">Community Lost & Found</p>
                 </div>
-                <button className="md:hidden text-white/70 hover:text-white" onClick={() => setSidebarOpen(false)}>
+                <button 
+                  className="md:hidden text-white/70 hover:text-white p-1 rounded-lg bg-white/10" 
+                  onClick={() => setSidebarOpen(false)}
+                >
                   <X className="h-5 w-5" />
                 </button>
               </div>
             </div>
 
             {/* Navigation Items */}
-            <nav className="flex-1 overflow-y-auto space-y-1.5 px-4 pt-2">
+            <nav className="flex-1 overflow-y-auto space-y-1 px-4 py-2">
               {[
-                { id: "home", label: "Dashboard", icon: Home },
-                { id: "search", label: "Item Listings", icon: FileSearch },
+                { id: "home", label: "Home", icon: Home },
                 { id: "report", label: "Report Item", icon: PlusCircle },
                 { id: "search", label: "Search", icon: Search },
                 { id: "notifications", label: "Alerts", icon: Bell },
                 { id: "profile", label: "Profile", icon: UserIcon },
-                { id: "myitems", label: "My Items", icon: Package },
-                { id: "pinned", label: "Pinned Items", icon: Tag },
-                { id: "categories", label: "Categories", icon: Grid },
-                { id: "analytics", label: "Analytics", icon: TrendingUp },
-                { id: "tips", label: "Recovery Tips", icon: Lightbulb },
-                { id: "packaging", label: "Packaging Tips", icon: PackageCheck },
-                { id: "about", label: "About/Help", icon: Info }
-              ].map((item) => (
-                <button
-                  key={item.label}
-                  onClick={() => {
-                    if (profileName === "Guest" && ["report", "analytics", "profile", "myitems", "pinned"].includes(item.id)) {
-                      setShowGuestModal(true);
-                    } else {
-                      // Map the labels to the existing tabs if they differ
-                      setActiveTab(item.id);
-                      if (item.id === "home" || item.id === "search") setCategoryKeywords(null);
-                    }
-                    setSidebarOpen(false);
-                  }}
-                  className={`w-full flex items-center px-4 py-3 rounded-lg transition-colors group ${
-                    activeTab === item.id || (activeTab === "itemDetail" && item.id === "search") || (activeTab === "claimItem" && item.id === "search")
-                      ? "bg-primary-container text-on-primary-container font-medium shadow-sm" 
-                      : "text-on-primary hover:bg-white/10"
-                  }`}
-                >
-                  <item.icon className={`h-5 w-5 mr-3 ${activeTab === item.id || (activeTab === "itemDetail" && item.id === "search") || (activeTab === "claimItem" && item.id === "search") ? "text-on-primary-container" : "opacity-80"}`} />
-                  <span className="text-sm font-label-md">{item.label}</span>
-                </button>
-              ))}
+                { id: "myitems", label: "My Items", icon: Archive },
+                { id: "pinned", label: "Pinned Items", icon: Pin },
+                { id: "categories", label: "Categories", icon: Shapes },
+                { id: "analytics", label: "Analytics", icon: BarChart2 },
+                { id: "tips", label: "Recovery Tips", icon: HeartHandshake },
+                { id: "packaging", label: "Packaging Tips", icon: Package },
+                { id: "about", label: "About / Help", icon: HelpCircle }
+              ].map((item) => {
+                const isSelected = activeTab === item.id || (activeTab === "itemDetail" && item.id === "search") || (activeTab === "claimItem" && item.id === "search");
+                
+                if (item.id === "about") {
+                  return (
+                    <div key={item.id} className="pt-4 pb-2">
+                      <button
+                        onClick={() => {
+                          setActiveTab("about");
+                          setSidebarOpen(false);
+                        }}
+                        className="w-full flex items-center px-4 py-3.5 rounded-xl bg-[#9effda] hover:bg-[#83ebd0] text-[#004d3c] font-semibold transition-all duration-200 shadow-sm gap-3 text-left"
+                      >
+                        <item.icon className="h-5 w-5 text-[#004d3c] shrink-0" />
+                        <span className="text-sm font-semibold tracking-wide">{item.label}</span>
+                      </button>
+                    </div>
+                  );
+                }
+
+                return (
+                  <button
+                    key={item.label}
+                    onClick={() => {
+                      if (profileName === "Guest" && ["report", "analytics", "profile", "myitems", "pinned"].includes(item.id)) {
+                        setShowGuestModal(true);
+                      } else {
+                        setActiveTab(item.id);
+                        if (item.id === "home" || item.id === "search") setCategoryKeywords(null);
+                      }
+                      setSidebarOpen(false);
+                    }}
+                    className={`w-full flex items-center px-4 py-2.5 rounded-xl transition-all duration-200 text-left gap-4 ${
+                      isSelected
+                        ? "bg-white/15 text-white font-semibold shadow-sm" 
+                        : "text-white/85 hover:text-white hover:bg-white/5"
+                    }`}
+                  >
+                    <item.icon className={`h-5 w-5 shrink-0 ${isSelected ? "text-white" : "opacity-80"}`} />
+                    <span className="text-sm font-medium tracking-wide">{item.label}</span>
+                  </button>
+                );
+              })}
             </nav>
 
             {/* Footer Items */}
-            <div className="p-4 border-t border-white/10 shrink-0 space-y-3">
+            <div className="p-4 px-7 border-t border-white/10 shrink-0">
               <button 
                 onClick={() => {
-                  if (profileName === "Guest") setShowGuestModal(true);
-                  else setActiveTab("report");
+                  if (profileName === "Guest") handleGuestBrowse();
+                  else logOut();
                 }}
-                className="w-full py-2.5 bg-tertiary-container text-on-tertiary-container font-label-md font-bold rounded-lg hover:bg-tertiary-container/90 transition-colors shadow-sm flex items-center justify-center gap-2"
+                className="w-full flex items-center justify-between px-4 py-2.5 rounded-xl transition-all duration-200 text-white/80 hover:text-white hover:bg-white/5 text-sm"
               >
-                <PlusCircle className="h-4 w-4" />
-                Report Missing
+                <div className="flex items-center gap-3">
+                  <LogOut className="h-4 w-4 opacity-80" />
+                  <span className="font-medium">{profileName === "Guest" ? "Login / Sign Up" : "Logout"}</span>
+                </div>
+                <span className="text-[10px] uppercase tracking-wider bg-white/10 px-2 py-0.5 rounded-md text-white/70">
+                  {profileName === "Guest" ? "Guest" : "User"}
+                </span>
               </button>
-
-              <div className="space-y-1">
-                <button 
-                  onClick={() => setActiveTab("about")}
-                  className="w-full flex items-center px-4 py-2 rounded-lg transition-colors text-on-primary/80 hover:text-white hover:bg-white/10"
-                >
-                  <Info className="h-4 w-4 mr-3" />
-                  <span className="text-xs font-label-md">Help Center</span>
-                </button>
-                <button 
-                  onClick={() => {
-                    if (profileName === "Guest") handleGuestBrowse();
-                    else logOut();
-                  }}
-                  className="w-full flex items-center px-4 py-2 rounded-lg transition-colors text-on-primary/80 hover:text-white hover:bg-white/10"
-                >
-                  <LogOut className="h-4 w-4 mr-3" />
-                  <span className="text-xs font-label-md">{profileName === "Guest" ? "Login / Sign Up" : "Logout"}</span>
-                </button>
-              </div>
             </div>
 </aside>
 
