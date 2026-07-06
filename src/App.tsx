@@ -2768,6 +2768,10 @@ export default function App() {
                 >
                   <Menu className="h-5 w-5" />
                 </button>
+                <div className="md:hidden flex items-center gap-2">
+                  <img src="/logo.png" alt="FindTrack Logo" className="w-6 h-6 object-contain" onError={(e) => { e.currentTarget.style.display='none'; }} />
+                  <span className="font-bold text-primary tracking-tight text-lg">FindTrack</span>
+                </div>
                 <div className="relative hidden sm:block" onClick={() => setActiveTab('search')}>
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-outline" />
                   <input 
