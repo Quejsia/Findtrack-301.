@@ -683,14 +683,17 @@ export default function App() {
   // Handle Logout
   const handleLogoutAction = async () => {
     localStorage.removeItem("sessionUser");
-    // Keeping userProfile locally since we do not currently sync names/avatars to a users collection.
+    localStorage.removeItem("userProfile");
     try {
       await logOut();
-    } catch (er) {}
-    setProfileName("Student");
+    } catch (er) {
+      console.error(er);
+    }
+    setProfileName("");
     setProfileEmail("");
     setProfileContact("");
-    triggerToast("🚪 Logged out securely.", "success");
+    setUser(null);
+    triggerToast("Signed out successfully.", "success");
     setCurrentView("landing");
     setActiveTab("home");
   };
@@ -1903,7 +1906,7 @@ export default function App() {
               <div className="mt-8 flex justify-center w-full">
                 <button
                   onClick={async () => {
-                    await logOut();
+                    await handleLogoutAction();
                     setCurrentView("login");
                   }}
                   className="text-on-surface-variant hover:text-primary font-body-md text-sm flex items-center gap-1.5 transition-colors cursor-pointer"
@@ -2765,7 +2768,7 @@ export default function App() {
                     </div>
                   </div>
                   <button 
-                    onClick={() => logOut()}
+                    onClick={handleLogoutAction}
                     className="p-2 rounded-lg text-white/60 hover:text-white hover:bg-white/10 transition-colors shrink-0"
                     title="Logout"
                   >
@@ -4022,7 +4025,7 @@ export default function App() {
                           
                           <div className="pt-4 mt-4 border-t border-surface-variant">
                             <button 
-                              onClick={logOut}
+                              onClick={handleLogoutAction}
                               className="text-error hover:text-error-dim font-label-md text-sm flex items-center gap-2 transition-colors w-full p-2"
                             >
                               <LogOut className="h-5 w-5" />
