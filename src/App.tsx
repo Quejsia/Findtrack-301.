@@ -1287,7 +1287,8 @@ export default function App() {
           <header className="w-full top-0 z-50 bg-[#fffbff] shadow-sm sticky">
             <div className="flex justify-between items-center h-16 px-4 md:px-8 max-w-7xl mx-auto">
               <div className="font-sans text-2xl font-bold text-[#01725a] tracking-tight flex items-center gap-2">
-                <MapPin className="h-6 w-6 text-[#01725a]" />
+                <img src="/logo.png" alt="FindTrack Logo" className="w-8 h-8 object-contain" onError={(e) => { e.currentTarget.style.display='none'; e.currentTarget.nextElementSibling?.classList.remove('hidden'); }} />
+                <MapPin className="h-6 w-6 text-[#01725a] hidden" />
                 FindTrack
               </div>
               <nav className="hidden md:flex items-center gap-6">
@@ -1349,6 +1350,7 @@ export default function App() {
               </div>
               <div className="relative z-10 max-w-7xl mx-auto px-4 md:px-8 text-center mt-8 w-full">
                 <div className="bg-white/85 backdrop-blur-md border border-white/30 p-8 md:p-12 rounded-xl inline-block max-w-3xl shadow-lg w-full">
+                  <img src="/logo.png" alt="FindTrack Logo" className="w-32 h-32 object-contain mx-auto mb-6 drop-shadow-md" onError={(e) => { e.currentTarget.style.display='none'; }} />
                   <h1 className="font-sans text-4xl md:text-[48px] md:leading-[56px] font-bold text-[#00654f] mb-4">
                     Find what's lost.<br/>Restore community trust.
                   </h1>
@@ -1454,7 +1456,11 @@ export default function App() {
           <footer className="bg-[#ebe9cf] border-t border-[#bcbaa2]/30 w-full mt-auto">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 py-8 px-4 md:px-8 max-w-7xl mx-auto">
               <div>
-                <div className="font-sans text-2xl font-bold text-[#393927] mb-4 flex items-center gap-2"><MapPin className="h-6 w-6 text-[#01725a]"/>FindTrack</div>
+                <div className="font-sans text-2xl font-bold text-[#393927] mb-4 flex items-center gap-2">
+                  <img src="/logo.png" alt="FindTrack Logo" className="w-8 h-8 object-contain" onError={(e) => { e.currentTarget.style.display='none'; e.currentTarget.nextElementSibling?.classList.remove('hidden'); }} />
+                  <MapPin className="h-6 w-6 text-[#01725a] hidden"/>
+                  FindTrack
+                </div>
                 <p className="font-sans text-base text-[#666551] max-w-sm mb-4">© 2026 FindTrack Philippines. Empowering communities through trust and recovery.</p>
               </div>
               <div className="grid grid-cols-2 gap-4">
@@ -2653,9 +2659,14 @@ export default function App() {
             {/* Brand Header */}
             <div className="pt-8 pb-6 px-7 shrink-0">
               <div className="flex justify-between items-start">
-                <div>
-                  <h1 className="text-[28px] font-bold tracking-tight text-white font-sans leading-none">FindTrack</h1>
-                  <p className="text-xs font-medium tracking-wide text-white/75 mt-2">Community Lost & Found</p>
+                <div className="flex flex-col gap-3">
+                  <img src="/logo.png" alt="FindTrack Logo" className="w-14 h-14 object-contain bg-white rounded-xl p-1 shadow-sm" onError={(e) => { e.currentTarget.style.display='none'; }} />
+                  <div>
+                    <h1 className="text-[28px] font-bold tracking-tight text-white font-sans leading-none">
+                      FindTrack
+                    </h1>
+                    <p className="text-xs font-medium tracking-wide text-white/75 mt-2">Community Lost & Found</p>
+                  </div>
                 </div>
                 <button 
                   className="md:hidden text-white/70 hover:text-white p-1 rounded-lg bg-white/10" 

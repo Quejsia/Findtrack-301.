@@ -97,8 +97,9 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess, initialMode 
           
           <div className="relative z-10">
             <div className="flex items-center space-x-3 mb-10">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-600 text-white shadow-lg shadow-indigo-500/20">
-                <Radio className="h-5 w-5 animate-pulse" />
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/10 text-white shadow-lg shadow-indigo-500/20">
+                <img src="/logo.png" alt="FindTrack Logo" className="w-8 h-8 object-contain" onError={(e) => { e.currentTarget.style.display='none'; e.currentTarget.nextElementSibling?.classList.remove('hidden'); }} />
+                <Radio className="h-5 w-5 animate-pulse hidden" />
               </div>
               <div>
                 <span className="font-sans text-lg font-bold tracking-tight bg-gradient-to-r from-white via-slate-100 to-indigo-200 bg-clip-text text-transparent">FindTrack</span>
