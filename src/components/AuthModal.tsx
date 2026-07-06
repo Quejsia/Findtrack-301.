@@ -102,16 +102,16 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess, initialMode 
                 <Radio className="h-5 w-5 animate-pulse hidden" />
               </div>
               <div>
-                <span className="font-sans text-lg font-bold tracking-tight bg-gradient-to-r from-white via-slate-100 to-indigo-200 bg-clip-text text-transparent">FindTrack</span>
-                <span className="block font-mono text-[8px] tracking-wider text-indigo-400 uppercase">Secure Lost & Found</span>
+                <span className="font-poppins text-xl font-bold tracking-tight bg-gradient-to-r from-white via-slate-100 to-indigo-200 bg-clip-text text-transparent">FindTrack</span>
+                <span className="block font-dmsans text-[9px] tracking-widest text-indigo-400 uppercase mt-0.5">Secure Lost & Found</span>
               </div>
             </div>
 
-            <div className="space-y-6">
-              <h2 className="font-sans text-2xl font-extrabold tracking-tight leading-all leading-tight">
+            <div className="space-y-4">
+              <h2 className="font-poppins text-2xl md:text-[28px] font-extrabold tracking-tight leading-tight">
                 Securely Reunite With Your Belongings
               </h2>
-              <p className="font-sans text-xs text-slate-350 leading-relaxed text-slate-300">
+              <p className="font-dmsans text-[13px] text-slate-300 leading-relaxed max-w-sm">
                 Welcome back to FindTrack. Our matching platform operates under zero-trust strict user data isolation so your metadata never leaks.
               </p>
             </div>
@@ -149,11 +149,11 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess, initialMode 
 
           <div className="w-full max-w-md mx-auto space-y-6">
             {/* Form Headers */}
-            <div className="text-center md:text-left space-y-1.5">
-              <h3 className="font-sans text-xl font-bold tracking-tight text-slate-900" id="auth-form-title">
+            <div className="text-center md:text-left space-y-2">
+              <h3 className="font-poppins text-2xl font-bold tracking-tight text-slate-900" id="auth-form-title">
                 {mode === 'login' ? 'Sign In to FindTrack' : 'Create Your FindTrack Account'}
               </h3>
-              <p className="font-sans text-xs text-slate-500">
+              <p className="font-dmsans text-[13px] text-slate-500">
                 {mode === 'login' 
                   ? 'Access your items, matching suggestions, and open directories securely' 
                   : 'Be one of the first users of Lost & Found System'
@@ -175,65 +175,63 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess, initialMode 
             )}
 
             {/* Form Content */}
-            <form onSubmit={handleSubmit} className="space-y-4" id="auth-main-form">
+            <form onSubmit={handleSubmit} className="space-y-5" id="auth-main-form">
               {mode === 'signup' && (
-                <div className="space-y-1">
-                  <label className="font-sans text-[10px] font-bold text-slate-500 uppercase tracking-wider block">Full Name</label>
+                <div className="space-y-1.5">
+                  <label className="font-dmsans text-[11px] font-bold text-slate-500 uppercase tracking-widest block">Full Name</label>
                   <div className="relative">
-                    <User className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
+                    <User className="absolute left-3.5 top-3 h-4 w-4 text-slate-400" />
                     <input
                       type="text"
                       required
                       value={fullName}
                       onChange={(e) => setFullName(e.target.value)}
                       placeholder="e.g. Carl Jaya"
-                      className="w-full rounded-xl border border-slate-200 bg-slate-50 pl-10 pr-3 py-2 font-sans text-xs text-slate-800 transition focus:border-indigo-500 focus:bg-white focus:outline-none"
+                      className="w-full rounded-xl border border-slate-200 bg-slate-50 pl-11 pr-4 py-3 font-dmsans text-[13px] text-slate-800 transition focus:border-indigo-500 focus:bg-white focus:outline-none"
                       id="signup-input-name"
                     />
                   </div>
                 </div>
               )}
-
-              <div className="space-y-1">
-                <label className="font-sans text-[10px] font-bold text-slate-500 uppercase tracking-wider block">Email Address</label>
+              <div className="space-y-1.5">
+                <label className="font-dmsans text-[11px] font-bold text-slate-500 uppercase tracking-widest block">Email Address</label>
                 <div className="relative">
-                  <Mail className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
+                  <Mail className="absolute left-3.5 top-3 h-4 w-4 text-slate-400" />
                   <input
                     type="email"
                     required
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="you@example.com"
-                    className="w-full rounded-xl border border-slate-200 bg-slate-50 pl-10 pr-3 py-2 font-sans text-xs text-slate-800 transition focus:border-indigo-500 focus:bg-white focus:outline-none"
+                    className="w-full rounded-xl border border-slate-200 bg-slate-50 pl-11 pr-4 py-3 font-dmsans text-[13px] text-slate-800 transition focus:border-indigo-500 focus:bg-white focus:outline-none"
                     id="auth-input-email"
                   />
                 </div>
               </div>
-
-              <div className="space-y-1">
+              <div className="space-y-1.5">
                 <div className="flex items-center justify-between">
-                  <label className="font-sans text-[10px] font-bold text-slate-500 uppercase tracking-wider block">Password</label>
+                  <label className="font-dmsans text-[11px] font-bold text-slate-500 uppercase tracking-widest block">Password</label>
                   {mode === 'login' && (
-                    <a className="font-sans text-[10px] font-bold text-indigo-600 hover:text-indigo-800 cursor-not-allowed">
+                    <a className="font-dmsans text-[11px] font-bold text-indigo-600 hover:text-indigo-800 cursor-not-allowed">
                       Forgot Password?
                     </a>
                   )}
                 </div>
                 <div className="relative">
-                  <Lock className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
+                  <Lock className="absolute left-3.5 top-3 h-4 w-4 text-slate-400" />
                   <input
                     type={showPassword ? 'text' : 'password'}
                     required
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="••••••••"
-                    className="w-full rounded-xl border border-slate-200 bg-slate-50 pl-10 pr-10 py-2 font-sans text-xs text-slate-800 transition focus:border-indigo-500 focus:bg-white focus:outline-none"
+                    className="w-full rounded-xl border border-slate-200 bg-slate-50 pl-11 pr-11 py-3 font-dmsans text-[13px] text-slate-800 transition focus:border-indigo-500 focus:bg-white focus:outline-none"
                     id="auth-input-password"
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-2 p-1 text-slate-400 hover:text-indigo-600 rounded transition-all duration-200 ease-out hover:scale-115 active:scale-90 active:rotate-3 cursor-pointer"
+                    className="absolute right-3.5 top-2.5 p-1 text-slate-400 hover:text-indigo-600 rounded transition-all duration-200 ease-out hover:scale-115 active:scale-90 active:rotate-3 cursor-pointer" cursor-pointer"
                     style={{ transition: 'all 0.2s ease' }}
                     title={showPassword ? 'Hide password' : 'Show password'}
                   >
@@ -251,7 +249,7 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess, initialMode 
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full inline-flex items-center justify-center gap-1.5 rounded-xl bg-slate-950 hover:bg-slate-800 text-white font-sans text-xs font-semibold py-2.5 shadow-md active:scale-98 transition disabled:opacity-50"
+                className="w-full flex items-center justify-center gap-2 rounded-xl bg-slate-950 hover:bg-slate-800 text-white font-poppins text-sm font-semibold py-3.5 shadow-md active:scale-95 transition disabled:opacity-50 mt-2"
                 id="auth-submit-btn"
               >
                 {loading ? (
@@ -259,16 +257,16 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess, initialMode 
                 ) : (
                   <>
                     <span>{mode === 'login' ? 'Secure Log In' : 'Register Account'}</span>
-                    <ArrowRight className="h-3.5 w-3.5" />
+                    <ArrowRight className="h-4 w-4" />
                   </>
                 )}
               </button>
             </form>
 
             {/* Divider */}
-            <div className="relative flex py-2 items-center">
+            <div className="relative flex py-3 items-center">
               <div className="flex-grow border-t border-slate-200"></div>
-              <span className="flex-shrink mx-3 text-[10px] font-bold tracking-wider text-slate-400 uppercase font-sans">Or continue with</span>
+              <span className="flex-shrink mx-4 text-[11px] font-bold tracking-widest text-slate-400 uppercase font-dmsans">Or continue with</span>
               <div className="flex-grow border-t border-slate-200"></div>
             </div>
 
@@ -276,7 +274,7 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess, initialMode 
             <button
               onClick={handleGoogleSignIn}
               disabled={loading}
-              className="w-full inline-flex items-center justify-center space-x-2.5 rounded-xl border border-slate-200 bg-white px-4 py-2.5 font-sans text-xs font-semibold text-slate-700 shadow-sm hover:bg-slate-50 transition"
+              className="w-full flex items-center justify-center gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3.5 font-dmsans text-[13px] font-semibold text-slate-700 shadow-sm hover:bg-slate-50 transition"
               id="auth-google-btn"
             >
               <svg className="h-4 w-4" viewBox="0 0 24 24" width="24" height="24" xmlns="http://www.w3.org/2000/svg">
@@ -291,16 +289,16 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess, initialMode 
             </button>
           </div>
 
-          {/* Toggle login vs signup (Simulates going from login.html to signup.html and vice-versa) */}
-          <div className="text-center mt-6">
-            <p className="font-sans text-xs text-slate-500">
+          {/* Toggle login vs signup */}
+          <div className="text-center mt-8">
+            <p className="font-dmsans text-[13px] text-slate-500">
               {mode === 'login' ? "Don't have an account? " : "Already have an account? "}
               <button
                 onClick={() => {
                   setMode(mode === 'login' ? 'signup' : 'login');
                   setError(null);
                 }}
-                className="font-semibold text-indigo-600 hover:text-indigo-800 transition"
+                className="font-semibold text-indigo-600 hover:text-indigo-800 transition ml-1"
                 id="auth-toggle-mode-btn"
               >
                 {mode === 'login' ? 'Create a free account' : 'Sign In instead'}

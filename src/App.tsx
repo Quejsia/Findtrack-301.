@@ -2657,15 +2657,15 @@ export default function App() {
           {/* SIDEBAR (Desktop) */}
           <aside className={`fixed md:relative z-50 flex flex-col w-64 h-full bg-[#00725a] text-white shadow-md transition-transform transform ${sidebarOpen ? "translate-x-0" : "-translate-x-full"} md:translate-x-0`}>
             {/* Brand Header */}
-            <div className="pt-8 pb-6 px-7 shrink-0">
+            <div className="pt-8 pb-8 px-8 shrink-0">
               <div className="flex justify-between items-start">
-                <div className="flex flex-col gap-3">
-                  <img src="/logo.png" alt="FindTrack Logo" className="w-14 h-14 object-contain bg-white rounded-xl p-1 shadow-sm" onError={(e) => { e.currentTarget.style.display='none'; }} />
-                  <div>
-                    <h1 className="text-[28px] font-bold tracking-tight text-white font-sans leading-none">
+                <div className="flex flex-col gap-4">
+                  <img src="/logo.png" alt="FindTrack Logo" className="w-16 h-16 object-contain bg-white rounded-xl p-1 shadow-sm" onError={(e) => { e.currentTarget.style.display='none'; }} />
+                  <div className="mt-1">
+                    <h1 className="text-3xl font-bold tracking-tight text-white font-poppins leading-none">
                       FindTrack
                     </h1>
-                    <p className="text-xs font-medium tracking-wide text-white/75 mt-2">Community Lost & Found</p>
+                    <p className="text-[11px] font-medium tracking-wider text-white/75 mt-3 uppercase font-dmsans">Community Lost & Found</p>
                   </div>
                 </div>
                 <button 
@@ -2678,7 +2678,7 @@ export default function App() {
             </div>
 
             {/* Navigation Items */}
-            <nav className="flex-1 overflow-y-auto space-y-1 px-4 py-2">
+            <nav className="flex-1 overflow-y-auto space-y-1.5 px-4 py-4">
               {[
                 { id: "home", label: "Home", icon: Home },
                 { id: "report", label: "Report Item", icon: PlusCircle },
@@ -2697,16 +2697,20 @@ export default function App() {
                 
                 if (item.id === "about") {
                   return (
-                    <div key={item.id} className="pt-4 pb-2">
+                    <div key={item.id} className="pt-2 pb-2">
                       <button
                         onClick={() => {
                           setActiveTab("about");
                           setSidebarOpen(false);
                         }}
-                        className="w-full flex items-center px-4 py-3.5 rounded-xl bg-[#9effda] hover:bg-[#83ebd0] text-[#004d3c] font-semibold transition-all duration-200 shadow-sm gap-3 text-left"
+                        className={`w-full flex items-center px-4 min-h-[48px] rounded-xl transition-all duration-200 text-left gap-4 ${
+                          isSelected
+                            ? "bg-primary-container text-[#005d49] font-semibold shadow-sm"
+                            : "text-white/80 hover:text-white hover:bg-white/10"
+                        }`}
                       >
-                        <item.icon className="h-5 w-5 text-[#004d3c] shrink-0" />
-                        <span className="text-sm font-semibold tracking-wide">{item.label}</span>
+                        <item.icon className={`h-5 w-5 shrink-0 ${isSelected ? "text-[#005d49]" : "opacity-80"}`} />
+                        <span className="text-[15px] font-medium tracking-wide font-dmsans whitespace-nowrap truncate">{item.label}</span>
                       </button>
                     </div>
                   );
@@ -2724,36 +2728,51 @@ export default function App() {
                       }
                       setSidebarOpen(false);
                     }}
-                    className={`w-full flex items-center px-4 py-2.5 rounded-xl transition-all duration-200 text-left gap-4 ${
+                    className={`w-full flex items-center px-4 min-h-[48px] rounded-xl transition-all duration-200 text-left gap-4 ${
                       isSelected
-                        ? "bg-white/15 text-white font-semibold shadow-sm" 
-                        : "text-white/85 hover:text-white hover:bg-white/5"
+                        ? "bg-primary-container text-[#005d49] font-semibold shadow-sm" 
+                        : "text-white/80 hover:text-white hover:bg-white/10"
                     }`}
                   >
-                    <item.icon className={`h-5 w-5 shrink-0 ${isSelected ? "text-white" : "opacity-80"}`} />
-                    <span className="text-sm font-medium tracking-wide">{item.label}</span>
+                    <item.icon className={`h-5 w-5 shrink-0 ${isSelected ? "text-[#005d49]" : "opacity-80"}`} />
+                    <span className="text-[15px] font-medium tracking-wide font-dmsans whitespace-nowrap truncate">{item.label}</span>
                   </button>
                 );
               })}
             </nav>
 
             {/* Footer Items */}
-            <div className="p-4 px-7 border-t border-white/10 shrink-0">
-              <button 
-                onClick={() => {
-                  if (profileName === "Guest") handleGuestBrowse();
-                  else logOut();
-                }}
-                className="w-full flex items-center justify-between px-4 py-2.5 rounded-xl transition-all duration-200 text-white/80 hover:text-white hover:bg-white/5 text-sm"
-              >
-                <div className="flex items-center gap-3">
-                  <LogOut className="h-4 w-4 opacity-80" />
-                  <span className="font-medium">{profileName === "Guest" ? "Login / Sign Up" : "Logout"}</span>
+            <div className="p-4 px-6 border-t border-white/10 shrink-0 mt-auto">
+              {profileName === "Guest" ? (
+                <button 
+                  onClick={() => handleGuestBrowse()}
+                  className="w-full flex items-center justify-between px-4 py-3 rounded-xl transition-all duration-200 text-white/80 hover:text-white hover:bg-white/10 text-sm"
+                >
+                  <div className="flex items-center gap-3">
+                    <LogOut className="h-5 w-5 opacity-80" />
+                    <span className="font-medium font-dmsans text-[15px]">Login / Sign Up</span>
+                  </div>
+                </button>
+              ) : (
+                <div className="flex items-center justify-between gap-3 px-3 py-3 rounded-xl bg-white/5 border border-white/10">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="h-9 w-9 rounded-full bg-primary-container text-[#005d49] flex items-center justify-center font-bold text-sm shrink-0 uppercase">
+                      {profileName.charAt(0)}
+                    </div>
+                    <div className="flex flex-col min-w-0">
+                      <span className="text-sm font-semibold text-white truncate w-24 font-poppins">{profileName}</span>
+                      <span className="text-[10px] text-white/60 truncate w-28 font-dmsans">{auth.currentUser?.email || "User"}</span>
+                    </div>
+                  </div>
+                  <button 
+                    onClick={() => logOut()}
+                    className="p-2 rounded-lg text-white/60 hover:text-white hover:bg-white/10 transition-colors shrink-0"
+                    title="Logout"
+                  >
+                    <LogOut className="h-5 w-5" />
+                  </button>
                 </div>
-                <span className="text-[10px] uppercase tracking-wider bg-white/10 px-2 py-0.5 rounded-md text-white/70">
-                  {profileName === "Guest" ? "Guest" : "User"}
-                </span>
-              </button>
+              )}
             </div>
 </aside>
 
@@ -2797,7 +2816,7 @@ export default function App() {
                   onClick={() => setActiveTab('notifications')}
                   className="p-2 text-on-surface-variant hover:bg-surface-container rounded-full transition-colors relative"
                 >
-                  <Bell className="h-5 w-5" />
+                  <Bell className="h-6 w-6" />
                   {alerts.filter(a => !a.read).length > 0 && <span className="absolute top-1 right-1 w-2 h-2 bg-error rounded-full"></span>}
                 </button>
                 <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold cursor-pointer">
@@ -3037,7 +3056,7 @@ export default function App() {
                       <p className="font-body-lg text-on-surface-variant mb-6">Search through our community database to find what you're looking for.</p>
                       <div className="relative flex items-center w-full shadow-sm rounded-lg overflow-hidden border border-outline-variant focus-within:border-primary transition-colors bg-surface">
                         <div className="pl-4 text-on-surface-variant">
-                          <Search className="h-5 w-5" />
+                          <Search className="h-6 w-6" />
                         </div>
                         <input 
                           className="w-full px-4 py-4 bg-transparent border-none focus:ring-0 font-body-lg text-on-surface placeholder:text-on-surface-variant/50 outline-none" 
@@ -4991,20 +5010,20 @@ export default function App() {
 </main>
 
           {/* MOBILE HUD BOTTOM NAV */}
-          <nav className="fixed bottom-0 left-0 right-0 z-[199] bg-surface/95 backdrop-blur-md border-t border-outline-variant/30 flex justify-around items-center px-4 py-2 pb-[calc(10px+env(safe-area-inset-bottom))] shadow-[0_-8px_30px_rgba(1,114,90,0.06)] md:hidden" id="bottomNav">
+          <nav className="fixed bottom-0 left-0 right-0 z-[199] bg-surface/95 backdrop-blur-md border-t border-outline-variant/30 flex justify-between items-center px-2 py-3 pb-[calc(16px+env(safe-area-inset-bottom))] shadow-[0_-8px_30px_rgba(1,114,90,0.06)] md:hidden" id="bottomNav">
             <button
               onClick={() => {
                 setActiveTab("home");
                 setCategoryKeywords(null);
               }}
-              className={`flex-1 flex flex-col items-center justify-center gap-1 py-1 transition-all duration-200 active:scale-95 cursor-pointer relative ${
+              className={`flex-1 flex flex-col items-center justify-center gap-1.5 h-12 transition-all duration-200 active:scale-95 cursor-pointer relative ${
                 activeTab === "home" ? "text-primary" : "text-on-surface-variant/70 hover:text-primary/80"
               }`}
             >
               <div className={`p-1.5 rounded-xl transition-all duration-200 ${activeTab === 'home' ? 'bg-primary-container text-primary shadow-sm' : ''}`}>
-                <Home className="h-5 w-5" />
+                <Home className="h-6 w-6" />
               </div>
-              <span className="text-[10px] font-semibold tracking-wide">Home</span>
+              <span className="text-[11px] font-semibold tracking-wide font-dmsans">Home</span>
             </button>
 
             <button
@@ -5012,14 +5031,14 @@ export default function App() {
                 setActiveTab("search");
                 setCategoryKeywords(null);
               }}
-              className={`flex-1 flex flex-col items-center justify-center gap-1 py-1 transition-all duration-200 active:scale-95 cursor-pointer relative ${
+              className={`flex-1 flex flex-col items-center justify-center gap-1.5 h-12 transition-all duration-200 active:scale-95 cursor-pointer relative ${
                 activeTab === "search" ? "text-primary" : "text-on-surface-variant/70 hover:text-primary/80"
               }`}
             >
               <div className={`p-1.5 rounded-xl transition-all duration-200 ${activeTab === 'search' ? 'bg-primary-container text-primary shadow-sm' : ''}`}>
-                <Search className="h-5 w-5" />
+                <Search className="h-6 w-6" />
               </div>
-              <span className="text-[10px] font-semibold tracking-wide">Search</span>
+              <span className="text-[11px] font-semibold tracking-wide font-dmsans">Search</span>
             </button>
 
             {/* CENTRALLY INTEGRATED REPORT TAB */}
@@ -5031,14 +5050,14 @@ export default function App() {
                   setActiveTab("report");
                 }
               }}
-              className={`flex-1 flex flex-col items-center justify-center gap-1 py-1 transition-all duration-200 active:scale-95 cursor-pointer relative ${
+              className={`flex-1 flex flex-col items-center justify-center gap-1.5 h-12 transition-all duration-200 active:scale-95 cursor-pointer relative ${
                 activeTab === "report" ? "text-primary" : "text-on-surface-variant/70 hover:text-primary/80"
               }`}
             >
               <div className={`p-1.5 rounded-xl transition-all duration-200 ${activeTab === 'report' ? 'bg-primary-container text-primary shadow-sm' : 'bg-surface-container-high border border-outline-variant/30 text-on-surface-variant'}`}>
-                <PlusCircle className="h-5 w-5" />
+                <PlusCircle className="h-6 w-6" />
               </div>
-              <span className="text-[10px] font-semibold tracking-wide">Report</span>
+              <span className="text-[11px] font-semibold tracking-wide font-dmsans">Report</span>
             </button>
 
             <button
@@ -5049,28 +5068,28 @@ export default function App() {
                   setActiveTab("notifications");
                 }
               }}
-              className={`flex-1 flex flex-col items-center justify-center gap-1 py-1 transition-all duration-200 active:scale-95 cursor-pointer relative ${
+              className={`flex-1 flex flex-col items-center justify-center gap-1.5 h-12 transition-all duration-200 active:scale-95 cursor-pointer relative ${
                 activeTab === "notifications" ? "text-primary" : "text-on-surface-variant/70 hover:text-primary/80"
               }`}
             >
               <div className={`p-1.5 rounded-xl transition-all duration-200 ${activeTab === 'notifications' ? 'bg-primary-container text-primary shadow-sm' : ''}`}>
-                <Bell className="h-5 w-5" />
+                <Bell className="h-6 w-6" />
               </div>
-              <span className="text-[10px] font-semibold tracking-wide">Alerts</span>
+              <span className="text-[11px] font-semibold tracking-wide font-dmsans">Alerts</span>
             </button>
 
             <button
               onClick={() => {
                 setActiveTab("profile");
               }}
-              className={`flex-1 flex flex-col items-center justify-center gap-1 py-1 transition-all duration-200 active:scale-95 cursor-pointer relative ${
+              className={`flex-1 flex flex-col items-center justify-center gap-1.5 h-12 transition-all duration-200 active:scale-95 cursor-pointer relative ${
                 activeTab === "profile" ? "text-primary" : "text-on-surface-variant/70 hover:text-primary/80"
               }`}
             >
               <div className={`p-1.5 rounded-xl transition-all duration-200 ${activeTab === 'profile' ? 'bg-primary-container text-primary shadow-sm' : ''}`}>
-                <UserIcon className="h-5 w-5" />
+                <UserIcon className="h-6 w-6" />
               </div>
-              <span className="text-[10px] font-semibold tracking-wide">Profile</span>
+              <span className="text-[11px] font-semibold tracking-wide font-dmsans">Profile</span>
             </button>
           </nav>
           </div>

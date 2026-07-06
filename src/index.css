@@ -1,5 +1,5 @@
 /* FindTrack v2 — Complete App Stylesheet combined with Landing, Login and Signup layouts */
-@import url('https://fonts.googleapis.com/css2?family=Sora:wght@300;450;600;700;800&family=DM+Sans:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&display=swap');
 @import "tailwindcss";
 
 @theme {
@@ -135,7 +135,7 @@ body {
 }
 .nav-logo {
   display: flex; align-items: center; gap: 10px;
-  font-family: 'Sora', sans-serif; font-weight: 700; font-size: 22px;
+  font-family: 'Poppins', sans-serif; font-weight: 700; font-size: 22px;
   letter-spacing: -0.3px;
 }
 .nav-logo-icon {
@@ -181,7 +181,7 @@ body {
 @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
 
 .hero h1 {
-  font-family: 'Sora', sans-serif;
+  font-family: 'Poppins', sans-serif;
   font-size: clamp(44px, 8vw, 78px);
   font-weight: 800;
   line-height: 1.06;
@@ -255,7 +255,7 @@ body {
   text-align: center;
 }
 .stat-num {
-  font-family: 'Sora', sans-serif;
+  font-family: 'Poppins', sans-serif;
   font-size: 40px; font-weight: 800;
   background: linear-gradient(135deg, #fff, #94a3b8);
   -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
@@ -297,7 +297,7 @@ body {
 .feat-icon.indigo { background: rgba(99,102,241,0.15); }
 .feat-icon.amber { background: rgba(245,158,11,0.15); }
 
-.feat-title { font-family: 'Sora', sans-serif; font-size: 16px; font-weight: 700; margin-bottom: 6px; }
+.feat-title { font-family: 'Poppins', sans-serif; font-size: 16px; font-weight: 700; margin-bottom: 6px; }
 .feat-desc { font-size: 13.5px; color: rgba(255,255,255,0.5); line-height: 1.6; }
 
 /* ── LANDING FOOTER ── */
@@ -334,7 +334,7 @@ body {
   margin-bottom: 14px;
 }
 .auth-logo h1 {
-  font-family: 'Sora', sans-serif; font-size: 26px; font-weight: 800;
+  font-family: 'Poppins', sans-serif; font-size: 26px; font-weight: 800;
   letter-spacing: -0.5px;
   color: white;
 }
@@ -351,7 +351,7 @@ body {
 }
 
 .card-title {
-  font-family: 'Sora', sans-serif; font-size: 22px; font-weight: 700;
+  font-family: 'Poppins', sans-serif; font-size: 22px; font-weight: 700;
   margin-bottom: 6px;
 }
 .card-sub { color: rgba(255,255,255,0.45); font-size: 14px; margin-bottom: 28px; }
@@ -486,7 +486,7 @@ body {
   box-shadow: 0 2px 8px rgba(0,0,0,0.15);
 }
 
-.brand-title { font-family: 'Sora', sans-serif; font-weight: 700; font-size: 17px; color: white; letter-spacing: -0.2px; }
+.brand-title { font-family: 'Poppins', sans-serif; font-weight: 700; font-size: 17px; color: white; letter-spacing: -0.2px; }
 .brand-text .small-muted { font-size: 11px; color: rgba(255,255,255,0.55); margin-top: 1px; }
 
 .burger-btn {
@@ -550,7 +550,7 @@ body {
   background: var(--sky);
   color: white;
 }
-.drawer-header strong { font-family: 'Sora', sans-serif; font-size: 16px; }
+.drawer-header strong { font-family: 'Poppins', sans-serif; font-size: 16px; }
 .drawer-header button { background: rgba(255,255,255,0.15); border: none; color: white; font-size: 16px; cursor: pointer; width: 30px; height: 30px; border-radius: 8px; display: flex; align-items: center; justify-content: center; }
 
 .drawer-menu { list-style: none; overflow-y: auto; flex: 1; padding: 12px 0; }
@@ -601,7 +601,7 @@ main {
 }
 
 .welcome-left .muted { color: rgba(255,255,255,0.6); font-size: 13px; margin-bottom: 4px; }
-.welcome-title { font-family: 'Sora', sans-serif; font-size: 26px; font-weight: 700; margin-bottom: 4px; }
+.welcome-title { font-family: 'Poppins', sans-serif; font-size: 26px; font-weight: 700; margin-bottom: 4px; }
 
 .stats-cards { display: flex; gap: 12px; flex-wrap: wrap; }
 .stat-card {
@@ -618,11 +618,11 @@ main {
 
 .stat-icon { font-size: 22px; }
 .stat-label { font-size: 10px; opacity: 0.7; font-weight: 700; letter-spacing: 0.8px; text-transform: uppercase; }
-.stat-value { font-family: 'Sora', sans-serif; font-size: 30px; font-weight: 800; line-height: 1; }
+.stat-value { font-family: 'Poppins', sans-serif; font-size: 30px; font-weight: 800; line-height: 1; }
 
 /* ── SECTION HEADERS ── */
 .section-title {
-  font-family: 'Sora', sans-serif; font-size: 19px; font-weight: 700;
+  font-family: 'Poppins', sans-serif; font-size: 19px; font-weight: 700;
   color: var(--text); margin-bottom: 16px;
   display: flex; align-items: center; gap: 8px;
   text-align: left;
@@ -637,7 +637,7 @@ main {
   text-align: left;
 }
 .recent-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
-.recent-header h3 { font-family: 'Sora', sans-serif; font-size: 16px; font-weight: 700; color: #1e293b; letter-spacing: -0.2px; text-transform: uppercase; }
+.recent-header h3 { font-family: 'Poppins', sans-serif; font-size: 16px; font-weight: 700; color: #1e293b; letter-spacing: -0.2px; text-transform: uppercase; }
 
 .recent-list { display: flex; flex-direction: column; gap: 12px; }
 
@@ -917,7 +917,7 @@ main {
   background: var(--surface-alt); display: block;
 }
 .detail-body { padding: 24px; }
-.detail-title { font-family: 'Sora', sans-serif; font-size: 22px; font-weight: 700; margin-bottom: 8px; }
+.detail-title { font-family: 'Poppins', sans-serif; font-size: 22px; font-weight: 700; margin-bottom: 8px; }
 .detail-meta { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 16px; }
 .detail-meta-item { font-size: 13px; color: var(--muted); display: flex; align-items: center; gap: 5px; }
 .detail-desc { font-size: 15px; line-height: 1.7; color: var(--text-sub); margin-bottom: 20px; }
@@ -943,7 +943,7 @@ main {
 @keyframes modalSlide { from { transform: scale(0.92) translateY(20px); } to { transform: scale(1) translateY(0); } }
 
 .modal-icon { font-size: 52px; margin-bottom: 16px; }
-.modal-content h2 { font-family: 'Sora', sans-serif; font-size: 22px; font-weight: 700; margin-bottom: 10px; }
+.modal-content h2 { font-family: 'Poppins', sans-serif; font-size: 22px; font-weight: 700; margin-bottom: 10px; }
 .modal-content p { color: var(--muted); font-size: 14px; line-height: 1.6; margin-bottom: 24px; }
 .modal-buttons { display: flex; gap: 10px; margin-bottom: 14px; }
 .modal-btn {
@@ -997,7 +997,7 @@ main {
   padding: 24px; border: 1px solid var(--border); box-shadow: var(--shadow-sm);
   text-align: center;
 }
-.analytics-card .big-num { font-family: 'Sora', sans-serif; font-size: 42px; font-weight: 800; }
+.analytics-card .big-num { font-family: 'Poppins', sans-serif; font-size: 42px; font-weight: 800; }
 .analytics-card .big-label { font-size: 13px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.8px; font-weight: 600; margin-top: 6px; }
 
 /* ── SKELETON LOADERS ── */
@@ -1080,7 +1080,7 @@ main {
   text-transform: uppercase; color: var(--sky); margin-bottom: 8px;
 }
 .onboard-title {
-  font-family: 'Sora', sans-serif; font-size: 22px; font-weight: 800;
+  font-family: 'Poppins', sans-serif; font-size: 22px; font-weight: 800;
   color: #0f172a; margin-bottom: 10px; line-height: 1.2;
 }
 .onboard-desc {
@@ -1119,7 +1119,7 @@ main {
 }
 .match-banner.show { display: block; animation: panelIn 0.3s ease; }
 .match-banner-title {
-  font-family: 'Sora', sans-serif; font-size: 14px; font-weight: 700;
+  font-family: 'Poppins', sans-serif; font-size: 14px; font-weight: 700;
   color: #92400e; margin-bottom: 10px;
   display: flex; align-items: center; gap: 7px;
 }
@@ -1292,3 +1292,8 @@ main {
   100% { box-shadow: 0 0 0 0 rgba(245,158,11,0); }
 }
 .card-item.matched { border-color: #fbbf24 !important; animation: matchPulse 1.5s ease 2; }
+@theme {
+  --font-poppins: "Poppins", sans-serif;
+  --font-inter: "Inter", sans-serif;
+  --font-dmsans: "DM Sans", sans-serif;
+}
