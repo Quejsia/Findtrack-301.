@@ -1527,9 +1527,8 @@ export default function App() {
               <div>
                 <label className="block font-label-md text-sm text-on-surface mb-1" htmlFor="email">Email Address</label>
                 <div className="relative">
-                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant h-5 w-5" strokeWidth={1.5} />
                   <input 
-                    className="w-full pl-10 pr-3 py-3 bg-surface-container-lowest border border-outline-variant rounded-lg font-body-md text-on-surface focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-colors" 
+                    className="w-full pr-10 pl-3 py-3 bg-surface-container-lowest border border-outline-variant rounded-lg font-body-md text-on-surface focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-colors" 
                     id="email" 
                     name="email" 
                     placeholder="you@example.com" 
@@ -1539,6 +1538,7 @@ export default function App() {
                     value={authEmail}
                     onChange={(e) => setAuthEmail(e.target.value)}
                   />
+                  <Mail className="absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant h-5 w-5" strokeWidth={1.5} />
                 </div>
               </div>
 
@@ -1546,9 +1546,8 @@ export default function App() {
               <div>
                 <label className="block font-label-md text-sm text-on-surface mb-1" htmlFor="password">Password</label>
                 <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant h-5 w-5" strokeWidth={1.5} />
                   <input 
-                    className="w-full pl-10 pr-10 py-3 bg-surface-container-lowest border border-outline-variant rounded-lg font-body-md text-on-surface focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-colors" 
+                    className="w-full pl-3 pr-16 py-3 bg-surface-container-lowest border border-outline-variant rounded-lg font-body-md text-on-surface focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-colors" 
                     id="password" 
                     name="password" 
                     placeholder="••••••••" 
@@ -1558,6 +1557,7 @@ export default function App() {
                     value={authPassword}
                     onChange={(e) => setAuthPass(e.target.value)}
                   />
+                  <Lock className="absolute right-10 top-1/2 -translate-y-1/2 text-on-surface-variant h-5 w-5 pointer-events-none" strokeWidth={1.5} />
                   <button 
                     type="button" 
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant hover:text-primary transition-colors focus:outline-none" 
@@ -2795,13 +2795,13 @@ export default function App() {
                   <span className="font-bold text-primary tracking-tight text-lg">FindTrack</span>
                 </div>
                 <div className="relative hidden sm:block" onClick={() => setActiveTab('search')}>
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-outline" />
                   <input 
                     type="text" 
                     placeholder="Search community..."
-                    className="pl-10 pr-4 py-2 bg-surface-container rounded-full text-sm border-none focus:ring-2 focus:ring-primary outline-none w-64 pointer-events-none"
+                    className="pr-10 pl-4 py-2 bg-surface-container rounded-full text-sm border-none focus:ring-2 focus:ring-primary outline-none w-64 pointer-events-none"
                     readOnly
                   />
+                  <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-outline" />
                 </div>
               </div>
               <div className="flex items-center gap-3">
@@ -2959,8 +2959,8 @@ export default function App() {
                       <div className="space-y-2">
                         <label className="block font-label-md font-bold text-on-surface">Location {reportType === "lost" ? "Lost" : "Found"}</label>
                         <div className="relative">
-                          <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-outline" />
-                          <input type="text" required value={reportLocation} onChange={(e) => setReportLocation(e.target.value)} placeholder="e.g. Library 2nd Floor" className="w-full bg-surface-variant border-none rounded-xl pl-12 pr-4 py-3 focus:ring-2 focus:ring-primary outline-none" />
+                          <input type="text" required value={reportLocation} onChange={(e) => setReportLocation(e.target.value)} placeholder="e.g. Library 2nd Floor" className="w-full bg-surface-variant border-none rounded-xl pr-12 pl-4 py-3 focus:ring-2 focus:ring-primary outline-none" />
+                          <MapPin className="absolute right-4 top-1/2 -translate-y-1/2 h-5 w-5 text-outline pointer-events-none" />
                         </div>
                       </div>
                     </div>
@@ -3877,16 +3877,16 @@ export default function App() {
                         <div>
                           <label className="block font-label-md text-sm text-on-surface-variant mb-2" htmlFor="profName">Display Name</label>
                           <div className="relative">
-                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                              <UserIcon className="h-5 w-5 text-outline" />
-                            </div>
                             <input 
-                              className="pl-10 w-full bg-surface-container-lowest border border-outline rounded-lg py-2.5 text-on-surface focus:ring-2 focus:ring-primary focus:border-primary transition-shadow font-body-md" 
+                              className="pr-10 pl-3 w-full bg-surface-container-lowest border border-outline rounded-lg py-2.5 text-on-surface focus:ring-2 focus:ring-primary focus:border-primary transition-shadow font-body-md" 
                               id="profName" 
                               type="text" 
                               value={profileName}
                               onChange={(e) => setProfileName(e.target.value)}
                             />
+                            <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                              <UserIcon className="h-5 w-5 text-outline" />
+                            </div>
                           </div>
                         </div>
                         
@@ -3905,16 +3905,16 @@ export default function App() {
                         <div className="md:col-span-2">
                           <label className="block font-label-md text-sm text-on-surface-variant mb-2" htmlFor="profEmail">Email Address</label>
                           <div className="relative">
-                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                              <Mail className="h-5 w-5 text-outline" />
-                            </div>
                             <input 
-                              className="pl-10 w-full bg-surface-container-lowest border border-outline rounded-lg py-2.5 text-on-surface opacity-70 cursor-not-allowed font-body-md" 
+                              className="pr-10 pl-3 w-full bg-surface-container-lowest border border-outline rounded-lg py-2.5 text-on-surface opacity-70 cursor-not-allowed font-body-md" 
                               id="profEmail" 
                               type="email" 
                               value={profileEmail || "No email"}
                               disabled
                             />
+                            <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                              <Mail className="h-5 w-5 text-outline" />
+                            </div>
                           </div>
                           {auth.currentUser?.emailVerified && (
                             <p className="text-xs text-on-surface-variant mt-1 ml-1 flex items-center gap-1">
@@ -3927,32 +3927,32 @@ export default function App() {
                         <div>
                           <label className="block font-label-md text-sm text-on-surface-variant mb-2" htmlFor="profPhone">Phone Number</label>
                           <div className="relative">
-                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                              <span className="text-outline font-body-md">+</span>
-                            </div>
                             <input 
-                              className="pl-8 w-full bg-surface-container-lowest border border-outline rounded-lg py-2.5 text-on-surface focus:ring-2 focus:ring-primary focus:border-primary transition-shadow font-body-md" 
+                              className="pr-8 pl-3 w-full bg-surface-container-lowest border border-outline rounded-lg py-2.5 text-on-surface focus:ring-2 focus:ring-primary focus:border-primary transition-shadow font-body-md" 
                               id="profPhone" 
                               type="tel" 
                               value={profileContact}
                               onChange={(e) => setProfileContact(e.target.value)}
                             />
+                            <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                              <span className="text-outline font-body-md">+</span>
+                            </div>
                           </div>
                         </div>
                         
                         <div>
                           <label className="block font-label-md text-sm text-on-surface-variant mb-2" htmlFor="profLoc">Primary Location</label>
                           <div className="relative">
-                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                              <MapPin className="h-5 w-5 text-outline" />
-                            </div>
                             <input 
-                              className="pl-10 w-full bg-surface-container-lowest border border-outline rounded-lg py-2.5 text-on-surface focus:ring-2 focus:ring-primary focus:border-primary transition-shadow font-body-md" 
+                              className="pr-10 pl-3 w-full bg-surface-container-lowest border border-outline rounded-lg py-2.5 text-on-surface focus:ring-2 focus:ring-primary focus:border-primary transition-shadow font-body-md" 
                               id="profLoc" 
                               type="text" 
                               value={profileLocation}
                               onChange={(e) => setProfileLocation(e.target.value)}
                             />
+                            <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                              <MapPin className="h-5 w-5 text-outline" />
+                            </div>
                           </div>
                         </div>
                       </div>
@@ -5221,37 +5221,27 @@ export default function App() {
 
       {/* ── REFERER DOMAIN BLOCKED EXPLANATION MODAL ── */}
       {showRefererModal && (
-        <div 
-          className="fixed inset-0 flex items-center justify-center p-4 z-[1001] bg-slate-900/60 backdrop-blur-sm"
-          style={{ height: '100dvh' }}
-        >
-          <div className="relative w-full max-w-lg flex flex-col bg-white rounded-2xl shadow-2xl border border-slate-100 max-h-[85dvh]">
-            {/* Header */}
-            <div className="p-6 border-b border-slate-100 flex items-center justify-between shrink-0 bg-gradient-to-r from-teal-700 to-teal-900 rounded-t-2xl text-white">
-              <div className="flex items-center gap-2">
-                <span className="text-xl">⚠️</span>
-                <h3 className="text-lg font-bold">Domain Security Authorization Required</h3>
-              </div>
-              <button 
-                onClick={() => setShowRefererModal(false)}
-                className="text-white/80 hover:text-white bg-white/10 hover:bg-white/20 p-1.5 rounded-full transition-colors text-sm"
-              >
-                ✕
-              </button>
+        <div className="fixed inset-0 z-[1001] bg-[#fffbff]/60 backdrop-blur-md flex flex-col items-center justify-center p-4">
+          <div className="relative z-10 w-full max-w-lg bg-white rounded-[24px] shadow-xl shadow-teal-700/5 flex flex-col p-8 text-center border border-[#ebe9cf] overflow-hidden">
+            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-[#9af4d6] via-[#01725a] to-[#9af4d6] opacity-30"></div>
+            
+            <div className="w-20 h-20 rounded-full bg-amber-50 border border-amber-100 flex items-center justify-center mx-auto mb-6 shadow-sm">
+              <span className="text-[40px]">⚠️</span>
             </div>
-
-            {/* Content (Scrollable) */}
-            <div className="p-6 flex-1 overflow-y-auto space-y-4 text-slate-700 text-sm leading-relaxed">
-              <p className="font-semibold text-slate-900">
+            
+            <h2 className="font-semibold text-[24px] text-gray-900 mb-3 tracking-tight">Domain Security Authorization Required</h2>
+            
+            <div className="flex-1 overflow-y-auto space-y-4 text-left text-sm text-gray-600 mb-6 max-h-[50vh] px-2">
+              <p className="font-medium text-gray-900 text-center">
                 You are visiting FindTrack from a custom domain: <code className="bg-amber-50 text-amber-800 px-1.5 py-0.5 rounded border border-amber-200/50 font-mono">{refererBlockedDomain || window.location.hostname}</code>
               </p>
               
-              <div className="bg-teal-50 border border-teal-100 p-4 rounded-xl text-teal-900 text-left">
-                <p className="font-medium mb-1">💡 Quick Fix for Users / Testers:</p>
+              <div className="bg-teal-50 border border-teal-100 p-4 rounded-xl text-teal-900">
+                <p className="font-medium mb-1 flex items-center gap-2">💡 Quick Fix for Users / Testers:</p>
                 <p>If you are a user trying to test FindTrack, please use the official sandbox domain of the app which is pre-authorized and works perfectly:</p>
                 <a 
                   href="https://ais-pre-ugza3g3lajlvapecr5xph7-125820164386.asia-east1.run.app" 
-                  className="font-semibold underline block mt-1 hover:text-teal-700 font-mono break-all"
+                  className="font-semibold underline block mt-2 hover:text-teal-700 font-mono break-all text-center"
                   target="_blank"
                   rel="noopener noreferrer"
                 >
@@ -5259,15 +5249,12 @@ export default function App() {
                 </a>
               </div>
 
-              <div className="space-y-4 text-left">
+              <div className="space-y-4">
                 <div className="bg-amber-50 border border-amber-200 p-4 rounded-xl text-amber-900 text-xs">
                   <p className="font-bold text-sm mb-1.5 flex items-center gap-1.5 text-amber-950">
-                    <span>📧</span> Fix "Link expired or already used" email verification error:
+                    <span>📧</span> Fix "Link expired" email verification error:
                   </p>
                   <p className="mb-2 leading-relaxed">
-                    If you successfully got the verification email, but clicking the link immediately shows <strong>"Your request to verify your email has expired or the link has already been used"</strong>:
-                  </p>
-                  <p className="mb-2 leading-relaxed font-semibold text-amber-950">
                     This is caused by restricting your Google Cloud API Key to your custom domain without also authorizing Firebase's default handler domains!
                   </p>
                   <p className="mb-1 leading-relaxed">To resolve this:</p>
@@ -5276,42 +5263,31 @@ export default function App() {
                     <li>Click your <strong>Browser/Web API Key</strong> to edit its settings.</li>
                     <li>In the <strong>HTTP Referrers (Website restrictions)</strong> list, you must add these three entries:
                       <ul className="list-disc pl-4 mt-1 space-y-0.5 font-mono text-[11px] bg-amber-100/50 p-2 rounded">
-                        <li><code>https://findtrack-17dee.firebaseapp.com/*</code> (Your Firebase Domain)</li>
-                        <li><code>https://findtrack-17dee.web.app/*</code> (Your Firebase Domain)</li>
-                        <li><code>https://{window.location.hostname}/*</code> (Your Custom Domain)</li>
+                        <li><code>https://findtrack-17dee.firebaseapp.com/*</code></li>
+                        <li><code>https://findtrack-17dee.web.app/*</code></li>
+                        <li><code>https://{window.location.hostname}/*</code></li>
                       </ul>
                     </li>
-                    <li>Save settings. It may take 1-2 minutes for Google Cloud to apply the updated key restrictions.</li>
                   </ol>
                 </div>
 
                 <div>
-                  <p className="font-semibold text-slate-900">🛠️ General Domain Setup (For Signup Block):</p>
-                  <p className="text-xs text-slate-500 mb-2">If you cannot register or login because the domain is blocked:</p>
-                  
+                  <p className="font-semibold text-gray-900">🛠️ General Domain Setup (For Signup Block):</p>
+                  <p className="text-xs text-gray-500 mb-2">If you cannot register or login because the domain is blocked:</p>
                   <ol className="list-decimal pl-5 space-y-2 text-xs">
-                    <li>
-                      Go to the <strong><a href="https://console.firebase.google.com/" target="_blank" rel="noopener noreferrer" className="text-teal-600 font-semibold underline hover:text-teal-800">Firebase Console</a></strong> and select your project.
-                    </li>
-                    <li>
-                      In the sidebar, go to <strong>Authentication</strong>, then click the <strong>Settings</strong> tab.
-                    </li>
-                    <li>
-                      In the left settings list, click <strong>Authorized Domains</strong>.
-                    </li>
-                    <li>
-                      Click <strong>Add domain</strong> and enter: <code className="bg-slate-100 px-1.5 py-0.5 rounded font-mono">{refererBlockedDomain || window.location.hostname}</code>
-                    </li>
+                    <li>Go to the <strong><a href="https://console.firebase.google.com/" target="_blank" rel="noopener noreferrer" className="text-teal-600 font-semibold underline hover:text-teal-800">Firebase Console</a></strong> and select your project.</li>
+                    <li>In the sidebar, go to <strong>Authentication</strong>, then click the <strong>Settings</strong> tab.</li>
+                    <li>In the left settings list, click <strong>Authorized Domains</strong>.</li>
+                    <li>Click <strong>Add domain</strong> and enter: <code className="bg-gray-100 px-1.5 py-0.5 rounded font-mono">{refererBlockedDomain || window.location.hostname}</code></li>
                   </ol>
                 </div>
               </div>
-            </div>
+            </div> 
 
-            {/* Footer */}
-            <div className="p-4 bg-slate-50 border-t border-slate-100 flex justify-end shrink-0 rounded-b-2xl">
-              <button
+            <div className="w-full flex flex-col gap-3">
+              <button 
                 onClick={() => setShowRefererModal(false)}
-                className="px-5 py-2 bg-slate-200 hover:bg-slate-300 text-slate-800 font-semibold rounded-lg transition-colors text-xs"
+                className="w-full bg-[#01725a] text-white font-medium text-[14px] py-3 px-6 rounded-lg shadow-md hover:bg-[#00654f] transition-all duration-200 flex items-center justify-center gap-2"
               >
                 Close & Got It
               </button>

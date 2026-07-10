@@ -1,88 +1,9 @@
-import React, { useState } from 'react';
-import { Mail, Lock, User, ArrowRight, Sparkles, Radio, Eye, EyeOff, X, ShieldCheck, AlertCircle } from 'lucide-react';
-import { auth, loginWithGoogle, loginWithEmail, registerWithEmail } from '../firebase';
-import { motion } from 'motion/react';
+const fs = require('fs');
+let modal = fs.readFileSync('src/components/AuthModal.tsx', 'utf8');
 
-interface AuthModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  onAuthSuccess: (user: any) => void;
-  initialMode?: 'login' | 'signup';
-}
+const regex = /return \(\s*<div className="fixed inset-0[^>]*>.*?<\/div>\s*\);\s*\}/s;
 
-export default function AuthModal({ isOpen, onClose, onAuthSuccess, initialMode = 'login' }: AuthModalProps) {
-  const [mode, setMode] = useState<'login' | 'signup'>(initialMode);
-  const [showPassword, setShowPassword] = useState<boolean>(false);
-  const [email, setEmail] = useState<string>('');
-  const [password, setPassword] = useState<string>('');
-  const [fullName, setFullName] = useState<string>('');
-  const [loading, setLoading] = useState<boolean>(false);
-  const [error, setError] = useState<string | null>(null);
-
-  if (!isOpen) return null;
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    setError(null);
-
-    // Simple fields validation
-    if (!email || !password) {
-      setError('Please fill in all required fields.');
-      setLoading(false);
-      return;
-    }
-
-    if (mode === 'signup' && !fullName) {
-      setError('Please provide your full display name.');
-      setLoading(false);
-      return;
-    }
-
-    try {
-      let user;
-      if (mode === 'login') {
-        user = await loginWithEmail(email, password);
-      } else {
-        user = await registerWithEmail(email, password, fullName);
-      }
-      onAuthSuccess(user);
-      onClose();
-    } catch (err: any) {
-      console.error('Email authentication failure:', err);
-      // Clean up common Firebase errors to look professional
-      let friendlyMessage = err.message || 'An authentication error occurred.';
-      if (friendlyMessage.includes('auth/invalid-credential') || friendlyMessage.includes('auth/wrong-password')) {
-        friendlyMessage = 'Invalid email or password combination.';
-      } else if (friendlyMessage.includes('auth/email-already-in-use')) {
-        friendlyMessage = 'An account with this email already exists.';
-      } else if (friendlyMessage.includes('auth/weak-password')) {
-        friendlyMessage = 'Password must be at least 6 characters.';
-      } else if (friendlyMessage.includes('auth/invalid-email')) {
-        friendlyMessage = 'Please enter a valid email address.';
-      }
-      setError(friendlyMessage);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleGoogleSignIn = async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const user = await loginWithGoogle();
-      onAuthSuccess(user);
-      onClose();
-    } catch (err: any) {
-      console.error('Google sign in failure:', err);
-      setError(err.message || 'Failed to authenticate via Google.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  return (
+const newModal = `return (
     <div className="fixed inset-0 z-50 bg-[#fffbff]/60 backdrop-blur-md flex flex-col items-center justify-center p-4 overflow-y-auto" id="auth-modal-overlay">
       <motion.div 
         initial={{ opacity: 0, scale: 0.95, y: 15 }}
@@ -194,11 +115,11 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess, initialMode 
           <div className="w-full flex flex-col gap-3 mt-4">
             <button 
               type="submit" 
-              disabled={loading}
+              disabled={isLoading}
               className="w-full bg-[#01725a] text-white font-medium text-[14px] py-3 px-6 rounded-lg shadow-md hover:bg-[#00654f] transition-all duration-200 flex items-center justify-center gap-2"
               id="auth-submit-btn"
             >
-              {loading ? (
+              {isLoading ? (
                 <div className="h-5 w-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
               ) : (
                 mode === 'login' ? 'Sign In' : 'Create Account'
@@ -229,4 +150,12 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess, initialMode 
       </motion.div>
     </div>
   );
+}`;
+
+if (regex.test(modal)) {
+  modal = modal.replace(regex, newModal);
+  fs.writeFileSync('src/components/AuthModal.tsx', modal);
+  console.log('AuthModal replaced!');
+} else {
+  console.log('Regex did not match AuthModal!');
 }

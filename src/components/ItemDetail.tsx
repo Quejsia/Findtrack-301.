@@ -767,113 +767,88 @@ export default function ItemDetail({
       {/* ── CLAIMS VERIFICATION MODAL COHESIVE WITH OUR STYLE (Item 2) ── */}
       <AnimatePresence>
         {openClaimModal && (
-          <div className="fixed inset-0 z-[60] flex items-start justify-center bg-slate-950/80 backdrop-blur-md p-4 overflow-y-auto pt-16 pb-16" id="claims-verification-modal">
+          <div className="fixed inset-0 z-[60] bg-[#fffbff]/60 backdrop-blur-md flex flex-col items-center justify-center p-4 overflow-y-auto" id="claims-verification-modal">
             <motion.div
               initial={{ opacity: 0, y: 15, scale: 0.95 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 15, scale: 0.95 }}
-              className="w-full max-w-md bg-white shadow-2xl border border-slate-150 rounded-md shrink-0 mt-auto mb-auto flex flex-col items-stretch"
+              className="relative z-10 w-full max-w-md bg-white rounded-[24px] shadow-xl shadow-teal-700/5 flex flex-col p-8 text-center border border-[#ebe9cf] overflow-hidden"
             >
-              <div className="bg-gradient-to-tr from-teal-800 to-indigo-950 p-6 text-white relative">
-                <button 
-                  type="button"
-                  onClick={() => setOpenClaimModal(false)}
-                  className="absolute top-4 right-4 text-white/70 hover:text-white rounded-full p-1.5 hover:bg-white/10 transition cursor-pointer"
-                >
-                  <X className="h-4.5 w-4.5" />
-                </button>
-                
-                <div className="flex items-center space-x-2 text-teal-300 font-mono text-[9px] font-bold tracking-wider uppercase mb-1.5">
-                  <ShieldCheck className="h-3.5 w-3.5 text-teal-400" />
-                  <span>Interactive Proof Shield</span>
-                  <span className="h-1 w-1 rounded-full bg-teal-400"></span>
-                  <span>Prove Ownership</span>
-                </div>
-                
-                <h3 className="font-sans text-lg font-bold">"Prove It" Identity Verification</h3>
-                <p className="font-sans text-[11px] text-teal-100/90 leading-relaxed mt-1">
-                  Authenticate your claims ownership details below for <strong>{item.title}</strong> so the listing recorder can verify securely.
-                </p>
+              <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-[#9af4d6] via-[#01725a] to-[#9af4d6] opacity-30"></div>
+              
+              <div className="w-20 h-20 rounded-full bg-teal-50 flex items-center justify-center mx-auto mb-6 shadow-sm">
+                <ShieldCheck className="h-10 w-10 text-teal-700" strokeWidth={1.5} />
               </div>
+              
+              <h2 className="font-semibold text-[24px] text-gray-900 mb-3 tracking-tight">"Prove It" Verification</h2>
+              
+              <p className="text-[14px] text-gray-600 mb-6 px-2">
+                Authenticate your claims ownership details below for <strong>{item.title}</strong> so the listing recorder can verify securely.
+              </p>
 
-              {/* Modal Body */}
-              <form onSubmit={handleSubmit} className="p-6 space-y-5">
+              <form onSubmit={handleSubmit} className="w-full flex flex-col gap-4 text-left">
                 <div className="space-y-2">
-                  <label className="block text-[9px] font-mono font-bold text-slate-400 uppercase tracking-widest">
+                  <label className="block text-[9px] font-mono font-bold text-slate-400 uppercase tracking-widest text-center">
                     VERIFICATION QUESTION
                   </label>
                   {hasSecurityQuestion ? (
-                    <div className="bg-amber-50 border border-amber-200 rounded-md p-4 text-amber-900">
+                    <div className="bg-amber-50 border border-amber-200 rounded-md p-4 text-amber-900 text-center">
                       <p className="font-bold text-xs mb-1"><Key className="h-3 w-3 inline" /> OWNER'S SECRET QUESTION</p>
-                      <p className="font-sans text-xs italic leading-relaxed">e.g. "{item.securityQuestion}"</p>
+                      <p className="font-sans text-xs italic leading-relaxed">"{item.securityQuestion}"</p>
                     </div>
                   ) : (
-                    <div className="bg-slate-50 border border-slate-205/65 rounded-md p-4">
+                    <div className="bg-slate-50 border border-slate-205/65 rounded-md p-4 text-center">
                       <p className="font-sans text-xs text-slate-800 leading-relaxed font-medium">
                         How can we verify that this is your item? Describe it in detail.
                       </p>
                     </div>
                   )}
                 </div>
-
+                
                 <div className={`space-y-2 ${isShaking ? 'animate-shake border-red-500' : ''}`}>
-                  <label htmlFor="claimer-answer-modal" className="block text-[9px] font-mono font-bold text-slate-400 uppercase tracking-widest">
-                    YOUR ANSWER
+                  <label htmlFor="claimer-answer-modal" className="block text-[9px] font-mono font-bold text-slate-400 uppercase tracking-widest mt-2 text-center">
+                    YOUR CONFIDENTIAL ANSWER
                   </label>
                   <textarea
                     id="claimer-answer-modal"
-                    value={answer}
-                    onChange={(e) => { 
-                      setAnswer(e.target.value); 
-                      if (error) setError(''); 
-                    }}
-                    placeholder="Provide your exact verification answer or physical proof details here..."
-                    className="w-full rounded-md border border-slate-250 bg-white p-4 font-sans text-xs font-medium text-slate-900 focus:border-teal-600 focus:outline-none focus:ring-2 focus:ring-teal-100 leading-relaxed placeholder:text-slate-400"
                     rows={4}
+                    value={answer}
+                    onChange={(e) => {
+                      setAnswer(e.target.value);
+                      setIsShaking(false);
+                    }}
+                    placeholder={hasSecurityQuestion ? "Type your exact answer here..." : "Provide specific details only the owner would know (e.g. scratches, contents)..."}
+                    className="w-full border border-slate-300 rounded-lg p-3 text-sm focus:border-teal-500 focus:ring-1 focus:ring-teal-500 outline-none resize-none transition"
+                    required
                   />
-                  {error && <p className="text-xs font-bold text-red-500 mt-1 animate-pulse">{error}</p>}
-                  <p className="font-sans text-[10px] text-slate-400 italic">
-                    The finder will inspect this proof and action your contact credentials request.
-                  </p>
+                  {isShaking && (
+                    <p className="text-red-500 text-xs font-medium text-center">Please provide a valid answer to proceed.</p>
+                  )}
                 </div>
 
-                {/* TIPS CARD */}
-                <div className="p-4 border border-teal-600/30 rounded-md bg-teal-50/50 space-y-1">
-                  <span className="text-[10px] font-bold text-teal-700 uppercase tracking-widest flex items-center gap-1 mb-1"><Lightbulb className="h-3 w-3" /> Tips for a strong claim</span>
-                  <p className="text-xs text-slate-650 leading-relaxed">• State items inside (e.g. specific cards, quantity of cash, etc.)</p>
-                  <p className="text-xs text-slate-650 leading-relaxed">• Mention distinct scratches, custom keychains, stickers, or wallpaper setups</p>
-                  <p className="text-xs text-slate-650 leading-relaxed">• State the exact date, time range and place you lost or found it</p>
-                </div>
-
-                {claimErrorObj && (
-                  <div className="p-3 bg-red-50 border border-red-100 rounded-md text-red-750 font-sans text-[11px]">
-                    <X className="h-3 w-3 inline text-red-500 mr-1" /> {claimErrorObj}
-                  </div>
-                )}
-
-                {/* Footer buttons with responsive block-stacking */}
-                <div className="flex flex-col gap-2.5 pt-1">
+                <div className="w-full flex flex-col gap-3 mt-4">
                   <button
                     type="submit"
                     disabled={submittingClaim}
-                    className="w-full py-3.5 px-4 rounded-md bg-gradient-to-tr from-teal-850 to-indigo-950 text-white font-sans text-xs font-bold shadow-md hover:from-teal-900 hover:to-indigo-900 transition disabled:opacity-50 active:scale-95 duration-200 flex items-center justify-center space-x-1.5 cursor-pointer"
+                    className="w-full bg-[#01725a] text-white font-medium text-[14px] py-3 px-6 rounded-lg shadow-md hover:bg-[#00654f] transition-all duration-200 flex items-center justify-center gap-2"
                   >
                     {submittingClaim ? (
-                      <>
-                        <Loader2 className="h-4 w-4 animate-spin shrink-0" />
-                        <span>Submitting...</span>
-                      </>
+                      <span className="flex items-center gap-2">
+                        <div className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                        Encrypting...
+                      </span>
                     ) : (
-                      <>
-                        <CheckCircle2 className="h-4 w-4 text-teal-300" />
-                        <span>Submit Answer</span>
-                      </>
+                      <span className="flex items-center gap-2">
+                        <Lock className="h-4 w-4" />
+                        Submit Secure Claim
+                      </span>
                     )}
                   </button>
                   <button
                     type="button"
                     onClick={() => setOpenClaimModal(false)}
-                    className="w-full py-3.5 px-4 rounded-md border border-slate-205 font-sans text-xs font-bold text-slate-700 bg-slate-50 hover:bg-slate-100 transition active:scale-95 duration-200 cursor-pointer text-center"
+                    disabled={submittingClaim}
+                    className="w-full bg-transparent text-[#01725a] border border-[#01725a] font-medium text-[14px] py-3 px-6 rounded-lg hover:bg-teal-50 transition-all duration-200 flex items-center justify-center gap-2"
                   >
                     Cancel
                   </button>
