@@ -1,0 +1,25 @@
+{
+  "sidebar": {
+    "home": "Home",
+    "reportItem": "I-report ang Bagay",
+    "search": "Maghanap",
+    "alerts": "Mga Alerto",
+    "profile": "Profile",
+    "myItems": "Aking Mga Bagay",
+    "pinnedItems": "Naka-pin na Mga Bagay",
+    "categories": "Mga Kategorya",
+    "analytics": "Analytics",
+    "recoveryTips": "Mga Tip sa Pagbawi",
+    "packagingTips": "Mga Tip sa Pag-pack",
+    "aboutHelp": "Tungkol sa / Tulong",
+    "settings": "Mga Setting"
+  },
+  "settings": {
+    "title": "Mga Setting",
+    "language": {
+      "title": "Wika",
+      "description": "Piliin ang iyong gustong wika para sa interface.",
+      "changing": "Pinapalitan ang wika, mangyaring maghintay..."
+    }
+  }
+}

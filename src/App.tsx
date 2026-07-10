@@ -1,4 +1,6 @@
-import React, { useState, useEffect, useRef, useMemo } from "react";
+import React, { useState, useEffect, useRef, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
+import SettingsPage from './pages/Settings';
 import {
   User,
   onAuthStateChanged,
@@ -119,6 +121,7 @@ const ONBOARD_STEPS = [
 ];
 
 export default function App() {
+  const { t } = useTranslation();
   // Navigation layout state: 'landing' | 'login' | 'signup' | 'dashboard' | 'verify-email' | 'privacy' | 'terms' | 'verification-success'
   const [currentView, setCurrentView] = useState<
     | "landing"
@@ -2683,18 +2686,19 @@ export default function App() {
             {/* Navigation Items */}
             <nav className="flex-1 overflow-y-auto space-y-1.5 px-4 py-4">
               {[
-                { id: "home", label: "Home", icon: Home },
-                { id: "report", label: "Report Item", icon: PlusCircle },
-                { id: "search", label: "Search", icon: Search },
-                { id: "notifications", label: "Alerts", icon: Bell },
-                { id: "profile", label: "Profile", icon: UserIcon },
-                { id: "myitems", label: "My Items", icon: Archive },
-                { id: "pinned", label: "Pinned Items", icon: Pin },
-                { id: "categories", label: "Categories", icon: Shapes },
-                { id: "analytics", label: "Analytics", icon: BarChart2 },
-                { id: "tips", label: "Recovery Tips", icon: HeartHandshake },
-                { id: "packaging", label: "Packaging Tips", icon: Package },
-                { id: "about", label: "About / Help", icon: HelpCircle }
+                { id: "home", label: t('sidebar.home'), icon: Home },
+                { id: "report", label: t('sidebar.reportItem'), icon: PlusCircle },
+                { id: "search", label: t('sidebar.search'), icon: Search },
+                { id: "notifications", label: t('sidebar.alerts'), icon: Bell },
+                { id: "profile", label: t('sidebar.profile'), icon: UserIcon },
+                { id: "myitems", label: t('sidebar.myItems'), icon: Archive },
+                { id: "pinned", label: t('sidebar.pinnedItems'), icon: Pin },
+                { id: "categories", label: t('sidebar.categories'), icon: Shapes },
+                { id: "analytics", label: t('sidebar.analytics'), icon: BarChart2 },
+                { id: "tips", label: t('sidebar.recoveryTips'), icon: HeartHandshake },
+                { id: "packaging", label: t('sidebar.packagingTips'), icon: Package },
+                { id: "settings", label: t('sidebar.settings'), icon: Settings },
+                { id: "about", label: t('sidebar.aboutHelp'), icon: HelpCircle }
               ].map((item) => {
                 const isSelected = activeTab === item.id || (activeTab === "itemDetail" && item.id === "search") || (activeTab === "claimItem" && item.id === "search");
                 
@@ -4929,6 +4933,12 @@ export default function App() {
               </div>
             </section>
 
+            
+            {/* Settings */}
+            <div className={`${activeTab === "settings" ? "block" : "hidden"} flex-1 flex flex-col min-w-0 h-full`}>
+              <SettingsPage />
+            </div>
+
             <section
               id="about"
               className={`${activeTab === "about" ? "block" : "hidden"}`}
@@ -5026,7 +5036,7 @@ export default function App() {
               <div className={`p-1.5 rounded-xl transition-all duration-200 ${activeTab === 'home' ? 'bg-primary-container text-primary shadow-sm' : ''}`}>
                 <Home className="h-6 w-6" />
               </div>
-              <span className="text-[11px] font-semibold tracking-wide font-dmsans">Home</span>
+              <span className="text-[11px] font-semibold tracking-wide font-dmsans">{t('sidebar.home')}</span>
             </button>
 
             <button
@@ -5041,7 +5051,7 @@ export default function App() {
               <div className={`p-1.5 rounded-xl transition-all duration-200 ${activeTab === 'search' ? 'bg-primary-container text-primary shadow-sm' : ''}`}>
                 <Search className="h-6 w-6" />
               </div>
-              <span className="text-[11px] font-semibold tracking-wide font-dmsans">Search</span>
+              <span className="text-[11px] font-semibold tracking-wide font-dmsans">{t('sidebar.search')}</span>
             </button>
 
             {/* CENTRALLY INTEGRATED REPORT TAB */}
@@ -5060,7 +5070,7 @@ export default function App() {
               <div className={`p-1.5 rounded-xl transition-all duration-200 ${activeTab === 'report' ? 'bg-primary-container text-primary shadow-sm' : 'bg-surface-container-high border border-outline-variant/30 text-on-surface-variant'}`}>
                 <PlusCircle className="h-6 w-6" />
               </div>
-              <span className="text-[11px] font-semibold tracking-wide font-dmsans">Report</span>
+              <span className="text-[11px] font-semibold tracking-wide font-dmsans">{t('sidebar.reportItem')}</span>
             </button>
 
             <button
@@ -5078,7 +5088,7 @@ export default function App() {
               <div className={`p-1.5 rounded-xl transition-all duration-200 ${activeTab === 'notifications' ? 'bg-primary-container text-primary shadow-sm' : ''}`}>
                 <Bell className="h-6 w-6" />
               </div>
-              <span className="text-[11px] font-semibold tracking-wide font-dmsans">Alerts</span>
+              <span className="text-[11px] font-semibold tracking-wide font-dmsans">{t('sidebar.alerts')}</span>
             </button>
 
             <button
@@ -5092,7 +5102,7 @@ export default function App() {
               <div className={`p-1.5 rounded-xl transition-all duration-200 ${activeTab === 'profile' ? 'bg-primary-container text-primary shadow-sm' : ''}`}>
                 <UserIcon className="h-6 w-6" />
               </div>
-              <span className="text-[11px] font-semibold tracking-wide font-dmsans">Profile</span>
+              <span className="text-[11px] font-semibold tracking-wide font-dmsans">{t('sidebar.profile')}</span>
             </button>
           </nav>
           </div>

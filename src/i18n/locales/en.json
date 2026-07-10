@@ -1,0 +1,25 @@
+{
+  "sidebar": {
+    "home": "Home",
+    "reportItem": "Report Item",
+    "search": "Search",
+    "alerts": "Alerts",
+    "profile": "Profile",
+    "myItems": "My Items",
+    "pinnedItems": "Pinned Items",
+    "categories": "Categories",
+    "analytics": "Analytics",
+    "recoveryTips": "Recovery Tips",
+    "packagingTips": "Packaging Tips",
+    "aboutHelp": "About / Help",
+    "settings": "Settings"
+  },
+  "settings": {
+    "title": "Settings",
+    "language": {
+      "title": "Language",
+      "description": "Choose your preferred language for the interface.",
+      "changing": "Changing language, please wait..."
+    }
+  }
+}

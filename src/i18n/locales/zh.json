@@ -1,0 +1,25 @@
+{
+  "sidebar": {
+    "home": "首页",
+    "reportItem": "报告物品",
+    "search": "搜索",
+    "alerts": "提醒",
+    "profile": "个人资料",
+    "myItems": "我的物品",
+    "pinnedItems": "置顶物品",
+    "categories": "类别",
+    "analytics": "分析",
+    "recoveryTips": "恢复提示",
+    "packagingTips": "包装提示",
+    "aboutHelp": "关于 / 帮助",
+    "settings": "设置"
+  },
+  "settings": {
+    "title": "设置",
+    "language": {
+      "title": "语言",
+      "description": "选择您首选的界面语言。",
+      "changing": "正在更改语言，请稍候..."
+    }
+  }
+}

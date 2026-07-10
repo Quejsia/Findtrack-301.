@@ -1,0 +1,25 @@
+{
+  "sidebar": {
+    "home": "Inicio",
+    "reportItem": "Reportar Artículo",
+    "search": "Buscar",
+    "alerts": "Alertas",
+    "profile": "Perfil",
+    "myItems": "Mis Artículos",
+    "pinnedItems": "Artículos Fijados",
+    "categories": "Categorías",
+    "analytics": "Análisis",
+    "recoveryTips": "Consejos de Recuperación",
+    "packagingTips": "Consejos de Empaque",
+    "aboutHelp": "Acerca de / Ayuda",
+    "settings": "Configuración"
+  },
+  "settings": {
+    "title": "Configuración",
+    "language": {
+      "title": "Idioma",
+      "description": "Elija su idioma preferido para la interfaz.",
+      "changing": "Cambiando de idioma, por favor espere..."
+    }
+  }
+}

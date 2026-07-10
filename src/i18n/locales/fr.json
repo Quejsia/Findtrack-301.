@@ -1,0 +1,25 @@
+{
+  "sidebar": {
+    "home": "Accueil",
+    "reportItem": "Signaler un objet",
+    "search": "Rechercher",
+    "alerts": "Alertes",
+    "profile": "Profil",
+    "myItems": "Mes objets",
+    "pinnedItems": "Objets épinglés",
+    "categories": "Catégories",
+    "analytics": "Analyses",
+    "recoveryTips": "Conseils de récupération",
+    "packagingTips": "Conseils d'emballage",
+    "aboutHelp": "À propos / Aide",
+    "settings": "Paramètres"
+  },
+  "settings": {
+    "title": "Paramètres",
+    "language": {
+      "title": "Langue",
+      "description": "Choisissez votre langue préférée pour l'interface.",
+      "changing": "Changement de langue, veuillez patienter..."
+    }
+  }
+}
