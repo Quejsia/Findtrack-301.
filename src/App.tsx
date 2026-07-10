@@ -5189,7 +5189,7 @@ export default function App() {
             
             {/* Icon Container */}
             <div className="w-20 h-20 rounded-full bg-tertiary-container flex items-center justify-center mb-lg shadow-sm">
-              <Lock className="h-10 w-10 text-on-tertiary-container" fill="currentColor" strokeWidth={1.5} />
+              <Lock className="h-10 w-10 text-on-tertiary-container" strokeWidth={1.5} />
             </div>
             
             {/* Headlines & Text */}
