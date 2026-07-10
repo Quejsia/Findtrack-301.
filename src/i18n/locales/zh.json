@@ -21,5 +21,10 @@
       "description": "选择您首选的界面语言。",
       "changing": "正在更改语言，请稍候..."
     }
+  },
+  "greeting": {
+    "morning": "早上好",
+    "afternoon": "下午好",
+    "evening": "晚上好"
   }
 }

@@ -21,5 +21,10 @@
       "description": "Piliin ang iyong gustong wika para sa interface.",
       "changing": "Pinapalitan ang wika, mangyaring maghintay..."
     }
+  },
+  "greeting": {
+    "morning": "Magandang umaga",
+    "afternoon": "Magandang hapon",
+    "evening": "Magandang gabi"
   }
 }

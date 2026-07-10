@@ -21,5 +21,10 @@
       "description": "Elija su idioma preferido para la interfaz.",
       "changing": "Cambiando de idioma, por favor espere..."
     }
+  },
+  "greeting": {
+    "morning": "Buenos días",
+    "afternoon": "Buenas tardes",
+    "evening": "Buenas noches"
   }
 }

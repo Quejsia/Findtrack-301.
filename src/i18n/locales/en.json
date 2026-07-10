@@ -21,5 +21,10 @@
       "description": "Choose your preferred language for the interface.",
       "changing": "Changing language, please wait..."
     }
+  },
+  "greeting": {
+    "morning": "Good morning",
+    "afternoon": "Good afternoon",
+    "evening": "Good evening"
   }
 }

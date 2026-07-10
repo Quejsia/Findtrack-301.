@@ -122,6 +122,17 @@ const ONBOARD_STEPS = [
 
 export default function App() {
   const { t } = useTranslation();
+  const getGreetingKey = () => {
+    const hour = new Date().getHours();
+    if (hour >= 5 && hour < 12) {
+      return 'greeting.morning';
+    } else if (hour >= 12 && hour < 18) {
+      return 'greeting.afternoon';
+    } else {
+      return 'greeting.evening';
+    }
+  };
+
   // Navigation layout state: 'landing' | 'login' | 'signup' | 'dashboard' | 'verify-email' | 'privacy' | 'terms' | 'verification-success'
   const [currentView, setCurrentView] = useState<
     | "landing"
@@ -2841,7 +2852,7 @@ export default function App() {
               className={`${activeTab === "home" ? "flex" : "hidden"} max-w-5xl mx-auto h-full flex-col`}
             >
               <h1 className="text-3xl md:text-4xl font-bold text-slate-900 mb-8 flex items-center gap-2">
-                Magandang araw 👋
+                {t(getGreetingKey())}
               </h1>
               
               {/* Stats row */}
