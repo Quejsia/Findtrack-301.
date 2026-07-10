@@ -74,7 +74,7 @@ import {
   Clock,
   Menu, Grid,
   Archive, Pin, Shapes, BarChart2, HeartHandshake, HelpCircle,
-  ArrowLeft, Share, Bot, RefreshCw, BadgeCheck, MessageSquare, Gavel, Shield , Scan , Settings , AlertTriangle, Star, Heart, TrendingUp, ArrowDownUp, FileText, Image as ImageIcon } from "lucide-react"
+  ArrowLeft, Share, Bot, RefreshCw, BadgeCheck, MessageSquare, Gavel, Shield , Scan , Settings , AlertTriangle, Star, Heart, TrendingUp, ArrowDownUp, FileText, Image as ImageIcon, LogIn } from "lucide-react"
 import { uploadToCloudinary } from "./lib/cloudinary";
 
 interface ItemReport {
@@ -5189,7 +5189,7 @@ export default function App() {
             
             {/* Icon Container */}
             <div className="w-20 h-20 rounded-full bg-tertiary-container flex items-center justify-center mb-lg shadow-sm">
-              <span className="material-symbols-outlined text-[40px] text-on-tertiary-container" style={{ fontVariationSettings: "'FILL' 1" }}>lock</span>
+              <Lock className="h-10 w-10 text-on-tertiary-container" fill="currentColor" strokeWidth={1.5} />
             </div>
             
             {/* Headlines & Text */}
@@ -5207,7 +5207,7 @@ export default function App() {
                 }}
                 className="w-full bg-primary text-on-primary font-label-md text-label-md py-3 px-6 rounded-lg shadow-md hover:bg-primary-dim transition-all duration-200 flex items-center justify-center gap-2"
               >
-                <span className="material-symbols-outlined text-[18px]" style={{ fontVariationSettings: "'FILL' 0" }}>login</span>
+                <LogIn className="h-[18px] w-[18px]" strokeWidth={2} />
                 Login
               </button>
               <button 
@@ -5217,7 +5217,7 @@ export default function App() {
                 }}
                 className="w-full bg-transparent text-secondary border border-secondary font-label-md text-label-md py-3 px-6 rounded-lg hover:bg-surface-variant transition-all duration-200 flex items-center justify-center gap-2"
               >
-                <span className="material-symbols-outlined text-[18px]" style={{ fontVariationSettings: "'FILL' 0" }}>person_add</span>
+                <UserPlus className="h-[18px] w-[18px]" strokeWidth={2} />
                 Sign Up
               </button>
             </div>
