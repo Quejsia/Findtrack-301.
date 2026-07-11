@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { 
   collection, 
   query, 
@@ -54,6 +55,7 @@ export default function ChatInterface({
   onClose,
   onSelectChat,
 }: ChatInterfaceProps) {
+  const { t, i18n } = useTranslation();
   const [messages, setMessages] = useState<Message[]>([]);
   const [chatInfo, setChatInfo] = useState<Chat | null>(null);
   const [inputText, setInputText] = useState('');
@@ -159,7 +161,7 @@ export default function ChatInterface({
 
     } catch (error) {
       console.error("Error sending message:", error);
-      alert("Failed to send message securely. Try again.");
+      alert(t('chat.sendFailed', 'Failed to send message securely. Try again.'));
     } finally {
       setSending(false);
     }
@@ -167,9 +169,9 @@ export default function ChatInterface({
 
   // Helper formatting for dates/times
   const formatTime = (timestamp: any) => {
-    if (!timestamp) return 'Just now';
+    if (!timestamp) return t('chat.justNow', 'Just now');
     const date = timestamp.seconds ? new Date(timestamp.seconds * 1000) : new Date(timestamp);
-    return date.toLocaleTimeString('en-US', {
+    return date.toLocaleTimeString(i18n.language, {
       hour: '2-digit',
       minute: '2-digit'
     });
@@ -193,11 +195,11 @@ export default function ChatInterface({
             onClick={onClose}
             className="text-white font-bold text-lg leading-none p-1 cursor-pointer"
           >
-            ← Back
+            ← {t('report.back')}
           </button>
           <div className="flex flex-col">
-            <span className="text-white font-semibold text-sm">{reporterName || "Chat"}</span>
-            <span className="text-cyan-100 text-xs">Secure Handoff Messaging</span>
+            <span className="text-white font-semibold text-sm">{reporterName || t('chat.title', 'Chat')}</span>
+            <span className="text-cyan-100 text-xs">{t('chat.secureHandoffMessaging', 'Secure Handoff Messaging')}</span>
           </div>
         </div>
 
@@ -206,7 +208,7 @@ export default function ChatInterface({
           {loading ? (
             <div className="flex h-full flex-col items-center justify-center space-y-2 text-slate-400">
               <Loader2 className="h-8 w-8 animate-spin text-teal-600" />
-              <span className="font-sans text-xs">Loading secure message logs...</span>
+              <span className="font-sans text-xs">{t('chat.loadingLogs', 'Loading secure message logs...')}</span>
             </div>
           ) : messages.length === 0 ? (
             <div className="flex h-full flex-col items-center justify-center text-center p-6 space-y-3">
@@ -214,9 +216,9 @@ export default function ChatInterface({
                 <MessageSquare className="h-6 w-6" />
               </div>
               <div>
-                <h4 className="font-sans font-bold text-slate-800 text-sm">No Messages Yet</h4>
+                <h4 className="font-sans font-bold text-slate-800 text-sm">{t('dashboard.noMessagesYet')}</h4>
                 <p className="font-sans text-xs text-slate-500 max-w-xs mt-1">
-                  Introduce yourself! Mention how or where you can sync up to return this item.
+                  {t('chat.introduceYourself', 'Introduce yourself! Mention how or where you can sync up to return this item.')}
                 </p>
               </div>
             </div>
@@ -265,7 +267,7 @@ export default function ChatInterface({
               type="text"
               value={inputText}
               onChange={(e) => setInputText(e.target.value)}
-              placeholder="Type secure handoff messages..."
+              placeholder={t('chat.placeholder', 'Type secure handoff messages...')}
               className="flex-1 px-4 py-2.5 rounded-2xl bg-slate-50 border border-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-teal-600 focus:bg-white transition"
             />
             <button
@@ -298,6 +300,7 @@ export function ChatInboxList({
   onSelectChat,
   activeChatId,
 }: ChatListProps) {
+  const { t, i18n } = useTranslation();
   const [chats, setChats] = useState<Chat[]>([]);
   const [loading, setLoading] = useState(false);
 
@@ -341,7 +344,7 @@ export function ChatInboxList({
   if (!currentUserUid) {
     return (
       <div className="p-4 text-center text-slate-500 font-sans text-xs">
-        Please sign in to read your direct messages.
+        {t('chat.pleaseSignIn', 'Please sign in to read your direct messages.')}
       </div>
     );
   }
@@ -350,7 +353,7 @@ export function ChatInboxList({
     return (
       <div className="p-8 flex flex-col items-center justify-center space-y-2 text-slate-400">
         <Loader2 className="h-6 w-6 animate-spin text-teal-600" />
-        <span className="font-sans text-[11px]">Syncing direct messages...</span>
+        <span className="font-sans text-[11px]">{t('chat.syncing', 'Syncing direct messages...')}</span>
       </div>
     );
   }
@@ -359,9 +362,9 @@ export function ChatInboxList({
     return (
       <div className="p-6 text-center border-2 border-dashed border-slate-100 rounded-xl bg-slate-50/20">
         <MessageSquare className="mx-auto h-7 w-7 text-slate-300 mb-2" />
-        <h5 className="font-sans font-bold text-slate-700 text-xs text-center">No Active Chats</h5>
+        <h5 className="font-sans font-bold text-slate-700 text-xs text-center">{t('chat.noActiveChats', 'No Active Chats')}</h5>
         <p className="font-sans text-[11px] text-slate-400 mt-1 max-w-sm mx-auto leading-relaxed">
-          Open a lost or found item details page and tap "Message Finder" to connect instantly and privately.
+          {t('chat.noActiveChatsDesc', 'Open a lost or found item details page and tap "Message Finder" to connect instantly and privately.')}
         </p>
       </div>
     );
@@ -372,7 +375,7 @@ export function ChatInboxList({
       {chats.map((chat) => {
         const isActive = activeChatId === chat.chatId;
         const formattedDate = chat.timestamp 
-          ? (chat.timestamp.seconds ? new Date(chat.timestamp.seconds * 1000) : new Date(chat.timestamp)).toLocaleDateString('en-US', {
+          ? (chat.timestamp.seconds ? new Date(chat.timestamp.seconds * 1000) : new Date(chat.timestamp)).toLocaleDateString(i18n.language, {
               month: 'short',
               day: 'numeric'
             })
@@ -401,13 +404,13 @@ export function ChatInboxList({
               {/* Chat details summary */}
               <div className="text-left min-w-0 flex-1">
                 <p className="font-sans text-[11px] text-slate-400 font-medium">
-                  {chat.itemTitle ? `About "${chat.itemTitle}"` : 'Direct Messaging'}
+                  {chat.itemTitle ? `${t('chat.about', 'About')} "${chat.itemTitle}"` : t('chat.directMessaging', 'Direct Messaging')}
                 </p>
                 <h4 className="font-sans font-bold text-slate-800 text-xs mt-0.5 truncate leading-snug">
-                  Discussion Participant {chat.participants.find(p => p !== currentUserUid)?.substring(0, 5)}
+                  {t('chat.participant', 'Discussion Participant')} {chat.participants.find(p => p !== currentUserUid)?.substring(0, 5)}
                 </h4>
                 <p className="font-sans text-[11px] text-slate-500 mt-1 truncate leading-normal">
-                  {chat.lastMessage || 'Message logs started...'}
+                  {chat.lastMessage || t('chat.logsStarted', 'Message logs started...')}
                 </p>
               </div>
             </div>

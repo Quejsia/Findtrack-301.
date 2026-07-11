@@ -121,7 +121,7 @@ const ONBOARD_STEPS = [
 ];
 
 export default function App() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const getGreetingKey = () => {
     const hour = new Date().getHours();
     if (hour >= 5 && hour < 12) {
@@ -2875,8 +2875,8 @@ export default function App() {
                     <div className="space-y-4 overflow-y-auto flex-1 pr-2">
                       {items.slice(0, 6).map((r) => (
                         <div key={r.id} className="text-sm border-b border-slate-50 pb-4 last:border-0">
-                          <span className="font-semibold text-slate-800">{r.type === 'lost' ? t('dashboard.lost') : t('dashboard.found')} {r.title}</span> {r.location ? `in ${r.location}` : ''} - 
-                          <span className="text-slate-500 ml-1">Reported by {r.contactName?.split(' ')[0] || 'Member'} ({r.date ? new Date(r.date).toLocaleDateString() : 'recently'})</span>
+                          <span className="font-semibold text-slate-800">{r.type === 'lost' ? t('dashboard.lost') : t('dashboard.found')} {r.title}</span> {r.location ? `${t('dashboard.in', 'in')} ${r.location}` : ''} - 
+                          <span className="text-slate-500 ml-1">{t('dashboard.reportedBy', 'Reported by')} {r.contactName?.split(' ')[0] || t('dashboard.member', 'Member')} ({r.date ? new Date(r.date).toLocaleDateString(i18n.language) : t('search.recent', 'Recent')})</span>
                         </div>
                       ))}
                       {items.length === 0 && <div className="text-slate-500 text-sm">{t('dashboard.noRecentActivity')}</div>}
@@ -2971,12 +2971,12 @@ export default function App() {
                     {/* STEP 2: Details */}
                     <div className={`space-y-6 ${reportStep === 2 ? 'block' : 'hidden'}`}>
                       <div className="space-y-2">
-                        <label className="block font-label-md font-bold text-on-surface">Description</label>
-                        <textarea required value={reportDesc} onChange={(e) => setReportDesc(e.target.value)} rows={4} placeholder="Describe the item in detail (color, brand, unique marks...)" className="w-full bg-surface-variant border-none rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary outline-none resize-none"></textarea>
+                        <label className="block font-label-md font-bold text-on-surface">{t('report.description')}</label>
+                        <textarea required value={reportDesc} onChange={(e) => setReportDesc(e.target.value)} rows={4} placeholder={t('report.descriptionPlaceholder')} className="w-full bg-surface-variant border-none rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary outline-none resize-none"></textarea>
                       </div>
 
                       <div className="space-y-2">
-                        <label className="block font-label-md font-bold text-on-surface">Upload Image (Optional)</label>
+                        <label className="block font-label-md font-bold text-on-surface">{t('report.uploadImage')}</label>
                         <div className="border-2 border-dashed border-outline-variant rounded-xl p-8 text-center hover:bg-surface-variant transition-colors cursor-pointer relative">
                           <input type="file" accept="image/*" onChange={(e) => {
                             const file = e.target.files?.[0];
@@ -2990,13 +2990,13 @@ export default function App() {
                           {reportImage ? (
                             <div className="flex flex-col items-center">
                               <img src={reportImage} alt="Preview" className="h-32 object-contain rounded-lg mb-4 shadow-sm" />
-                              <span className="text-sm font-medium text-primary">Change Image</span>
+                              <span className="text-sm font-medium text-primary">{t('report.changeImage')}</span>
                             </div>
                           ) : (
                             <div className="flex flex-col items-center">
                               <Camera className="h-10 w-10 text-outline mb-3" />
-                              <span className="text-sm font-medium text-on-surface">Click to upload or drag and drop</span>
-                              <span className="text-xs text-on-surface-variant mt-1">PNG, JPG up to 5MB</span>
+                              <span className="text-sm font-medium text-on-surface">{t('report.dragDropText')}</span>
+                              <span className="text-xs text-on-surface-variant mt-1">{t('report.imageLimits')}</span>
                             </div>
                           )}
                         </div>
@@ -3009,21 +3009,21 @@ export default function App() {
                         <div className="flex items-start gap-3">
                           <ShieldCheck className="h-5 w-5 shrink-0 mt-0.5" />
                           <div>
-                            <p className="font-bold mb-1">Protecting Ownership</p>
-                            <p>To ensure this item is returned to its rightful owner, set a secret question that only the real owner would know.</p>
+                            <p className="font-bold mb-1">{t('report.protectingOwnership')}</p>
+                            <p>{t('report.protectingOwnershipDesc')}</p>
                           </div>
                         </div>
                       </div>
 
                       <div className="space-y-2">
-                        <label className="block font-label-md font-bold text-on-surface">Secret Verification Question</label>
-                        <input type="text" required value={reportSecurityQuestion} onChange={(e) => setReportSecurityQuestion(e.target.value)} placeholder="e.g. What is the wallpaper on the lock screen?" className="w-full bg-surface-variant border-none rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary outline-none" />
+                        <label className="block font-label-md font-bold text-on-surface">{t('report.secretQuestion')}</label>
+                        <input type="text" required value={reportSecurityQuestion} onChange={(e) => setReportSecurityQuestion(e.target.value)} placeholder={t('report.secretQuestionPlaceholder')} className="w-full bg-surface-variant border-none rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary outline-none" />
                       </div>
 
                       <div className="space-y-2">
-                        <label className="block font-label-md font-bold text-on-surface">Secret Answer</label>
-                        <input type="text" required value={reportSecurityAnswer} onChange={(e) => setReportSecurityAnswer(e.target.value)} placeholder="e.g. A picture of a dog" className="w-full bg-surface-variant border-none rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary outline-none" />
-                        <p className="text-xs text-on-surface-variant mt-1">This answer will be hidden and used for verification.</p>
+                        <label className="block font-label-md font-bold text-on-surface">{t('report.secretAnswer')}</label>
+                        <input type="text" required value={reportSecurityAnswer} onChange={(e) => setReportSecurityAnswer(e.target.value)} placeholder={t('report.secretAnswerPlaceholder')} className="w-full bg-surface-variant border-none rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary outline-none" />
+                        <p className="text-xs text-on-surface-variant mt-1">{t('report.secretAnswerDesc')}</p>
                       </div>
                     </div>
 
@@ -3031,13 +3031,13 @@ export default function App() {
                     <div className="pt-6 border-t border-outline-variant flex justify-between items-center mt-8">
                       {reportStep > 1 ? (
                         <button type="button" onClick={() => setReportStep(reportStep - 1)} className="px-6 py-2.5 rounded-full font-label-md font-bold text-on-surface border border-outline-variant hover:bg-surface-variant transition-colors">
-                          Back
+                          {t('report.back')}
                         </button>
                       ) : <div></div>}
                       
                       <button type="submit" disabled={isUploading} className="px-6 py-2.5 rounded-full font-label-md font-bold bg-primary text-on-primary hover:bg-primary-dim transition-colors flex items-center gap-2 shadow-sm disabled:opacity-70">
-                        {isUploading ? "Uploading..." : reportStep < 3 ? t('report.continue') : (
-                          <><Send className="h-4 w-4" /> Submit Report</>
+                        {isUploading ? t('report.uploading') : reportStep < 3 ? t('report.continue') : (
+                          <><Send className="h-4 w-4" /> {t('report.submitReport')}</>
                         )}
                       </button>
                     </div>
@@ -3219,22 +3219,22 @@ export default function App() {
                             <h3 className="font-headline-md text-base text-on-surface font-semibold line-clamp-1 group-hover:text-primary transition-colors">{r.title}</h3>
                           </div>
                           <p className="font-body-md text-on-surface-variant line-clamp-2 mb-4 text-sm">
-                            {r.desc || r.description || "No description provided."}
+                            {r.desc || r.description || t('search.noDescriptionProvided', 'No description provided.')}
                           </p>
                           <div className="mt-auto space-y-2">
                             <div className="flex items-center text-xs text-on-surface-variant">
                               <MapPin className="h-[14px] w-[14px] mr-1 text-primary shrink-0" />
-                              <span className="truncate">{r.location || "Unknown location"}</span>
+                              <span className="truncate">{r.location || t('search.unknownLocation', 'Unknown location')}</span>
                             </div>
                             <div className="flex items-center text-xs text-on-surface-variant">
                               <Clock className="h-[14px] w-[14px] mr-1 text-primary shrink-0" />
                               <span>{r.date
-                                ? new Date(r.date).toLocaleDateString("en-US", {
+                                ? new Date(r.date).toLocaleDateString(i18n.language, {
                                     year: "numeric",
                                     month: "short",
                                     day: "numeric",
                                   })
-                                : r.createdAt ? new Date(r.createdAt.seconds ? r.createdAt.seconds * 1000 : r.createdAt).toLocaleDateString() : "Recent"}</span>
+                                : r.createdAt ? new Date(r.createdAt.seconds ? r.createdAt.seconds * 1000 : r.createdAt).toLocaleDateString(i18n.language) : t('search.recent', 'Recent')}</span>
                             </div>
                           </div>
                         </div>
@@ -4041,24 +4041,24 @@ export default function App() {
                 {/* Dashboard Header */}
                 <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 space-y-4 md:space-y-0">
                   <div>
-                    <h2 className="font-headline-lg text-3xl font-bold text-on-background mb-1">My Items</h2>
-                    <p className="font-body-lg text-on-surface-variant">Manage and track your reported lost or found items.</p>
+                    <h2 className="font-headline-lg text-3xl font-bold text-on-background mb-1">{t('sidebar.myItems', 'My Items')}</h2>
+                    <p className="font-body-lg text-on-surface-variant">{t('generated.string_271', 'Manage and track your reported lost or found items.')}</p>
                   </div>
                   <button 
                     onClick={() => setActiveTab("report")}
                     className="flex items-center gap-2 px-4 py-2 font-label-md font-bold bg-primary text-on-primary rounded-lg shadow-sm hover:bg-primary-dim transition-colors"
                   >
-                    <PlusCircle className="h-4 w-4" /> Report New
+                    <PlusCircle className="h-4 w-4" /> {t('generated.string_272', 'Report New')}
                   </button>
                 </div>
 
                 {/* Tabs */}
                 <div className="flex space-x-8 border-b border-outline-variant mb-8 overflow-x-auto pb-px">
                   <button className="font-label-md text-sm text-primary border-b-2 border-primary pb-3 px-1 whitespace-nowrap">
-                    Active ({items.filter(i => i.userId === auth.currentUser?.uid && !i.claimed).length})
+                    {t('generated.string_273', 'Active (')} {items.filter(i => i.userId === auth.currentUser?.uid && !i.claimed).length})
                   </button>
                   <button className="font-label-md text-sm text-on-surface-variant hover:text-primary transition-colors pb-3 px-1 whitespace-nowrap">
-                    Resolved ({items.filter(i => i.userId === auth.currentUser?.uid && i.claimed).length})
+                    {t('generated.string_274', 'Resolved (')} {items.filter(i => i.userId === auth.currentUser?.uid && i.claimed).length})
                   </button>
                 </div>
 
@@ -4074,21 +4074,21 @@ export default function App() {
                               {r.claimed ? (
                                 <span className="bg-secondary-container text-on-secondary-container px-2 py-1 rounded-full font-label-md text-[10px] uppercase tracking-wider flex items-center space-x-1">
                                   <CheckCircle2 className="h-[14px] w-[14px]" />
-                                  <span>Match Found</span>
+                                  <span>{t('generated.string_275', 'Match Found')}</span>
                                 </span>
                               ) : r.type === "found" ? (
                                 <span className="bg-primary-container text-on-primary-container px-2 py-1 rounded-full font-label-md text-[10px] uppercase tracking-wider flex items-center space-x-1">
                                   <Hand className="h-[14px] w-[14px]" />
-                                  <span>Found</span>
+                                  <span>{t('generated.string_276', 'Found')}</span>
                                 </span>
                               ) : (
                                 <span className="bg-tertiary-container text-on-tertiary-container px-2 py-1 rounded-full font-label-md text-[10px] uppercase tracking-wider flex items-center space-x-1">
                                   <Search className="h-[14px] w-[14px] animate-pulse" />
-                                  <span>Searching</span>
+                                  <span>{t('generated.string_277', 'Searching')}</span>
                                 </span>
                               )}
                               <span className="text-on-surface-variant font-label-md text-xs">
-                                {r.type === 'found' ? 'Found' : 'Lost'} • {r.createdAt ? new Date(r.createdAt.seconds ? r.createdAt.seconds * 1000 : r.createdAt).toLocaleDateString() : 'Recent'}
+                                {r.type === 'found' ? t('search.found', 'Found') : t('search.lost', 'Lost')} • {r.createdAt ? new Date(r.createdAt.seconds ? r.createdAt.seconds * 1000 : r.createdAt).toLocaleDateString() : t('alerts.recently', 'Recent')}
                               </span>
                             </div>
                             <button 
@@ -4129,7 +4129,7 @@ export default function App() {
                               <>
                                 <button className="flex-1 bg-primary text-on-primary py-2 rounded-lg font-label-md text-sm hover:bg-primary-dim transition-colors flex items-center justify-center space-x-2">
                                   <MessageSquare className="h-[18px] w-[18px]" />
-                                  <span>Message Finder</span>
+                                  <span>{t('generated.string_278', 'Message Finder')}</span>
                                 </button>
                               </>
                             ) : (
@@ -4154,13 +4154,13 @@ export default function App() {
                   {items.filter((item) => item.userId === auth.currentUser?.uid).length === 0 && (
                     <div className="col-span-full py-16 text-center border-2 border-dashed border-outline-variant rounded-2xl bg-surface-container-lowest">
                       <Inbox className="h-12 w-12 text-outline mx-auto mb-4" />
-                      <h3 className="font-headline-md text-lg font-bold text-on-surface mb-2">No items yet</h3>
-                      <p className="font-body-md text-on-surface-variant mb-6">You haven't reported any lost or found items.</p>
+                      <h3 className="font-headline-md text-lg font-bold text-on-surface mb-2">{t('generated.string_279', 'No items yet')}</h3>
+                      <p className="font-body-md text-on-surface-variant mb-6">{t('generated.string_280', "You haven't reported any lost or found items.")}</p>
                       <button 
                         onClick={() => setActiveTab("report")}
                         className="inline-flex items-center gap-2 px-6 py-2.5 font-label-md font-bold bg-primary text-on-primary rounded-lg shadow-sm hover:bg-primary-dim transition-colors"
                       >
-                        <PlusCircle className="h-4 w-4" /> Report an Item
+                        <PlusCircle className="h-4 w-4" /> {t('dashboard.reportAnItem', 'Report an Item')}
                       </button>
                     </div>
                   )}
@@ -4175,17 +4175,17 @@ export default function App() {
               <div className="pt-8 px-4 md:px-8 pb-32">
                 <div className="mb-8 flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
                   <div>
-                    <h2 className="font-headline-lg text-3xl font-bold text-on-background mb-2">Pinned Items</h2>
-                    <p className="font-body-lg text-on-surface-variant max-w-2xl">Keep track of important community reports. Items you pin will appear here for quick access until they are resolved or you unpin them.</p>
+                    <h2 className="font-headline-lg text-3xl font-bold text-on-background mb-2">{t('sidebar.pinnedItems', 'Pinned Items')}</h2>
+                    <p className="font-body-lg text-on-surface-variant max-w-2xl">{t('generated.string_281', 'Keep track of important community reports. Items you pin will appear here for quick access until they are resolved or you unpin them.')}</p>
                   </div>
                   <div className="flex gap-2">
                     <button className="px-4 py-2 bg-surface-container rounded-lg font-label-md text-sm text-on-surface flex items-center gap-2 hover:bg-surface-container-high transition-colors border border-outline-variant">
                       <Filter className="h-[18px] w-[18px]" />
-                      Filter
+                      {t('search.filter', 'Filter')}
                     </button>
                     <button className="px-4 py-2 bg-surface-container rounded-lg font-label-md text-sm text-on-surface flex items-center gap-2 hover:bg-surface-container-high transition-colors border border-outline-variant">
                       <ArrowDownUp className="h-[18px] w-[18px]" />
-                      Sort
+                      {t('generated.string_282', 'Sort')}
                     </button>
                   </div>
                 </div>
@@ -4198,16 +4198,16 @@ export default function App() {
                       const isLarge = i % 5 === 0;
                       return (
                         <div 
-                          key={r.id} 
-                          className={`${isLarge ? "md:col-span-2 lg:col-span-2 row-span-2" : "col-span-1 row-span-1"} bg-surface-container-lowest rounded-xl shadow-[0_4px_20px_-4px_rgba(1,114,90,0.08)] border border-outline-variant/30 overflow-hidden flex flex-col group relative transition-transform hover:-translate-y-1 duration-300 cursor-pointer`}
-                          onClick={() => {
-                            setSelectedItemId(r.id);
-                            setActiveTab("itemDetail");
-                          }}
+                           key={r.id} 
+                           className={`${isLarge ? "md:col-span-2 lg:col-span-2 row-span-2" : "col-span-1 row-span-1"} bg-surface-container-lowest rounded-xl shadow-[0_4px_20px_-4px_rgba(1,114,90,0.08)] border border-outline-variant/30 overflow-hidden flex flex-col group relative transition-transform hover:-translate-y-1 duration-300 cursor-pointer`}
+                           onClick={() => {
+                             setSelectedItemId(r.id);
+                             setActiveTab("itemDetail");
+                           }}
                         >
                           <div className="absolute top-4 right-4 z-10 flex gap-2">
                             <span className={`${r.claimed ? 'bg-secondary-container text-on-secondary-container' : r.type === 'found' ? 'bg-primary-container text-on-primary-container' : 'bg-tertiary-container text-on-tertiary-container'} px-3 py-1 rounded-full font-label-md text-[10px] font-bold tracking-wider uppercase shadow-sm`}>
-                              {r.claimed ? "Resolved" : r.type === "found" ? "Found" : "Lost"}
+                              {r.claimed ? t('search.resolved', 'Resolved') : r.type === "found" ? t('search.found', 'Found') : t('search.lost', 'Lost')}
                             </span>
                             <button
                               onClick={(e) => {
@@ -4215,7 +4215,7 @@ export default function App() {
                                 togglePin(r.id);
                               }}
                               className="bg-surface-container-lowest/80 backdrop-blur p-2 rounded-full text-primary hover:text-error transition-colors shadow-sm group/btn"
-                              title="Unpin Item"
+                              title={t('generated.string_283', 'Unpin Item')}
                             >
                               <MapPin className="h-4 w-4 fill-current group-hover/btn:hidden" />
                               <X className="h-4 w-4 hidden group-hover/btn:block text-error" />
@@ -4236,7 +4236,7 @@ export default function App() {
                             ) : (
                               <div className="w-full h-full border-2 border-dashed border-outline-variant flex flex-col items-center justify-center text-outline-variant p-4 m-4 rounded-lg bg-surface-container-lowest">
                                 <ImageIcon className="h-10 w-10 mb-2 opacity-50" />
-                                <span className="font-label-md text-xs text-center opacity-70">No Image Available</span>
+                                <span className="font-label-md text-xs text-center opacity-70">{t('generated.string_401', 'No Image Available')}</span>
                               </div>
                             )}
                             
@@ -4244,7 +4244,7 @@ export default function App() {
                               <div className="absolute bottom-4 left-4 right-4 text-white">
                                 <div className="flex items-center gap-2 mb-1 text-sm opacity-90">
                                   <MapPin className="h-[16px] w-[16px]" />
-                                  <span>{r.location || "Unknown"}</span>
+                                  <span>{r.location || t('generated.string_284', 'Unknown')}</span>
                                 </div>
                                 <h3 className="font-headline-md text-2xl font-bold leading-tight line-clamp-1">{r.title}</h3>
                               </div>
@@ -4259,12 +4259,12 @@ export default function App() {
                             {(!isLarge || (!r.image && !r.imageUrl)) && (
                               <div className="flex items-center gap-1 text-on-surface-variant text-sm mb-3">
                                 <MapPin className="h-[14px] w-[14px] text-primary" />
-                                <span className="truncate">{r.location || "Unknown"}</span>
+                                <span className="truncate">{r.location || t('generated.string_284', 'Unknown')}</span>
                               </div>
                             )}
                             
                             <p className="font-body-md text-on-surface-variant line-clamp-3 mb-4 text-sm">
-                              {r.desc || r.description || "No description provided."}
+                              {r.desc || r.description || t('generated.string_285', 'No description provided.')}
                             </p>
                             
                             <div className="mt-auto pt-4 border-t border-surface-variant flex justify-between items-center">
@@ -4273,12 +4273,12 @@ export default function App() {
                                   <div className="w-8 h-8 rounded-full bg-surface-container-high border border-outline-variant flex items-center justify-center text-xs font-bold text-on-surface">
                                     {r.contactName ? r.contactName.charAt(0).toUpperCase() : "U"}
                                   </div>
-                                  <span className="font-label-md text-xs text-on-surface">Reported by {r.contactName || "User"}</span>
+                                  <span className="font-label-md text-xs text-on-surface">{t('generated.string_286', 'Reported by')} {r.contactName || "User"}</span>
                                 </div>
                               ) : (
                                 <span className="font-label-md text-xs text-outline flex items-center gap-1">
                                   <Clock className="h-3 w-3" />
-                                  Pinned {r.createdAt ? new Date(r.createdAt.seconds ? r.createdAt.seconds * 1000 : r.createdAt).toLocaleDateString() : 'Recently'}
+                                  {t('generated.string_287', 'Pinned')} {r.createdAt ? new Date(r.createdAt.seconds ? r.createdAt.seconds * 1000 : r.createdAt).toLocaleDateString() : t('alerts.recently', 'Recently')}
                                 </span>
                               )}
                               
@@ -4296,13 +4296,13 @@ export default function App() {
                       <div className="w-16 h-16 bg-surface-container rounded-full flex items-center justify-center mx-auto mb-4 border border-outline-variant">
                         <MapPin className="h-8 w-8 text-outline" />
                       </div>
-                      <h3 className="font-headline-md text-lg font-bold text-on-surface mb-2">No pinned items</h3>
-                      <p className="font-body-md text-on-surface-variant mb-6">You haven't bookmarked any items yet.</p>
+                      <h3 className="font-headline-md text-lg font-bold text-on-surface mb-2">{t('generated.string_288', 'No pinned items')}</h3>
+                      <p className="font-body-md text-on-surface-variant mb-6">{t('generated.string_289', "You haven't bookmarked any items yet.")}</p>
                       <button 
                         onClick={() => setActiveTab("search")}
                         className="inline-flex items-center gap-2 px-6 py-2.5 font-label-md font-bold bg-primary text-on-primary rounded-lg shadow-sm hover:bg-primary-dim transition-colors"
                       >
-                        <Search className="h-4 w-4" /> Browse Items
+                        <Search className="h-4 w-4" /> {t('generated.string_290', 'Browse Items')}
                       </button>
                     </div>
                   )}
@@ -4317,8 +4317,8 @@ export default function App() {
               <div className="pt-8 px-4 md:px-8 pb-32 max-w-7xl mx-auto w-full">
                 {/* Page Header */}
                 <div className="mb-12">
-                  <h2 className="font-headline-lg text-4xl font-bold text-primary mb-2">Browse Categories</h2>
-                  <p className="font-body-lg text-on-surface-variant max-w-2xl">Find what you're looking for by exploring our organized categories. We've classified items to help you navigate through reports efficiently.</p>
+                  <h2 className="font-headline-lg text-4xl font-bold text-primary mb-2">{t('sidebar.categories', 'Browse Categories')}</h2>
+                  <p className="font-body-lg text-on-surface-variant max-w-2xl">{t('generated.string_291', "Find what you're looking for by exploring our organized categories. We've classified items to help you navigate through reports efficiently.")}</p>
                 </div>
                 
                 {/* Bento Grid for Categories */}
@@ -4339,12 +4339,12 @@ export default function App() {
                         <Smartphone className="text-on-primary-container h-8 w-8" />
                       </div>
                       <span className="bg-surface-variant text-on-surface-variant font-label-md text-xs px-3 py-1 rounded-full border border-outline-variant/20">
-                        {items.filter(i => ["phone", "laptop", "tablet", "charger", "headphone", "earphone", "computer", "iphone", "samsung", "ipad", "macbook"].some(kw => i.title.toLowerCase().includes(kw) || i.desc?.toLowerCase().includes(kw))).length} Active
+                        {items.filter(i => ["phone", "laptop", "tablet", "charger", "headphone", "earphone", "computer", "iphone", "samsung", "ipad", "macbook"].some(kw => i.title.toLowerCase().includes(kw) || i.desc?.toLowerCase().includes(kw))).length} {t('generated.string_292', 'Active')}
                       </span>
                     </div>
                     <div className="relative z-10 mt-auto">
-                      <h3 className="font-headline-md text-3xl font-bold text-primary mb-2 group-hover:text-primary-dim transition-colors">Electronics</h3>
-                      <p className="font-body-md text-base text-on-surface-variant max-w-sm">Phones, laptops, tablets, and other digital devices reported lost or found recently.</p>
+                      <h3 className="font-headline-md text-3xl font-bold text-primary mb-2 group-hover:text-primary-dim transition-colors">{t('generated.string_293', 'Electronics')}</h3>
+                      <p className="font-body-md text-base text-on-surface-variant max-w-sm">{t('generated.string_294', 'Phones, laptops, tablets, and other digital devices reported lost or found recently.')}</p>
                     </div>
                   </div>
 
@@ -4364,12 +4364,12 @@ export default function App() {
                         <Package className="text-on-tertiary-container h-6 w-6" />
                       </div>
                       <span className="bg-surface-variant text-on-surface-variant font-label-md text-[10px] px-2 py-1 rounded-full">
-                        {items.filter(i => ["bag", "backpack", "purse", "wallet", "luggage", "suitcase", "handbag"].some(kw => i.title.toLowerCase().includes(kw) || i.desc?.toLowerCase().includes(kw))).length} Active
+                        {items.filter(i => ["bag", "backpack", "purse", "wallet", "luggage", "suitcase", "handbag"].some(kw => i.title.toLowerCase().includes(kw) || i.desc?.toLowerCase().includes(kw))).length} {t('generated.string_292', 'Active')}
                       </span>
                     </div>
                     <div className="relative z-10 mt-auto">
-                      <h3 className="font-body-lg text-lg font-bold text-on-surface mb-1 group-hover:text-tertiary transition-colors">Bags & Luggage</h3>
-                      <p className="font-body-md text-sm text-on-surface-variant line-clamp-2">Backpacks, purses, suitcases and other carry-ons.</p>
+                      <h3 className="font-body-lg text-lg font-bold text-on-surface mb-1 group-hover:text-tertiary transition-colors">{t('generated.string_295', 'Bags & Luggage')}</h3>
+                      <p className="font-body-md text-sm text-on-surface-variant line-clamp-2">{t('generated.string_296', 'Backpacks, purses, suitcases and other carry-ons.')}</p>
                     </div>
                   </div>
 
@@ -4389,12 +4389,12 @@ export default function App() {
                         <Heart className="text-error h-6 w-6" fill="currentColor" />
                       </div>
                       <span className="bg-surface-variant text-on-surface-variant font-label-md text-[10px] px-2 py-1 rounded-full">
-                        {items.filter(i => ["dog", "cat", "pet", "bird", "animal", "puppy", "kitten", "collar"].some(kw => i.title.toLowerCase().includes(kw) || i.desc?.toLowerCase().includes(kw))).length} Active
+                        {items.filter(i => ["dog", "cat", "pet", "bird", "animal", "puppy", "kitten", "collar"].some(kw => i.title.toLowerCase().includes(kw) || i.desc?.toLowerCase().includes(kw))).length} {t('generated.string_292', 'Active')}
                       </span>
                     </div>
                     <div className="relative z-10 mt-auto">
-                      <h3 className="font-body-lg text-lg font-bold text-on-surface mb-1 group-hover:text-error transition-colors">Pets & Animals</h3>
-                      <p className="font-body-md text-sm text-on-surface-variant line-clamp-2">Lost dogs, cats, and other companion animals.</p>
+                      <h3 className="font-body-lg text-lg font-bold text-on-surface mb-1 group-hover:text-error transition-colors">{t('generated.string_297', 'Pets & Animals')}</h3>
+                      <p className="font-body-md text-sm text-on-surface-variant line-clamp-2">{t('generated.string_298', 'Lost dogs, cats, and other companion animals.')}</p>
                     </div>
                   </div>
 
@@ -4412,14 +4412,14 @@ export default function App() {
                         <FileText className="text-on-secondary-container h-8 w-8" />
                       </div>
                       <span className="bg-surface-variant text-on-surface-variant font-label-md text-[10px] px-2 py-1 rounded-full">
-                        {items.filter(i => ["document", "id", "passport", "license", "card", "paper", "folder"].some(kw => i.title.toLowerCase().includes(kw) || i.desc?.toLowerCase().includes(kw))).length} Active
+                        {items.filter(i => ["document", "id", "passport", "license", "card", "paper", "folder"].some(kw => i.title.toLowerCase().includes(kw) || i.desc?.toLowerCase().includes(kw))).length} {t('generated.string_292', 'Active')}
                       </span>
                     </div>
                     <div className="relative z-10 mt-auto">
-                      <h3 className="font-body-lg text-2xl font-bold text-secondary mb-2 group-hover:text-primary transition-colors">Documents & IDs</h3>
-                      <p className="font-body-md text-sm text-on-surface-variant mb-4">Passports, driver's licenses, IDs, and important paperwork.</p>
+                      <h3 className="font-body-lg text-2xl font-bold text-secondary mb-2 group-hover:text-primary transition-colors">{t('generated.string_299', 'Documents & IDs')}</h3>
+                      <p className="font-body-md text-sm text-on-surface-variant mb-4">{t('generated.string_300', "Passports, driver's licenses, IDs, and important paperwork.")}</p>
                       <div className="flex items-center text-primary font-label-md text-xs group-hover:translate-x-1 transition-transform">
-                        Explore <ArrowRight className="h-4 w-4 ml-1" />
+                        {t('generated.string_301', 'Explore')} <ArrowRight className="h-4 w-4 ml-1" />
                       </div>
                     </div>
                   </div>
@@ -4437,11 +4437,11 @@ export default function App() {
                         <Tag className="text-on-surface h-6 w-6" />
                       </div>
                       <span className="bg-surface-variant text-on-surface-variant font-label-md text-[10px] px-2 py-1 rounded-full">
-                        {items.filter(i => ["jacket", "shirt", "pants", "uniform", "shoes", "hat", "scarf", "coat", "clothing"].some(kw => i.title.toLowerCase().includes(kw) || i.desc?.toLowerCase().includes(kw))).length} Active
+                        {items.filter(i => ["jacket", "shirt", "pants", "uniform", "shoes", "hat", "scarf", "coat", "clothing"].some(kw => i.title.toLowerCase().includes(kw) || i.desc?.toLowerCase().includes(kw))).length} {t('generated.string_292', 'Active')}
                       </span>
                     </div>
                     <div className="relative z-10 mt-auto">
-                      <h3 className="font-body-lg text-lg font-bold text-on-surface mb-1 group-hover:text-primary transition-colors">Clothing</h3>
+                      <h3 className="font-body-lg text-lg font-bold text-on-surface mb-1 group-hover:text-primary transition-colors">{t('generated.string_302', 'Clothing')}</h3>
                     </div>
                   </div>
 
@@ -4458,11 +4458,11 @@ export default function App() {
                         <Clock className="text-on-surface h-6 w-6" />
                       </div>
                       <span className="bg-surface-variant text-on-surface-variant font-label-md text-[10px] px-2 py-1 rounded-full">
-                        {items.filter(i => ["ring", "necklace", "bracelet", "watch", "earring", "jewelry", "diamond", "gold", "silver"].some(kw => i.title.toLowerCase().includes(kw) || i.desc?.toLowerCase().includes(kw))).length} Active
+                        {items.filter(i => ["ring", "necklace", "bracelet", "watch", "earring", "jewelry", "diamond", "gold", "silver"].some(kw => i.title.toLowerCase().includes(kw) || i.desc?.toLowerCase().includes(kw))).length} {t('generated.string_292', 'Active')}
                       </span>
                     </div>
                     <div className="relative z-10 mt-auto">
-                      <h3 className="font-body-lg text-lg font-bold text-on-surface mb-1 group-hover:text-primary transition-colors">Jewelry & Watches</h3>
+                      <h3 className="font-body-lg text-lg font-bold text-on-surface mb-1 group-hover:text-primary transition-colors">{t('generated.string_303', 'Jewelry & Watches')}</h3>
                     </div>
                   </div>
 
@@ -4479,11 +4479,11 @@ export default function App() {
                         <Key className="text-on-surface h-6 w-6" />
                       </div>
                       <span className="bg-surface-variant text-on-surface-variant font-label-md text-[10px] px-2 py-1 rounded-full">
-                        {items.filter(i => ["key", "keychain", "fob", "car key"].some(kw => i.title.toLowerCase().includes(kw) || i.desc?.toLowerCase().includes(kw))).length} Active
+                        {items.filter(i => ["key", "keychain", "fob", "car key"].some(kw => i.title.toLowerCase().includes(kw) || i.desc?.toLowerCase().includes(kw))).length} {t('generated.string_292', 'Active')}
                       </span>
                     </div>
                     <div className="relative z-10 mt-auto">
-                      <h3 className="font-body-lg text-lg font-bold text-on-surface mb-1 group-hover:text-primary transition-colors">Keys</h3>
+                      <h3 className="font-body-lg text-lg font-bold text-on-surface mb-1 group-hover:text-primary transition-colors">{t('search.keys', 'Keys')}</h3>
                     </div>
                   </div>
                 </div>
@@ -4497,10 +4497,10 @@ export default function App() {
               {/* Header */}
               <div className="flex flex-col gap-1 mb-6 border-b border-gray-100 pb-4">
                 <h2 className="text-2xl font-bold tracking-tight text-[#01725a] font-sans flex items-center gap-2">
-                  <BarChart2 className="h-6 w-6 text-[#01725a]" /> Analytics Dashboard
+                  <BarChart2 className="h-6 w-6 text-[#01725a]" /> {t('generated.string_304', 'Analytics Dashboard')}
                 </h2>
                 <p className="text-sm text-gray-500">
-                  Real-time visual metrics and recovery performance of reported items from Firestore.
+                  {t('generated.string_305', 'Real-time visual metrics and recovery performance of reported items from Firestore.')}
                 </p>
               </div>
 
@@ -4508,7 +4508,7 @@ export default function App() {
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
                 <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all duration-200 flex flex-col justify-between">
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Active Lost Reports</span>
+                    <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">{t('generated.string_306', 'Active Lost Reports')}</span>
                     <span className="p-2 rounded-xl bg-red-50 text-red-500">
                       <Archive className="h-4 w-4" />
                     </span>
@@ -4518,14 +4518,14 @@ export default function App() {
                       {stats.lost}
                     </div>
                     <p className="text-xs text-gray-400 mt-1 flex items-center gap-1">
-                      <span className="font-semibold text-red-500">Currently active</span> lost items
+                      <span className="font-semibold text-red-500">{t('generated.string_307', 'Currently active')}</span> {t('generated.string_308', 'lost items')}
                     </p>
                   </div>
                 </div>
 
                 <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all duration-200 flex flex-col justify-between">
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Active Found Reports</span>
+                    <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">{t('generated.string_309', 'Active Found Reports')}</span>
                     <span className="p-2 rounded-xl bg-sky-50 text-sky-500">
                       <Search className="h-4 w-4" />
                     </span>
@@ -4535,14 +4535,14 @@ export default function App() {
                       {stats.found}
                     </div>
                     <p className="text-xs text-gray-400 mt-1 flex items-center gap-1">
-                      <span className="font-semibold text-sky-500">Awaiting claim</span> validation
+                      <span className="font-semibold text-sky-500">{t('generated.string_310', 'Awaiting claim')}</span> {t('generated.string_311', 'validation')}
                     </p>
                   </div>
                 </div>
 
                 <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all duration-200 flex flex-col justify-between">
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Resolved Cases</span>
+                    <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">{t('generated.string_312', 'Resolved Cases')}</span>
                     <span className="p-2 rounded-xl bg-[#9af4d6]/50 text-[#00654f]">
                       <CheckCircle2 className="h-4 w-4" />
                     </span>
@@ -4552,14 +4552,14 @@ export default function App() {
                       {stats.claimed}
                     </div>
                     <p className="text-xs text-gray-400 mt-1 flex items-center gap-1">
-                      <span className="font-semibold text-emerald-600">{t('profile.reunited')}</span> with rightful owners
+                      <span className="font-semibold text-emerald-600">{t('profile.reunited')}</span> {t('generated.string_313', 'with rightful owners')}
                     </p>
                   </div>
                 </div>
 
                 <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all duration-200 flex flex-col justify-between">
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Success Rate</span>
+                    <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">{t('generated.string_314', 'Success Rate')}</span>
                     <span className="p-2 rounded-xl bg-amber-50 text-amber-500">
                       <TrendingUp className="h-4 w-4" />
                     </span>
@@ -4570,9 +4570,9 @@ export default function App() {
                     </div>
                     <p className="text-xs text-gray-400 mt-1 flex items-center gap-1">
                       <span className="font-semibold text-amber-600">
-                        {items.length > 0 && Math.round((stats.claimed / items.length) * 100) >= 50 ? "High performance" : "Steady growth"}
+                        {items.length > 0 && Math.round((stats.claimed / items.length) * 100) >= 50 ? t('analytics.highPerformance', 'High performance') : t('analytics.steadyGrowth', 'Steady growth')}
                       </span>{" "}
-                      across {items.length} total reports
+                      {t('generated.string_315', 'across')} {items.length} {t('generated.string_316', 'total reports')}
                     </p>
                   </div>
                 </div>
@@ -4584,18 +4584,18 @@ export default function App() {
                 <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm lg:col-span-2">
                   <div className="flex items-center justify-between mb-4">
                     <div>
-                      <h3 className="font-bold text-gray-800 text-sm tracking-tight font-sans uppercase">Recovery Trends</h3>
-                      <p className="text-xs text-gray-400">Monthly breakdown of reported vs resolved items</p>
+                      <h3 className="font-bold text-gray-800 text-sm tracking-tight font-sans uppercase">{t('generated.string_317', 'Recovery Trends')}</h3>
+                      <p className="text-xs text-gray-400">{t('generated.string_318', 'Monthly breakdown of reported vs resolved items')}</p>
                     </div>
                     {/* Legend */}
                     <div className="flex items-center gap-3 text-xs font-medium">
                       <div className="flex items-center gap-1.5">
                         <span className="w-2.5 h-2.5 bg-[#9af4d6] rounded"></span>
-                        <span className="text-gray-500">Reported</span>
+                        <span className="text-gray-500">{t('generated.string_319', 'Reported')}</span>
                       </div>
                       <div className="flex items-center gap-1.5">
                         <span className="w-2.5 h-2.5 bg-[#01725a] rounded"></span>
-                        <span className="text-gray-500">Resolved</span>
+                        <span className="text-gray-500">{t('search.resolved', 'Resolved')}</span>
                       </div>
                     </div>
                   </div>
@@ -4637,7 +4637,7 @@ export default function App() {
                                   style={{ height: `${Math.max(reportedHeight, 2)}%` }}
                                 >
                                   <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-gray-800 text-white text-[10px] font-bold px-2 py-1 rounded shadow-md opacity-0 group-hover:opacity-100 transition-opacity z-20 whitespace-nowrap pointer-events-none">
-                                    Reported: {m.reported}
+                                    {t('generated.string_319', 'Reported')}: {m.reported}
                                   </div>
                                 </div>
                                 {/* Resolved Bar */}
@@ -4646,7 +4646,7 @@ export default function App() {
                                   style={{ height: `${Math.max(resolvedHeight, 2)}%` }}
                                 >
                                   <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-gray-800 text-white text-[10px] font-bold px-2 py-1 rounded shadow-md opacity-0 group-hover:opacity-100 transition-opacity z-20 whitespace-nowrap pointer-events-none">
-                                    Resolved: {m.resolved}
+                                    {t('search.resolved', 'Resolved')}: {m.resolved}
                                   </div>
                                 </div>
                               </div>
@@ -4662,8 +4662,8 @@ export default function App() {
                 {/* Chart 2: Categories (Col-span 1) */}
                 <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm flex flex-col">
                   <div>
-                    <h3 className="font-bold text-gray-800 text-sm tracking-tight font-sans uppercase mb-1">Categories</h3>
-                    <p className="text-xs text-gray-400 mb-4">Distribution by matched keywords</p>
+                    <h3 className="font-bold text-gray-800 text-sm tracking-tight font-sans uppercase mb-1">{t('generated.string_321', 'Categories')}</h3>
+                    <p className="text-xs text-gray-400 mb-4">{t('generated.string_322', 'Distribution by matched keywords')}</p>
                   </div>
 
                   {/* SVG Donut */}
@@ -4674,7 +4674,7 @@ export default function App() {
                         return (
                           <div className="flex flex-col items-center justify-center h-48 text-gray-300">
                             <span className="text-4xl mb-2">📊</span>
-                            <p className="text-xs text-gray-400">No reported data yet</p>
+                            <p className="text-xs text-gray-400">{t('generated.string_323', 'No reported data yet')}</p>
                           </div>
                         );
                       }
@@ -4720,7 +4720,7 @@ export default function App() {
                           </svg>
                           <div className="absolute inset-0 flex flex-col items-center justify-center">
                             <span className="text-2xl font-extrabold text-gray-800 font-sans">{items.length}</span>
-                            <span className="text-[9px] text-gray-400 font-bold uppercase tracking-wider">Reports</span>
+                            <span className="text-[9px] text-gray-400 font-bold uppercase tracking-wider">{t('generated.string_324', 'Reports')}</span>
                           </div>
                         </div>
                       );
@@ -4733,7 +4733,7 @@ export default function App() {
                         return (
                           <div key={cat.name} className="flex items-center justify-between text-gray-500">
                             <div className="flex items-center gap-1.5 min-w-0">
-                              <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: cat.color }}></span>
+                              <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: cat.color }}></span>
                               <span className="truncate">{cat.name}</span>
                             </div>
                             <span className="font-semibold text-gray-700 ml-1 shrink-0">{cat.percentage}% ({cat.count})</span>
@@ -4749,11 +4749,11 @@ export default function App() {
               <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
                 <div className="flex items-center justify-between mb-4">
                   <div>
-                    <h3 className="font-bold text-gray-800 text-sm tracking-tight font-sans uppercase">Top Performing Areas</h3>
-                    <p className="text-xs text-gray-400">Locations sorted by total database activity</p>
+                    <h3 className="font-bold text-gray-800 text-sm tracking-tight font-sans uppercase">{t('generated.string_325', 'Top Performing Areas')}</h3>
+                    <p className="text-xs text-gray-400">{t('generated.string_326', 'Locations sorted by total database activity')}</p>
                   </div>
                   <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-[#9af4d6]/50 text-[#00654f]">
-                    Live
+                    {t('generated.string_327', 'Live')}
                   </span>
                 </div>
 
@@ -4761,18 +4761,18 @@ export default function App() {
                   <table className="w-full text-left text-xs text-gray-500 border-collapse">
                     <thead>
                       <tr className="border-b border-gray-100 text-[10px] text-gray-400 uppercase font-semibold">
-                        <th className="py-2.5 pb-2">Area / Location</th>
-                        <th className="py-2.5 pb-2 text-center">Total Reported</th>
-                        <th className="py-2.5 pb-2 text-center">Recovered / Claimed</th>
-                        <th className="py-2.5 pb-2 text-center">Success Rate</th>
-                        <th className="py-2.5 pb-2 text-right">Trend</th>
+                        <th className="py-2.5 pb-2">{t('generated.string_328', 'Area / Location')}</th>
+                        <th className="py-2.5 pb-2 text-center">{t('generated.string_329', 'Total Reported')}</th>
+                        <th className="py-2.5 pb-2 text-center">{t('generated.string_330', 'Recovered / Claimed')}</th>
+                        <th className="py-2.5 pb-2 text-center">{t('generated.string_314', 'Success Rate')}</th>
+                        <th className="py-2.5 pb-2 text-right">{t('generated.string_331', 'Trend')}</th>
                       </tr>
                     </thead>
                     <tbody>
                       {locationStats.length === 0 ? (
                         <tr>
                           <td colSpan={5} className="py-8 text-center text-gray-400">
-                            No locations reported yet. Submit items on the Report tab to populate statistics!
+                            {t('generated.string_332', 'No locations reported yet. Submit items on the Report tab to populate statistics!')}
                           </td>
                         </tr>
                       ) : (
@@ -4815,65 +4815,60 @@ export default function App() {
               className={`panel ${activeTab === "tips" ? "active" : ""}`}
             >
               <div className="section-title">
-                <Navigation className="h-5 w-5 inline mr-1 text-sky-500" /> Lost
-                Item Recovery Guide
+                <Navigation className="h-5 w-5 inline mr-1 text-sky-500" /> {t('generated.string_333', 'Lost Item Recovery Guide')}
               </div>
               <p className="section-subtitle">
-                Helpful tips to increase your chances of finding lost items
+                {t('generated.string_334', 'Helpful tips to increase your chances of finding lost items')}
               </p>
               <div className="tips-grid">
                 <div className="tip-card">
                   <Search className="h-5 w-5 text-sky-500 inline mr-1" />{" "}
-                  <strong>Retrace Recent Locations</strong>
+                  <strong>{t('generated.string_335', 'Retrace Recent Locations')}</strong>
                   <br />
                   <br />
-                  Carefully revisit the places you recently visited to help
-                  locate missing items.
+                  {t('generated.string_336', 'Carefully revisit the places you recently visited to help locate missing items.')}
                 </div>
                 <div className="tip-card">
                   <MapPin className="h-5 w-5 text-red-500 inline mr-1" />{" "}
-                  <strong>Check Nearby Areas</strong>
+                  <strong>{t('generated.string_337', 'Check Nearby Areas')}</strong>
                   <br />
                   <br />
-                  Inspect public spaces, offices, transportation stops, shops,
-                  and common areas.
+                  {t('generated.string_338', 'Inspect public spaces, offices, transportation stops, shops, and common areas.')}
                 </div>
                 <div className="tip-card">
                   <Smartphone className="h-5 w-5 text-indigo-500 inline mr-1" />{" "}
-                  <strong>Use Digital Tools</strong>
+                  <strong>{t('generated.string_339', 'Use Digital Tools')}</strong>
                   <br />
                   <br />
-                  Post on forums, use FindTrack, check social media groups.
+                  {t('generated.string_340', 'Post on forums, use FindTrack, check social media groups.')}
                 </div>
                 <div className="tip-card">
                   <CheckCircle2 className="h-5 w-5 text-green-500 inline mr-1" />{" "}
-                  <strong>Act Quickly</strong>
+                  <strong>{t('generated.string_341', 'Act Quickly')}</strong>
                   <br />
                   <br />
-                  Report and search within 2 hours for best results.
+                  {t('generated.string_342', 'Report and search within 2 hours for best results.')}
                 </div>
                 <div className="tip-card">
                   <Camera className="h-5 w-5 text-amber-500 inline mr-1" />{" "}
-                  <strong>Add Photos</strong>
+                  <strong>{t('generated.string_343', 'Add Photos')}</strong>
                   <br />
                   <br />
-                  Upload a photo of your item for much faster identification.
+                  {t('generated.string_344', 'Upload a photo of your item for much faster identification.')}
                 </div>
                 <div className="tip-card">
                   <Bell className="h-5 w-5 text-pink-500 inline mr-1" />{" "}
-                  <strong>Stay Updated</strong>
+                  <strong>{t('generated.string_345', 'Stay Updated')}</strong>
                   <br />
                   <br />
-                  Receive updates and notifications about matched or recovered
-                  items.
+                  {t('generated.string_346', 'Receive updates and notifications about matched or recovered items.')}
                 </div>
                 <div className="tip-card">
                   <PenTool className="h-5 w-5 text-slate-500 inline mr-1" />{" "}
-                  <strong>Submit Detailed Reports</strong>
+                  <strong>{t('generated.string_347', 'Submit Detailed Reports')}</strong>
                   <br />
                   <br />
-                  Provide accurate descriptions and item details for easier
-                  identification.
+                  {t('generated.string_348', 'Provide accurate descriptions and item details for easier identification.')}
                 </div>
               </div>
             </section>
@@ -4884,40 +4879,39 @@ export default function App() {
             >
               <div className="section-title">
                 <Package className="h-5 w-5 inline mr-1 text-sky-500" />{" "}
-                Packaging &amp; Handling Tips
+                {t('generated.string_349', 'Packaging & Handling Tips')}
               </div>
               <p className="section-subtitle">
-                Best practices for securing found items
+                {t('generated.string_350', 'Best practices for securing found items')}
               </p>
               <div className="tips-grid">
                 <div className="tip-card">
                   <ShieldCheck className="h-5 w-5 text-teal-500 inline mr-1" />{" "}
-                  <strong>Protect Fragile Items</strong>
+                  <strong>{t('generated.string_351', 'Protect Fragile Items')}</strong>
                   <br />
                   <br />
-                  Use bubble wrap or padding for delicate objects.
+                  {t('generated.string_352', 'Use bubble wrap or padding for delicate objects.')}
                 </div>
                 <div className="tip-card">
                   <Package className="h-5 w-5 text-blue-500 inline mr-1" />{" "}
-                  <strong>Seal Securely</strong>
+                  <strong>{t('generated.string_353', 'Seal Securely')}</strong>
                   <br />
                   <br />
-                  Ensure items are properly contained before storage.
+                  {t('generated.string_354', 'Ensure items are properly contained before storage.')}
                 </div>
                 <div className="tip-card">
                   <Home className="h-5 w-5 text-indigo-500 inline mr-1" />{" "}
-                  <strong>Classify Correctly</strong>
+                  <strong>{t('generated.string_355', 'Classify Correctly')}</strong>
                   <br />
                   <br />
-                  Hand keys and sensitive IDs straight to the Library security
-                  safe desk.
+                  {t('generated.string_356', 'Hand keys and sensitive IDs straight to the Library security safe desk.')}
                 </div>
                 <div className="tip-card">
                   <CheckCircle2 className="h-5 w-5 text-green-500 inline mr-1" />{" "}
-                  <strong>Update Status</strong>
+                  <strong>{t('generated.string_357', 'Update Status')}</strong>
                   <br />
                   <br />
-                  Mark items as claimed once they've been recovered.
+                  {t('generated.string_358', "Mark items as claimed once they've been recovered.")}
                 </div>
               </div>
             </section>
@@ -4934,8 +4928,8 @@ export default function App() {
             >
               <div className="max-w-6xl mx-auto space-y-8">
                 <header className="mb-8">
-                  <h2 className="font-headline-lg text-3xl font-bold text-on-surface">About &amp; Help</h2>
-                  <p className="font-body-md text-on-surface-variant mt-2">Everything you need to know about FindTrack.</p>
+                  <h2 className="font-headline-lg text-3xl font-bold text-on-surface">{t('sidebar.aboutHelp', 'About & Help')}</h2>
+                  <p className="font-body-md text-on-surface-variant mt-2">{t('about.everythingYouNeedToKnow', 'Everything you need to know about FindTrack.')}</p>
                 </header>
 
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
@@ -4943,21 +4937,21 @@ export default function App() {
                     {/* FAQ */}
                     <div className="bg-surface-container-lowest rounded-2xl border border-outline-variant p-6 md:p-8">
                       <h3 className="font-headline-md text-xl font-bold text-on-surface mb-6 flex items-center gap-2">
-                        <Info className="h-6 w-6 text-primary" /> Frequently Asked Questions
+                        <Info className="h-6 w-6 text-primary" /> {t('about.faq', 'Frequently Asked Questions')}
                       </h3>
                       
                       <div className="space-y-6">
                         <div className="border-b border-outline-variant pb-6">
-                          <h4 className="font-bold text-on-surface mb-2">How do I verify ownership?</h4>
-                          <p className="text-on-surface-variant text-sm">When you claim a found item, you must correctly answer the secret security question set by the finder. Additionally, the finder may request further proof of ownership via contact before handing over the item.</p>
+                          <h4 className="font-bold text-on-surface mb-2">{t('about.howVerify', 'How do I verify ownership?')}</h4>
+                          <p className="text-on-surface-variant text-sm">{t('about.howVerifyDesc', 'When you claim a found item, you must correctly answer the security/security question set by the finder. Additionally, the finder may request further proof of ownership via contact before handing over the item.')}</p>
                         </div>
                         <div className="border-b border-outline-variant pb-6">
-                          <h4 className="font-bold text-on-surface mb-2">What happens when an item is claimed?</h4>
-                          <p className="text-on-surface-variant text-sm">Once an item is successfully claimed and verified, its status changes to 'Resolved'. Contact details are then shared securely between both parties to arrange the return.</p>
+                          <h4 className="font-bold text-on-surface mb-2">{t('about.whatHappens', 'What happens when an item is claimed?')}</h4>
+                          <p className="text-on-surface-variant text-sm">{t('about.whatHappensDesc', "Once an item is successfully claimed and verified, its status changes to 'Resolved'. Contact details are then shared securely between both parties to arrange the return.")}</p>
                         </div>
                         <div>
-                          <h4 className="font-bold text-on-surface mb-2">Is FindTrack free to use?</h4>
-                          <p className="text-on-surface-variant text-sm">Yes, FindTrack is completely free for all community members. Our mission is to restore trust and reunite lost items with their rightful owners.</p>
+                          <h4 className="font-bold text-on-surface mb-2">{t('about.isFree', 'Is FindTrack free to use?')}</h4>
+                          <p className="text-on-surface-variant text-sm">{t('about.isFreeDesc', 'Yes, FindTrack is completely free for all community members. Our mission is to restore trust and reunite lost items with their rightful owners.')}</p>
                         </div>
                       </div>
                     </div>
@@ -4965,12 +4959,12 @@ export default function App() {
                     {/* Guidelines */}
                     <div className="bg-surface-container-lowest rounded-2xl border border-outline-variant p-6 md:p-8">
                       <h3 className="font-headline-md text-xl font-bold text-on-surface mb-6 flex items-center gap-2">
-                        <ShieldCheck className="h-6 w-6 text-primary" /> Community Guidelines
+                        <ShieldCheck className="h-6 w-6 text-primary" /> {t('about.communityGuidelines', 'Community Guidelines')}
                       </h3>
                       <ul className="space-y-3 text-sm text-on-surface-variant">
-                        <li className="flex gap-2"><CheckCircle2 className="h-5 w-5 text-primary shrink-0" /> Always meet in public, well-lit places when returning items.</li>
-                        <li className="flex gap-2"><CheckCircle2 className="h-5 w-5 text-primary shrink-0" /> Do not share personal addresses or sensitive information until verified.</li>
-                        <li className="flex gap-2"><CheckCircle2 className="h-5 w-5 text-primary shrink-0" /> Report any suspicious behavior or false claims immediately.</li>
+                        <li className="flex gap-2"><CheckCircle2 className="h-5 w-5 text-primary shrink-0" /> {t('about.guideline1', 'Always meet in public, well-lit places when returning items.')}</li>
+                        <li className="flex gap-2"><CheckCircle2 className="h-5 w-5 text-primary shrink-0" /> {t('about.guideline2', 'Do not share personal addresses or sensitive information until verified.')}</li>
+                        <li className="flex gap-2"><CheckCircle2 className="h-5 w-5 text-primary shrink-0" /> {t('about.guideline3', 'Report any suspicious behavior or false claims immediately.')}</li>
                       </ul>
                     </div>
                   </div>
@@ -4982,10 +4976,10 @@ export default function App() {
                         <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-4">
                           <Mail className="h-8 w-8" />
                         </div>
-                        <h3 className="font-headline-md text-xl font-bold mb-2">Need More Help?</h3>
-                        <p className="text-sm text-on-primary/90 mb-6">Our support team is ready to assist you with any issues or disputes.</p>
+                        <h3 className="font-headline-md text-xl font-bold mb-2">{t('about.needMoreHelp', 'Need More Help?')}</h3>
+                        <p className="text-sm text-on-primary/90 mb-6">{t('about.needMoreHelpDesc', 'Our support team is ready to assist you with any issues or disputes.')}</p>
                         <a href="mailto:novapulsarsupport@gmail.com" className="inline-block w-full py-3 bg-white text-primary font-bold rounded-xl hover:bg-surface-variant transition-colors shadow-sm">
-                          Contact Support
+                          {t('about.contactSupport', 'Contact Support')}
                         </a>
                       </div>
                       <div className="absolute -top-12 -right-12 w-32 h-32 bg-white/10 rounded-full blur-2xl"></div>
@@ -4998,7 +4992,7 @@ export default function App() {
                         <span className="text-xl">✨</span>
                       </div>
                       <h4 className="font-bold text-on-surface">FindTrack</h4>
-                      <p className="text-xs text-on-surface-variant mt-1 mb-4">Version 2.0.0 (Beta)</p>
+                      <p className="text-xs text-on-surface-variant mt-1 mb-4">{t('about.version', 'Version 2.0.0 (Beta)')}</p>
                       <div className="flex justify-center gap-4 text-xs font-bold text-primary">
                         <button onClick={() => setCurrentView('privacy')}>{t('landing.privacyPolicy')}</button>
                         <span>&bull;</span>
