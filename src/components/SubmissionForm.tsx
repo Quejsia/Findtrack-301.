@@ -1,4 +1,5 @@
 import React, { useState, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Category, ItemType } from '../types';
 import { Camera, RefreshCw, Sparkles, Upload, Loader2, AlertCircle, Key } from 'lucide-react';
 import { auth } from '../firebase';
@@ -23,6 +24,7 @@ interface SubmissionFormProps {
 const CATEGORIES: Category[] = ['electronics', 'keys', 'wallet', 'documents', 'clothing', 'jewelry', 'bags', 'others'];
 
 export default function SubmissionForm({ onSubmit, onClose, defaultContactName = "" }: SubmissionFormProps) {
+  const { t } = useTranslation();
   // Form States
   const [type, setType] = useState<ItemType>('lost');
   const [title, setTitle] = useState('');
@@ -148,7 +150,7 @@ export default function SubmissionForm({ onSubmit, onClose, defaultContactName =
     <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-xl" id="submission-form">
       <div className="flex items-center justify-between gap-4 border-b border-slate-100 pb-4 mb-5">
         <div>
-          <h2 className="font-sans text-lg font-bold text-slate-1000">Report Missing or Found Item</h2>
+          <h2 className="font-sans text-lg font-bold text-slate-1000">{t('generated.string_509')}</h2>
           <p className="font-sans text-xs text-slate-500">Add an item to the registry database helper system.</p>
         </div>
         <button
@@ -176,7 +178,7 @@ export default function SubmissionForm({ onSubmit, onClose, defaultContactName =
                   : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
               }`}
             >
-              Lost Item
+              {t('report.lostItem')}
             </button>
             <button
               type="button"
@@ -187,7 +189,7 @@ export default function SubmissionForm({ onSubmit, onClose, defaultContactName =
                   : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
               }`}
             >
-              Found Item
+              {t('report.foundItem')}
             </button>
           </div>
         </div>
@@ -264,7 +266,7 @@ export default function SubmissionForm({ onSubmit, onClose, defaultContactName =
               type="text"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder="e.g. Broken House Key with red ring"
+              placeholder={t('generated.string_532')}
               className="w-full rounded-lg border border-slate-250 bg-white px-3.5 py-2 font-sans text-xs font-medium text-slate-900 focus:border-indigo-500 focus:outline-none"
               required
             />
@@ -295,7 +297,7 @@ export default function SubmissionForm({ onSubmit, onClose, defaultContactName =
               type="text"
               value={location}
               onChange={(e) => setLocation(e.target.value)}
-              placeholder="e.g. Central Park East Ground near bench"
+              placeholder={t('generated.string_533')}
               className="w-full rounded-lg border border-slate-250 bg-white px-3.5 py-2 font-sans text-xs font-medium text-slate-900 focus:border-indigo-500 focus:outline-none"
               required
             />
@@ -323,7 +325,7 @@ export default function SubmissionForm({ onSubmit, onClose, defaultContactName =
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             rows={3}
-            placeholder="Introduce specific markings, brands, tags, texture shapes, material details (e.g. brass keys, engraved 'Home' on back)..."
+            placeholder={t('generated.string_534')}
             className="w-full rounded-lg border border-slate-250 bg-white px-3.5 py-2 font-sans text-xs font-medium text-slate-900 focus:border-indigo-500 focus:outline-none leading-relaxed"
             required
           />
@@ -338,7 +340,7 @@ export default function SubmissionForm({ onSubmit, onClose, defaultContactName =
               type="text"
               value={securityQuestion}
               onChange={(e) => setSecurityQuestion(e.target.value)}
-              placeholder="e.g. What color sticker is on the back? / Can you name the keychain brand?"
+              placeholder={t('generated.string_535')}
               className={`w-full rounded-lg border px-3.5 py-2 font-sans text-xs font-medium text-slate-900 focus:outline-none transition-colors ${
                 securityQuestion.trim().length >= 4 
                   ? 'border-emerald-500 bg-emerald-50 focus:border-emerald-500 pr-10' 
@@ -365,7 +367,7 @@ export default function SubmissionForm({ onSubmit, onClose, defaultContactName =
               type="text"
               value={contactName}
               onChange={(e) => setContactName(e.target.value)}
-              placeholder="e.g. Jane Doe"
+              placeholder={t('generated.string_536')}
               className="w-full rounded-lg border border-slate-250 bg-white px-3.5 py-2 font-sans text-xs font-medium text-slate-900 focus:border-indigo-500 focus:outline-none"
               required
             />
@@ -379,7 +381,7 @@ export default function SubmissionForm({ onSubmit, onClose, defaultContactName =
               type="text"
               value={contactInfo}
               onChange={(e) => setContactInfo(e.target.value)}
-              placeholder="e.g. janedoe@email.com or +1 (555) 019-2831"
+              placeholder={t('generated.string_537')}
               className="w-full rounded-lg border border-slate-250 bg-white px-3.5 py-2 font-sans text-xs font-medium text-slate-900 focus:border-indigo-500 focus:outline-none"
               required
             />

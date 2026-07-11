@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Item, Claim } from '../types';
 import { motion, AnimatePresence } from 'motion/react';
 import { getCategoryIcon } from './ItemCard';
@@ -59,6 +60,7 @@ export default function ItemDetail({
   currentUserUid,
   onStartChat,
 }: ItemDetailProps) {
+  const { t } = useTranslation();
   const [deleting, setDeleting] = useState(false);
   const [openClaimModal, setOpenClaimModal] = useState(false);
   const [claimView, setClaimView] = useState(false);
@@ -272,7 +274,7 @@ export default function ItemDetail({
           {/* THE HEADER: Keep the teal "Log Ownership Claim / Prove-It Verification Layer" header clean and isolated at the top. */}
           <div className="flex items-center justify-between px-6 py-5 bg-gradient-to-r from-teal-800 to-teal-600 text-white shrink-0 rounded-t-md shadow-md z-10 border-b border-teal-900/30">
             <div className="flex flex-col">
-              <span className="text-xl md:text-2xl font-black text-white leading-tight tracking-tight">Log Ownership Claim</span>
+              <span className="text-xl md:text-2xl font-black text-white leading-tight tracking-tight">{t('itemDetail.logOwnershipClaim')}</span>
               <span className="text-teal-100 text-[10px] font-mono font-bold tracking-widest mt-1 uppercase text-opacity-90">Prove-It Verification Layer</span>
             </div>
             <button
@@ -360,8 +362,8 @@ export default function ItemDetail({
                 onClick={() => setClaimView(false)}
                 className="px-6 py-4 border-2 border-sky-500 rounded-md text-sky-500 bg-white text-base font-bold transition shadow-sm hover:bg-slate-50 active:scale-95"
               >
-                Cancel
-              </button>
+                    {t('generated.string_511')} {/* Close/Cancel */}
+                  </button>
               <button
                 type="button"
                 disabled={submittingClaim}
@@ -406,7 +408,7 @@ export default function ItemDetail({
               onClick={onClose}
               className="flex items-center gap-2 text-teal-600 font-semibold text-sm px-4 py-3"
             >
-              ← Back to Results
+              ← {t('itemDetail.backToResults')}
             </button>
 
             {/* Header Ribbon */}
@@ -475,7 +477,7 @@ export default function ItemDetail({
                     <div className="flex items-center space-x-2 bg-slate-50 p-2 rounded-md border border-slate-100">
                       <MapPin className="h-4 w-4 text-slate-400 shrink-0" />
                       <div className="min-w-0">
-                        <p className="font-sans text-[10px] text-slate-400 uppercase font-semibold">Location</p>
+                        <p className="font-sans text-[10px] text-slate-400 uppercase font-semibold">{t('itemDetail.location')}</p>
                         <p className="font-sans font-medium text-slate-800 truncate">{item.location}</p>
                       </div>
                     </div>
@@ -483,7 +485,7 @@ export default function ItemDetail({
                     <div className="flex items-center space-x-2 bg-slate-50 p-2 rounded-md border border-slate-100">
                       <Calendar className="h-4 w-4 text-slate-400 shrink-0" />
                       <div>
-                        <p className="font-sans text-[10px] text-slate-400 uppercase font-semibold">Date Logged</p>
+                        <p className="font-sans text-[10px] text-slate-400 uppercase font-semibold">{t('itemDetail.dateLogged')}</p>
                         <p className="font-sans font-medium text-slate-800">{formattedDate}</p>
                       </div>
                     </div>
@@ -495,7 +497,7 @@ export default function ItemDetail({
               <div className="border border-slate-200 rounded-md p-4 bg-slate-50" id="contact-credentials">
                 <h4 className="font-sans text-xs font-bold text-slate-700 tracking-wider uppercase mb-3 flex items-center space-x-1">
                   <User className="h-3.5 w-3.5" />
-                  <span>Contact Credentials</span>
+                  <span>{t('itemDetail.contactCredentials')}</span>
                 </h4>
 
                 {currentUserUid ? (
@@ -517,7 +519,7 @@ export default function ItemDetail({
                             <PhoneCall className="h-4 w-4" />
                           </div>
                           <div>
-                            <p className="font-sans text-[10px] text-slate-400 font-medium">Method of contact</p>
+                            <p className="font-sans text-[10px] text-slate-400 font-medium">{t('generated.string_473')}</p>
                             <p className="font-sans text-xs text-slate-800 font-bold truncate">{item.contactInfo}</p>
                           </div>
                         </div>
@@ -635,7 +637,7 @@ export default function ItemDetail({
                                   {item.contactName.charAt(0).toUpperCase()}
                                 </div>
                                 <div>
-                                  <p className="font-sans text-[10px] text-slate-400 font-medium">Reporter</p>
+                                  <p className="font-sans text-[10px] text-slate-400 font-medium">{t('itemDetail.reporter')}</p>
                                   <p className="font-sans text-xs text-slate-800 font-bold">{item.contactName}</p>
                                 </div>
                               </div>
@@ -682,7 +684,7 @@ export default function ItemDetail({
                                   className="w-full flex items-center justify-center space-x-1.5 bg-white border border-slate-300 hover:bg-slate-50/50 text-slate-700 font-sans text-xs font-bold py-3.5 px-4 rounded-md shadow-sm cursor-pointer transition active:scale-95 duration-200"
                                 >
                                   <CheckCircle2 className="h-4 w-4 shrink-0 text-teal-600" />
-                                  <span>Log Ownership Claim</span>
+                                  <span>{t('itemDetail.logOwnershipClaim')}</span>
                                 </button>
                               )}
                               
@@ -840,7 +842,7 @@ export default function ItemDetail({
                     ) : (
                       <span className="flex items-center gap-2">
                         <Lock className="h-4 w-4" />
-                        Submit Secure Claim
+                        {t('generated.string_495')}
                       </span>
                     )}
                   </button>
@@ -850,7 +852,7 @@ export default function ItemDetail({
                     disabled={submittingClaim}
                     className="w-full bg-transparent text-[#01725a] border border-[#01725a] font-medium text-[14px] py-3 px-6 rounded-lg hover:bg-teal-50 transition-all duration-200 flex items-center justify-center gap-2"
                   >
-                    Cancel
+                    {t('generated.string_511')} {/* Close/Cancel */}
                   </button>
                 </div>
               </form>
@@ -969,7 +971,7 @@ function ChatView({ chatId, currentUserUid, itemTitle, otherUserId, reporterName
             {reporterName}
           </span>
           <span className="text-[10px] text-teal-300 font-medium block">
-            Direct Message Stream
+            {t('generated.string_496')}
           </span>
         </div>
 
@@ -983,7 +985,7 @@ function ChatView({ chatId, currentUserUid, itemTitle, otherUserId, reporterName
         {loading ? (
           <div className="flex h-full flex-col items-center justify-center space-y-2 text-slate-400">
             <Loader2 className="h-6 w-6 animate-spin text-teal-600" />
-            <span className="font-sans text-xs font-medium">Connecting SECURE server channels...</span>
+            <span className="font-sans text-xs font-medium">{t('generated.string_497')}</span>
           </div>
         ) : messages.length === 0 ? (
           <div className="flex h-full flex-col items-center justify-center text-center p-6 space-y-3">
@@ -991,9 +993,9 @@ function ChatView({ chatId, currentUserUid, itemTitle, otherUserId, reporterName
               <MessageSquare className="h-6 w-6" />
             </div>
             <div>
-              <h4 className="font-sans font-bold text-slate-800 text-sm">Send a message</h4>
+              <h4 className="font-sans font-bold text-slate-800 text-sm">{t('generated.string_498')}</h4>
               <p className="font-sans text-[11px] text-slate-500 max-w-xs mt-1 leading-relaxed">
-                Coordinate handoff spots, describe identification details in high accuracy, or exchange contact details.
+                {t('generated.string_499')}
               </p>
             </div>
           </div>
@@ -1027,7 +1029,7 @@ function ChatView({ chatId, currentUserUid, itemTitle, otherUserId, reporterName
           type="text"
           value={inputText}
           onChange={(e) => setInputText(e.target.value)}
-          placeholder="Type secure handoff messages..."
+          placeholder={t('generated.string_446')}
           className="flex-1 rounded-md border border-slate-200 bg-slate-50/50 px-3.5 py-2.5 text-xs font-sans focus:border-indigo-500 focus:bg-white focus:outline-none transition placeholder:text-slate-400 duration-155"
         />
         <button

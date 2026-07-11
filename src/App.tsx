@@ -1433,7 +1433,7 @@ export default function App() {
                     <div className="flex gap-6 mb-8">
                       <div>
                         <div className="font-sans text-3xl font-bold text-[#01725a]">{new Set(items.map(i => i.userId)).size}</div>
-                        <div className="font-sans text-sm font-medium text-[#666551]">Community Members</div>
+                        <div className="font-sans text-sm font-medium text-[#666551]">{t('profile.communityMember')}s</div>
                       </div>
                       <div className="w-px bg-[#bcbaa2]/50"></div>
                       <div>
@@ -1533,7 +1533,7 @@ export default function App() {
             <form onSubmit={handleLoginSubmit} name="login" className="space-y-6">
               {/* Email Field */}
               <div>
-                <label className="block font-label-md text-sm text-on-surface mb-1" htmlFor="email">Email Address</label>
+                <label className="block font-label-md text-sm text-on-surface mb-1" htmlFor="email">{t('profile.emailAddress')}</label>
                 <div className="relative">
                   <input 
                     className="w-full pr-10 pl-3 py-3 bg-surface-container-lowest border border-outline-variant rounded-lg font-body-md text-on-surface focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-colors" 
@@ -1706,7 +1706,7 @@ export default function App() {
               </div>
 
               <div>
-                <label className="block font-label-md text-xs text-on-surface mb-1" htmlFor="phone">Phone Number (Optional)</label>
+                <label className="block font-label-md text-xs text-on-surface mb-1" htmlFor="phone">{t('profile.phoneNumber')} (Optional)</label>
                 <input 
                   id="phone" 
                   name="phone" 
@@ -3058,15 +3058,15 @@ export default function App() {
                   <div className="md:col-span-8 bg-surface-container-high rounded-xl p-6 md:p-8 relative overflow-hidden group">
                     <div className="absolute inset-0 opacity-10 bg-cover bg-center"></div>
                     <div className="relative z-10">
-                      <h2 className="font-headline-lg text-3xl font-bold text-primary mb-2">Find Lost Items</h2>
-                      <p className="font-body-lg text-on-surface-variant mb-6">Search through our community database to find what you're looking for.</p>
+                      <h2 className="font-headline-lg text-3xl font-bold text-primary mb-2">{t('search.findLostItems')}</h2>
+                      <p className="font-body-lg text-on-surface-variant mb-6">{t('search.searchThroughOurCommunityDatabaseToFindWhatYouReLookingFor')}</p>
                       <div className="relative flex items-center w-full shadow-sm rounded-lg overflow-hidden border border-outline-variant focus-within:border-primary transition-colors bg-surface">
                         <div className="pl-4 text-on-surface-variant">
                           <Search className="h-6 w-6" />
                         </div>
                         <input 
                           className="w-full px-4 py-4 bg-transparent border-none focus:ring-0 font-body-lg text-on-surface placeholder:text-on-surface-variant/50 outline-none" 
-                          placeholder="Search by keywords, brands, or descriptions..." 
+                          placeholder={t("search.searchByKeywordsBrandsOrDescriptions")} 
                           type="text"
                           value={sQuery}
                           onChange={(e) => setSQuery(e.target.value)}
@@ -3086,7 +3086,7 @@ export default function App() {
                             onChange={(e) => setSFilter(e.target.value)}
                             className="bg-transparent border-none p-0 font-headline-md text-lg text-primary focus:ring-0 cursor-pointer outline-none font-bold"
                           >
-                            <option value="all">All Items</option>
+                            <option value="all">{t('search.allItems')}</option>
                             <option value="lost">Lost Only</option>
                             <option value="found">Found Only</option>
                             <option value="claimed">Resolved</option>
@@ -3105,7 +3105,7 @@ export default function App() {
                           <input 
                             value={sLoc}
                             onChange={(e) => setSLoc(e.target.value)}
-                            placeholder="Type location..."
+                            placeholder={t("search.typeLocation")}
                             className="bg-transparent border-none p-0 w-full font-headline-md text-lg text-on-surface leading-tight focus:ring-0 outline-none placeholder:text-on-surface/50 font-bold"
                           />
                         </div>
@@ -3168,7 +3168,7 @@ export default function App() {
                 {/* Results Grid */}
                 <div className="mb-6 flex justify-between items-end">
                   <h2 className="font-headline-md text-2xl font-bold text-on-surface">
-                    Search Results <span className="text-on-surface-variant font-body-md font-normal ml-2 text-lg">({filteredSearchList.length} found)</span>
+                    {t('search.searchResultsStart')}<span className="text-on-surface-variant font-body-md font-normal ml-2 text-lg">({filteredSearchList.length}{t('search.searchResultsEnd')}</span>
                   </h2>
                 </div>
 
@@ -3242,7 +3242,7 @@ export default function App() {
                           <button className={`w-full py-2 rounded font-label-md text-sm transition-colors text-center block shadow-sm ${
                             r.type === 'found' ? 'bg-primary text-on-primary hover:bg-primary-dim' : 'border border-primary text-primary hover:bg-primary-container/20'
                           }`}>
-                            View Details
+                            {t('search.viewDetails')}
                           </button>
                         </div>
                       </div>
@@ -3290,7 +3290,7 @@ export default function App() {
                         </button>
                         <div className="flex items-center gap-3 mt-1">
                           <span className={`px-3 py-1 text-[10px] font-bold tracking-wider rounded-full uppercase ${r.type === "lost" ? "bg-error-container text-on-error-container" : "bg-secondary-container text-on-secondary-container"}`}>
-                            {r.type === "lost" ? "LOST" : "FOUND"}
+                            {r.type === 'lost' ? t('dashboard.lost').toUpperCase() : t('dashboard.found').toUpperCase()}
                           </span>
                           <span className="text-on-surface-variant text-[12px] font-label-md border-l border-outline-variant pl-3">
                             Ref #{r.id.substring(0, 8).toUpperCase()}
@@ -3760,7 +3760,7 @@ export default function App() {
                                 <span className="inline-flex items-center px-3 py-1 rounded-full bg-secondary-fixed-dim text-on-secondary-fixed font-label-md text-[11px]">
                                   <CheckCircle2 className="h-3 w-3 mr-1" /> Closed
                                 </span>
-                                <button onClick={() => { if (notif.itemId) { setSelectedItemId(notif.itemId); setActiveTab("itemDetail"); } }} className="text-secondary hover:underline font-label-md text-sm">View details</button>
+                                <button onClick={() => { if (notif.itemId) { setSelectedItemId(notif.itemId); setActiveTab("itemDetail"); } }} className="text-secondary hover:underline font-label-md text-sm">{t('search.viewDetails')}</button>
                               </div>
                             )}
                           </div>
@@ -3827,22 +3827,18 @@ export default function App() {
                             <h1 className="font-headline-lg text-4xl text-on-surface">{profileName}</h1>
                             <div className="flex flex-wrap items-center justify-center md:justify-start gap-2 mt-2">
                               <span className="bg-primary-container text-on-primary-container px-3 py-1 rounded-full font-label-md text-sm font-semibold inline-flex items-center gap-1">
-                                <Heart className="h-4 w-4" fill="currentColor" />
-                                Community Member
-                              </span>
+                                <Heart className="h-4 w-4" fill="currentColor" />{t('profile.communityMember')}</span>
                               <span className="text-on-surface-variant font-body-md flex items-center gap-1">
                                 <MapPin className="h-4 w-4" />
-                                {profileLocation || "Location not set"}
+                                {profileLocation || "{t('profile.locationNotSet')}"}
                               </span>
                             </div>
                             <p className="mt-4 font-body-md text-on-surface-variant max-w-2xl">
-                              {profileBio || "Update your profile to add a bio."}
+                              {profileBio || "{t('profile.updateYourProfileToAddABio')}"}
                             </p>
                           </div>
                           <button onClick={() => document.getElementById("profName")?.focus()} className="bg-surface-container-high border border-outline-variant text-on-surface hover:bg-surface-variant px-4 py-2 rounded-lg font-label-md text-sm transition-colors flex items-center justify-center gap-2 shadow-sm shrink-0 w-full md:w-auto">
-                            <Settings className="h-[18px] w-[18px]" />
-                            Edit Profile
-                          </button>
+                            <Settings className="h-[18px] w-[18px]" />{t('profile.editProfile')}</button>
                         </div>
                       </div>
                     </div>
@@ -3855,16 +3851,16 @@ export default function App() {
                         <div className="bg-primary-container p-2 rounded-lg">
                           <Package className="h-5 w-5 text-on-primary-container" />
                         </div>
-                        <h3 className="font-headline-md text-lg font-semibold">Impact Stats</h3>
+                        <h3 className="font-headline-md text-lg font-semibold">{t('profile.impactStats')}</h3>
                       </div>
                       <div className="grid grid-cols-2 gap-4 mt-6">
                         <div className="bg-surface-container rounded-lg p-4 text-center">
                           <span className="block font-headline-lg text-primary text-3xl mb-1">{items.filter(i => i.userId === auth.currentUser?.uid).length}</span>
-                          <span className="font-label-md text-on-surface-variant uppercase tracking-wide text-[10px]">Items Reported</span>
+                          <span className="font-label-md text-on-surface-variant uppercase tracking-wide text-[10px]">{t('profile.itemsReported')}</span>
                         </div>
                         <div className="bg-surface-container rounded-lg p-4 text-center">
                           <span className="block font-headline-lg text-secondary text-3xl mb-1">{items.filter(i => i.userId === auth.currentUser?.uid && i.claimed).length}</span>
-                          <span className="font-label-md text-on-surface-variant uppercase tracking-wide text-[10px]">Reunited</span>
+                          <span className="font-label-md text-on-surface-variant uppercase tracking-wide text-[10px]">{t('profile.reunited')}</span>
                         </div>
                         
                       </div>
@@ -3873,12 +3869,12 @@ export default function App() {
 
                   {/* Personal Information Form */}
                   <div className="col-span-1 lg:col-span-8 bg-surface-container-lowest rounded-xl shadow-sm border border-surface-variant p-6 md:p-8">
-                    <h3 className="font-headline-md text-xl text-on-surface mb-6 border-b border-surface-variant pb-4">Personal Information</h3>
+                    <h3 className="font-headline-md text-xl text-on-surface mb-6 border-b border-surface-variant pb-4">{t('profile.personalInformation')}</h3>
                     <form className="space-y-6" onSubmit={(e) => { e.preventDefault(); triggerToast("Profile updated successfully", "success"); }}>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         {/* Input Group */}
                         <div>
-                          <label className="block font-label-md text-sm text-on-surface-variant mb-2" htmlFor="profName">Display Name</label>
+                          <label className="block font-label-md text-sm text-on-surface-variant mb-2" htmlFor="profName">{t('profile.displayName')}</label>
                           <div className="relative">
                             <input 
                               className="pr-10 pl-3 w-full bg-surface-container-lowest border border-outline rounded-lg py-2.5 text-on-surface focus:ring-2 focus:ring-primary focus:border-primary transition-shadow font-body-md" 
@@ -3894,19 +3890,19 @@ export default function App() {
                         </div>
                         
                         <div className="md:col-span-2">
-                          <label className="block font-label-md text-sm text-on-surface-variant mb-2" htmlFor="profBio">Bio</label>
+                          <label className="block font-label-md text-sm text-on-surface-variant mb-2" htmlFor="profBio">{t('profile.bio')}</label>
                           <textarea 
                             className="w-full bg-surface-container-lowest border border-outline rounded-lg p-3 text-on-surface focus:ring-2 focus:ring-primary focus:border-primary transition-shadow font-body-md" 
                             id="profBio" 
                             rows={3}
-                            placeholder="Tell the community a bit about yourself..."
+                            placeholder={t("generated.string_431")}
                             value={profileBio}
                             onChange={(e) => setProfileBio(e.target.value)}
                           ></textarea>
                         </div>
                         
                         <div className="md:col-span-2">
-                          <label className="block font-label-md text-sm text-on-surface-variant mb-2" htmlFor="profEmail">Email Address</label>
+                          <label className="block font-label-md text-sm text-on-surface-variant mb-2" htmlFor="profEmail">{t('profile.emailAddress')}</label>
                           <div className="relative">
                             <input 
                               className="pr-10 pl-3 w-full bg-surface-container-lowest border border-outline rounded-lg py-2.5 text-on-surface opacity-70 cursor-not-allowed font-body-md" 
@@ -3921,14 +3917,12 @@ export default function App() {
                           </div>
                           {auth.currentUser?.emailVerified && (
                             <p className="text-xs text-on-surface-variant mt-1 ml-1 flex items-center gap-1">
-                              <CheckCircle2 className="h-3.5 w-3.5 text-primary" />
-                              Email verified
-                            </p>
+                              <CheckCircle2 className="h-3.5 w-3.5 text-primary" />{t('profile.emailVerified')}</p>
                           )}
                         </div>
                         
                         <div>
-                          <label className="block font-label-md text-sm text-on-surface-variant mb-2" htmlFor="profPhone">Phone Number</label>
+                          <label className="block font-label-md text-sm text-on-surface-variant mb-2" htmlFor="profPhone">{t('profile.phoneNumber')}</label>
                           <div className="relative">
                             <input 
                               className="pr-8 pl-3 w-full bg-surface-container-lowest border border-outline rounded-lg py-2.5 text-on-surface focus:ring-2 focus:ring-primary focus:border-primary transition-shadow font-body-md" 
@@ -3944,7 +3938,7 @@ export default function App() {
                         </div>
                         
                         <div>
-                          <label className="block font-label-md text-sm text-on-surface-variant mb-2" htmlFor="profLoc">Primary Location</label>
+                          <label className="block font-label-md text-sm text-on-surface-variant mb-2" htmlFor="profLoc">{t('profile.primaryLocation')}</label>
                           <div className="relative">
                             <input 
                               className="pr-10 pl-3 w-full bg-surface-container-lowest border border-outline rounded-lg py-2.5 text-on-surface focus:ring-2 focus:ring-primary focus:border-primary transition-shadow font-body-md" 
@@ -3964,9 +3958,7 @@ export default function App() {
                         <button 
                           className="bg-primary hover:bg-primary-dim text-on-primary font-label-md text-sm py-2.5 px-6 rounded-lg shadow-sm transition-colors" 
                           type="submit"
-                        >
-                          Save Changes
-                        </button>
+                        >{t('profile.saveChanges')}</button>
                       </div>
                     </form>
                   </div>
@@ -3980,13 +3972,13 @@ export default function App() {
                           <div className="bg-secondary-container p-2 rounded-lg">
                             <Bell className="h-5 w-5 text-on-secondary-container" />
                           </div>
-                          <h3 className="font-headline-md text-lg font-semibold">Notification Preferences</h3>
+                          <h3 className="font-headline-md text-lg font-semibold">{t('profile.notificationPreferences')}</h3>
                         </div>
                         <div className="space-y-5">
                           <label className="flex items-center justify-between cursor-pointer group">
                             <div>
-                              <span className="font-body-md text-on-surface font-medium block">New matches for my items</span>
-                              <span className="font-body-md text-xs text-on-surface-variant">Get notified when a found item matches your report.</span>
+                              <span className="font-body-md text-on-surface font-medium block">{t('profile.newMatchesForMyItems')}</span>
+                              <span className="font-body-md text-xs text-on-surface-variant">{t('profile.getNotifiedWhenAFoundItemMatchesYourReport')}</span>
                             </div>
                             <div className="relative">
                               <input defaultChecked className="sr-only peer" type="checkbox" />
@@ -3995,8 +3987,8 @@ export default function App() {
                           </label>
                           <label className="flex items-center justify-between cursor-pointer group">
                             <div>
-                              <span className="font-body-md text-on-surface font-medium block">Community Alerts</span>
-                              <span className="font-body-md text-xs text-on-surface-variant">Important alerts in your primary location.</span>
+                              <span className="font-body-md text-on-surface font-medium block">{t('profile.communityAlerts')}</span>
+                              <span className="font-body-md text-xs text-on-surface-variant">{t('profile.importantAlertsInYourPrimaryLocation')}</span>
                             </div>
                             <div className="relative">
                               <input defaultChecked className="sr-only peer" type="checkbox" />
@@ -4012,15 +4004,15 @@ export default function App() {
                           <div className="bg-surface-variant p-2 rounded-lg">
                             <Lock className="h-5 w-5 text-on-surface-variant" />
                           </div>
-                          <h3 className="font-headline-md text-lg font-semibold">Security</h3>
+                          <h3 className="font-headline-md text-lg font-semibold">{t('profile.security')}</h3>
                         </div>
                         <div className="space-y-4">
                           <button onClick={async () => { if (auth.currentUser?.email) { try { const { sendPasswordResetEmail } = await import("firebase/auth"); await sendPasswordResetEmail(auth, auth.currentUser.email); triggerToast("Password reset email sent", "success"); } catch (e) { triggerToast("Failed to send reset email", "error"); } } else { triggerToast("No email associated with account", "error"); } }} className="w-full flex items-center justify-between p-4 rounded-lg border border-outline-variant hover:bg-surface-variant transition-colors group">
                             <div className="flex items-center gap-3 text-left">
                               <Key className="h-5 w-5 text-on-surface-variant" />
                               <div>
-                                <span className="block font-body-md font-medium text-on-surface">Change Password</span>
-                                <span className="block text-xs text-on-surface-variant mt-0.5">Update your security credentials</span>
+                                <span className="block font-body-md font-medium text-on-surface">{t('profile.changePassword')}</span>
+                                <span className="block text-xs text-on-surface-variant mt-0.5">{t('profile.updateYourSecurityCredentials')}</span>
                               </div>
                             </div>
                             <ArrowRight className="h-5 w-5 text-on-surface-variant group-hover:text-primary transition-colors" />
@@ -4031,9 +4023,7 @@ export default function App() {
                               onClick={handleLogoutAction}
                               className="text-error hover:text-error-dim font-label-md text-sm flex items-center gap-2 transition-colors w-full p-2"
                             >
-                              <LogOut className="h-5 w-5" />
-                              Sign Out Everywhere
-                            </button>
+                              <LogOut className="h-5 w-5" />{t('profile.signOutEverywhere')}</button>
                           </div>
                         </div>
                       </div>
@@ -4152,7 +4142,7 @@ export default function App() {
                                   className="flex-1 border border-primary text-primary py-2 rounded-lg font-label-md text-sm hover:bg-surface-container transition-colors flex items-center justify-center space-x-2"
                                 >
                                   <Eye className="h-[18px] w-[18px]" />
-                                  <span>View Details</span>
+                                  <span>{t('search.viewDetails')}</span>
                                 </button>
                               </>
                             )}
@@ -4293,7 +4283,7 @@ export default function App() {
                               )}
                               
                               <button className="text-primary font-label-md text-sm hover:underline flex items-center gap-1">
-                                View Details {isLarge && <ArrowRight className="h-4 w-4" />}
+                                {t('search.viewDetails')} {isLarge && <ArrowRight className="h-4 w-4" />}
                               </button>
                             </div>
                           </div>
@@ -4562,7 +4552,7 @@ export default function App() {
                       {stats.claimed}
                     </div>
                     <p className="text-xs text-gray-400 mt-1 flex items-center gap-1">
-                      <span className="font-semibold text-emerald-600">Reunited</span> with rightful owners
+                      <span className="font-semibold text-emerald-600">{t('profile.reunited')}</span> with rightful owners
                     </p>
                   </div>
                 </div>
