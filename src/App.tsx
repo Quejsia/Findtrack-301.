@@ -29,10 +29,12 @@ import {
 } from "./firebase";
 import ChatInterface, { ChatInboxList } from "./components/ChatInterface";
 import ItemDetail from "./components/ItemDetail";
-import { Item, Claim } from "./types";
+import { Item, Claim, Category } from "./types";
 import { ClaimSubmissionForm } from "./components/claims/ClaimSubmissionForm";
 import { ClaimReviewView } from "./components/claims/ClaimReviewView";
 import { MyClaimsView } from "./components/claims/MyClaimsView";
+import { ReportDetailsStep } from "./components/report/ReportDetailsStep";
+import { ReportVerificationStep } from "./components/report/ReportVerificationStep";
 import { useIncomingClaims, useMyClaims, markClaimAsRead } from "./lib/claims";
 import {
   ShieldCheck,
@@ -227,6 +229,9 @@ export default function App() {
   const [reportDesc, setReportDesc] = useState("");
   const [reportEmail, setReportEmail] = useState("");
   const [reportType, setReportType] = useState<"lost" | "found">("lost");
+  const [reportCategory, setReportCategory] = useState<Category>("others");
+  const [reportDate, setReportDate] = useState("");
+  const [reportColor, setReportColor] = useState("");
   const [reportImage, setReportImage] = useState<string>("");
   const [reportImageFile, setReportImageFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
@@ -789,12 +794,13 @@ export default function App() {
       title: reportTitle.trim(),
       description: reportDesc.trim() || "No description provided.",
       type: reportType,
-      category: "others", // Supported standard selection
+      category: reportCategory, // Supported standard selection
       location: reportLocation.trim() || "Unknown Location",
       status: "active",
       contactName: profileName || "Student",
       contactInfo: `${profileContact || "No contact provided"} | Email: ${reportEmail.trim() || profileEmail || "No email provided"}`,
-      date: new Date().toISOString(),
+      date: reportDate || new Date().toISOString(),
+      color: reportColor.trim(),
       imageUrl: finalImageUrl,
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp(),
@@ -823,6 +829,9 @@ export default function App() {
       setReportDesc("");
       setReportEmail("");
       setReportType("lost");
+      setReportCategory("others");
+      setReportDate("");
+      setReportColor("");
       setReportImage("");
       setReportImageFile(null);
       setReportSecurityQuestion("");
@@ -2945,61 +2954,31 @@ export default function App() {
 
                     {/* STEP 2: Details */}
                     <div className={`space-y-6 ${reportStep === 2 ? 'block' : 'hidden'}`}>
-                      <div className="space-y-2">
-                        <label className="block font-label-md font-bold text-on-surface">{t('report.description')}</label>
-                        <textarea required value={reportDesc} onChange={(e) => setReportDesc(e.target.value)} rows={4} placeholder={t('report.descriptionPlaceholder')} className="w-full bg-surface-variant border-none rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary outline-none resize-none"></textarea>
-                      </div>
-
-                      <div className="space-y-2">
-                        <label className="block font-label-md font-bold text-on-surface">{t('report.uploadImage')}</label>
-                        <div className="border-2 border-dashed border-outline-variant rounded-xl p-8 text-center hover:bg-surface-variant transition-colors cursor-pointer relative">
-                          <input type="file" accept="image/*" onChange={(e) => {
-                            const file = e.target.files?.[0];
-                            if (file) {
-                              setReportImageFile(file);
-                              const reader = new FileReader();
-                              reader.onload = (ev) => setReportImage(ev.target?.result as string);
-                              reader.readAsDataURL(file);
-                            }
-                          }} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
-                          {reportImage ? (
-                            <div className="flex flex-col items-center">
-                              <img src={reportImage} alt="Preview" className="h-32 object-contain rounded-lg mb-4 shadow-sm" />
-                              <span className="text-sm font-medium text-primary">{t('report.changeImage')}</span>
-                            </div>
-                          ) : (
-                            <div className="flex flex-col items-center">
-                              <Camera className="h-10 w-10 text-outline mb-3" />
-                              <span className="text-sm font-medium text-on-surface">{t('report.dragDropText')}</span>
-                              <span className="text-xs text-on-surface-variant mt-1">{t('report.imageLimits')}</span>
-                            </div>
-                          )}
-                        </div>
-                      </div>
+                      <ReportDetailsStep 
+                        reportType={reportType}
+                        reportCategory={reportCategory}
+                        setReportCategory={setReportCategory}
+                        reportDesc={reportDesc}
+                        setReportDesc={setReportDesc}
+                        reportColor={reportColor}
+                        setReportColor={setReportColor}
+                        reportDate={reportDate}
+                        setReportDate={setReportDate}
+                        reportImage={reportImage}
+                        setReportImage={setReportImage}
+                        setReportImageFile={setReportImageFile}
+                      />
                     </div>
 
                     {/* STEP 3: Verification */}
                     <div className={`space-y-6 ${reportStep === 3 ? 'block' : 'hidden'}`}>
-                      <div className="p-4 bg-primary-container text-on-primary-container rounded-xl text-sm mb-6">
-                        <div className="flex items-start gap-3">
-                          <ShieldCheck className="h-5 w-5 shrink-0 mt-0.5" />
-                          <div>
-                            <p className="font-bold mb-1">{t('report.protectingOwnership')}</p>
-                            <p>{t('report.protectingOwnershipDesc')}</p>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="space-y-2">
-                        <label className="block font-label-md font-bold text-on-surface">{t('report.secretQuestion')}</label>
-                        <input type="text" required value={reportSecurityQuestion} onChange={(e) => setReportSecurityQuestion(e.target.value)} placeholder={t('report.secretQuestionPlaceholder')} className="w-full bg-surface-variant border-none rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary outline-none" />
-                      </div>
-
-                      <div className="space-y-2">
-                        <label className="block font-label-md font-bold text-on-surface">{t('report.secretAnswer')}</label>
-                        <input type="text" required value={reportSecurityAnswer} onChange={(e) => setReportSecurityAnswer(e.target.value)} placeholder={t('report.secretAnswerPlaceholder')} className="w-full bg-surface-variant border-none rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary outline-none" />
-                        <p className="text-xs text-on-surface-variant mt-1">{t('report.secretAnswerDesc')}</p>
-                      </div>
+                      <ReportVerificationStep 
+                        reportSecurityQuestion={reportSecurityQuestion}
+                        setReportSecurityQuestion={setReportSecurityQuestion}
+                        reportTitle={reportTitle}
+                        reportType={reportType}
+                        reportCategory={reportCategory}
+                      />
                     </div>
 
                     {/* Footer Actions */}
