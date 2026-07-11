@@ -37,6 +37,7 @@ export interface Claim {
   status: 'pending' | 'approved' | 'rejected';
   autoVerified?: boolean;
   manualOverride?: boolean;
+  isReadByFinder?: boolean;
   createdAt: any;
   updatedAt: any;
 }

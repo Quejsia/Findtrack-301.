@@ -30,6 +30,10 @@ import {
 import ChatInterface, { ChatInboxList } from "./components/ChatInterface";
 import ItemDetail from "./components/ItemDetail";
 import { Item, Claim } from "./types";
+import { ClaimSubmissionForm } from "./components/claims/ClaimSubmissionForm";
+import { ClaimReviewView } from "./components/claims/ClaimReviewView";
+import { MyClaimsView } from "./components/claims/MyClaimsView";
+import { useIncomingClaims, useMyClaims, markClaimAsRead } from "./lib/claims";
 import {
   ShieldCheck,
   Search,
@@ -167,7 +171,8 @@ export default function App() {
 
   // App alerts, loading states & real-time sync list
   const [items, setItems] = useState<ItemReport[]>([]);
-  const [alerts, setAlerts] = useState<any[]>([]);
+  const incomingClaims = useIncomingClaims(auth.currentUser?.uid);
+  const myClaims = useMyClaims(auth.currentUser?.uid);
   const [toasts, setToasts] = useState<
     { id: string; msg: string; type: "success" | "error" }[]
   >([]);
@@ -212,6 +217,9 @@ export default function App() {
   const [showRefererModal, setShowRefererModal] = useState(false);
   const [refererBlockedDomain, setRefererBlockedDomain] = useState("");
 
+  // My Items Tab
+  const [myItemsTab, setMyItemsTab] = useState<'items' | 'claims'>('items');
+
   // Dashboard inputs
   const [reportStep, setReportStep] = useState(1);
   const [reportTitle, setReportTitle] = useState("");
@@ -224,7 +232,6 @@ export default function App() {
   const [isUploading, setIsUploading] = useState(false);
   const [reportSecurityQuestion, setReportSecurityQuestion] = useState("");
   const [reportSecurityAnswer, setReportSecurityAnswer] = useState("");
-  const [incomingClaims, setIncomingClaims] = useState<Claim[]>([]);
 
   // Dashboard Search state
   const [sQuery, setSQuery] = useState("");
@@ -242,9 +249,13 @@ export default function App() {
   const [profileName, setProfileName] = useState("Student");
   const [profileLocation, setProfileLocation] = useState("");
   const [profileBio, setProfileBio] = useState("");
-  const [notifications, setNotifications] = useState<any[]>([]);
-  const markAlertRead = (id: string) => setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
-  const markAllAlertsRead = () => setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+  
+  const [selectedReviewClaim, setSelectedReviewClaim] = useState<Claim | null>(null);
+
+  const markAlertRead = (id: string) => markClaimAsRead(id);
+  const markAllAlertsRead = () => {
+    incomingClaims.filter(c => !c.isReadByFinder).forEach(c => markClaimAsRead(c.id));
+  };
 
   const [profileEmail, setProfileEmail] = useState("");
   const [profileContact, setProfileContact] = useState("");
@@ -475,43 +486,7 @@ export default function App() {
     return unsubscribe;
   }, []);
 
-  // 2.2. Real-time Claims Sync for Finder Review Panel
-  useEffect(() => {
-    if (!user?.uid) {
-      setIncomingClaims([]);
-      return;
-    }
-    const claimsCollection = collection(db, "claims");
-    const q = query(claimsCollection, where("finderId", "==", user.uid));
 
-    const unsubscribe = onSnapshot(
-      q,
-      (snapshot) => {
-        const list: Claim[] = [];
-        snapshot.forEach((docSnap) => {
-          list.push({ id: docSnap.id, ...docSnap.data() } as Claim);
-        });
-        // Place pending claims at the top, then sort by newest first
-        list.sort((a, b) => {
-          if (a.status === "pending" && b.status !== "pending") return -1;
-          if (a.status !== "pending" && b.status === "pending") return 1;
-          const aTime = a.createdAt?.seconds
-            ? a.createdAt.seconds * 1000
-            : new Date(a.createdAt || 0).getTime();
-          const bTime = b.createdAt?.seconds
-            ? b.createdAt.seconds * 1000
-            : new Date(b.createdAt || 0).getTime();
-          return bTime - aTime;
-        });
-        setIncomingClaims(list);
-      },
-      (error) => {
-        console.error("Claims snapshot read failed:", error);
-      },
-    );
-
-    return unsubscribe;
-  }, [user]);
 
   // Safeguard: Block unverified users from accessing protected views (dashboard) and redirect them to verify screen
   useEffect(() => {
@@ -2823,7 +2798,7 @@ export default function App() {
                   className="p-2 text-on-surface-variant hover:bg-surface-container rounded-full transition-colors relative"
                 >
                   <Bell className="h-6 w-6" />
-                  {alerts.filter(a => !a.read).length > 0 && <span className="absolute top-1 right-1 w-2 h-2 bg-error rounded-full"></span>}
+                  {incomingClaims.filter(c => !c.isReadByFinder).length > 0 && <span className="absolute top-1 right-1 w-2 h-2 bg-error rounded-full"></span>}
                 </button>
                 <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold cursor-pointer">
                   {profileName === "Guest" ? "G" : profileName.charAt(0).toUpperCase()}
@@ -3544,102 +3519,16 @@ export default function App() {
                             </div>
                           </div>
 
-                          {/* Verification Challenge Box */}
-                          <div className="bg-surface-container-low p-6 rounded-xl border-l-4 border-primary shadow-sm relative overflow-hidden">
-                            <Info className="absolute -right-4 -bottom-4 h-[120px] w-[120px] text-primary/5 select-none pointer-events-none" />
-                            <div className="relative z-10">
-                              <h3 className="text-[12px] font-label-md text-primary tracking-widest uppercase mb-3 flex items-center gap-2">
-                                <ShieldCheck className="h-4 w-4" />
-                                Verification Question
-                              </h3>
-                              <p className="text-[16px] font-body-lg text-on-surface italic bg-surface-container-highest/50 p-4 rounded-lg border border-outline-variant/20">
-                                "{r.securityQuestion || 'Describe this item in enough detail to prove ownership (e.g. scratches, contents, background).'}"
-                              </p>
-                            </div>
-                          </div>
-
-                          {/* User Input Form */}
-                          <form onSubmit={(e) => {
-                            e.preventDefault();
-                            const form = e.target as HTMLFormElement;
-                            const answer = (form.elements.namedItem('claimAnswer') as HTMLTextAreaElement).value;
-                            handleSubmitClaim(r.id, r.userId, r.securityQuestion || 'Describe this item in enough detail to prove ownership (e.g. scratches, contents, background).', answer);
-                          }} className="space-y-4">
-                            <div>
-                              <label htmlFor="claimAnswer" className="block text-[12px] font-label-md font-medium text-on-surface mb-2">Your Answer</label>
-                              <textarea
-                                id="claimAnswer"
-                                name="claimAnswer"
-                                required
-                                rows={5}
-                                placeholder="Please provide specific details to prove ownership..."
-                                className="w-full bg-surface-container-lowest border border-outline-variant rounded-xl p-4 text-[14px] font-body-md text-on-surface placeholder:text-outline focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all outline-none resize-y shadow-inner"
-                              ></textarea>
-                            </div>
-
-                            {/* Helper Text */}
-                            <div className="flex items-start gap-3 p-3 bg-secondary-fixed/30 rounded-lg border border-secondary-fixed-dim/50">
-                              <Info className="h-5 w-5 text-secondary-dim shrink-0 mt-0.5" />
-                              <p className="text-[14px] font-body-md text-on-secondary-container leading-relaxed">
-                                The finder will inspect this proof and action your contact credentials request. <span className="font-medium text-error-dim">False claims may result in account suspension.</span>
-                              </p>
-                            </div>
-
-                            {/* Actions */}
-                            <div className="flex items-center justify-end gap-4 pt-6 border-t border-outline-variant/30 mt-8">
-                              <button
-                                type="button"
-                                onClick={() => setActiveTab("itemDetail")}
-                                className="px-6 py-2.5 text-[12px] font-label-md text-on-surface-variant hover:text-on-surface hover:bg-surface-container rounded-lg transition-colors"
-                              >
-                                Cancel
-                              </button>
-                              <button
-                                type="submit"
-                                className="flex items-center gap-2 bg-primary text-on-primary px-8 py-2.5 rounded-lg text-[12px] font-label-md hover:bg-primary-dim hover:shadow-md transition-all active:scale-95 group"
-                              >
-                                Submit Claim
-                                <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
-                              </button>
-                            </div>
-                          </form>
-                        </div>
-
-                        {/* Contextual Helper (Right Column) */}
-                        <div className="lg:col-span-4 mt-6 lg:mt-0">
-                          <div className="bg-surface-container-highest rounded-xl p-6 border border-tertiary-fixed/40 shadow-sm relative overflow-hidden group">
-                            {/* Top Accent Bar */}
-                            <div className="absolute top-0 left-0 w-full h-1.5 bg-tertiary-fixed"></div>
-                            <div className="flex items-center gap-3 mb-4 mt-2">
-                              <div className="w-10 h-10 rounded-full bg-tertiary-container flex items-center justify-center text-on-tertiary-container">
-                                <Lightbulb className="h-5 w-5" fill="currentColor" />
-                              </div>
-                              <h3 className="text-[18px] font-headline-md font-semibold text-on-surface">Tips for a Strong Claim</h3>
-                            </div>
-                            <ul className="space-y-4 mt-6">
-                              <li className="flex items-start gap-3">
-                                <CheckCircle2 className="h-5 w-5 text-tertiary-dim mt-0.5 shrink-0" />
-                                <div>
-                                  <strong className="block text-[12px] font-label-md text-on-surface">Be Specific</strong>
-                                  <span className="text-[14px] font-body-md text-on-surface-variant">Mention unique marks, exact brand names, or highly specific contents.</span>
-                                </div>
-                              </li>
-                              <li className="flex items-start gap-3">
-                                <CheckCircle2 className="h-5 w-5 text-tertiary-dim mt-0.5 shrink-0" />
-                                <div>
-                                  <strong className="block text-[12px] font-label-md text-on-surface">Provide Context</strong>
-                                  <span className="text-[14px] font-body-md text-on-surface-variant">If relevant to the question, describe exactly where or when the item was lost.</span>
-                                </div>
-                              </li>
-                              <li className="flex items-start gap-3">
-                                <CheckCircle2 className="h-5 w-5 text-tertiary-dim mt-0.5 shrink-0" />
-                                <div>
-                                  <strong className="block text-[12px] font-label-md text-on-surface">Be Patient</strong>
-                                  <span className="text-[14px] font-body-md text-on-surface-variant">Finders are community volunteers; review times may vary based on their availability.</span>
-                                </div>
-                              </li>
-                            </ul>
-                          </div>
+                          <ClaimSubmissionForm
+                            itemId={r.id}
+                            finderId={r.userId}
+                            securityQuestion={r.securityQuestion || 'Describe this item in enough detail to prove ownership (e.g. scratches, contents, background).'}
+                            onCancel={() => setActiveTab("itemDetail")}
+                            onViewMyClaims={() => {
+                              setActiveTab("myitems");
+                              setMyItemsTab("claims");
+                            }}
+                          />
                         </div>
                       </div>
                     </div>
@@ -3653,7 +3542,16 @@ export default function App() {
               className={`${activeTab === "notifications" ? "block" : "hidden"} flex-1 flex flex-col min-w-0`}
             >
               <div className="pt-8 px-4 md:px-8 pb-32 max-w-5xl mx-auto w-full">
-                <div className="mb-8 flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
+                {selectedReviewClaim ? (
+                  <ClaimReviewView 
+                    claim={selectedReviewClaim} 
+                    item={items.find(i => i.id === selectedReviewClaim.itemId)}
+                    onClose={() => setSelectedReviewClaim(null)} 
+                    triggerToast={triggerToast} 
+                  />
+                ) : (
+                  <>
+                    <div className="mb-8 flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
                   <div>
                     <h2 className="font-headline-lg text-3xl font-bold text-on-background mb-2">{t('alerts.pageTitle')}</h2>
                     <p className="font-body-md text-on-surface-variant">{t('alerts.pageSubtitle')}</p>
@@ -3704,72 +3602,59 @@ export default function App() {
                       <p className="font-body-md text-primary-fixed-dim opacity-90">{t('alerts.youHaveNewActivity')}</p>
                     </div>
                     <div className="mt-4 flex items-baseline gap-2">
-                      <span className="font-headline-lg text-5xl font-bold leading-none">{notifications.filter(n => !n.read).length}</span>
+                      <span className="font-headline-lg text-5xl font-bold leading-none">{incomingClaims.filter(n => !n.isReadByFinder).length}</span>
                       <span className="font-body-md opacity-90">{t('alerts.pendingReviews')}</span>
                     </div>
                   </div>
 
-                  {notifications.map((notif) => {
-                    const isUnread = !notif.read;
-                    const isMatch = notif.message.toLowerCase().includes("match");
-                    const isClaim = notif.message.toLowerCase().includes("claim");
+                  {incomingClaims.map((claim) => {
+                    const isUnread = !claim.isReadByFinder;
+                    const itemMatch = items.find(i => i.id === claim.itemId);
                     
                     return (
                       <div 
-                        key={notif.id}
-                        onClick={() => markAlertRead(notif.id)}
+                        key={claim.id}
+                        onClick={() => {
+                          markAlertRead(claim.id);
+                          setSelectedReviewClaim(claim);
+                        }}
                         className={`md:col-span-6 bg-surface-container-lowest rounded-xl p-6 shadow-sm border border-outline-variant/30 hover:shadow-md transition-shadow relative cursor-pointer ${!isUnread ? "opacity-80" : ""}`}
                       >
                         {isUnread && <div className="absolute top-4 right-4 w-2 h-2 rounded-full bg-primary"></div>}
                         <div className="flex gap-4">
-                          <div className={`w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0 ${
-                            isMatch ? "bg-primary-container text-on-primary-container" : 
-                            isClaim ? "bg-secondary-container text-on-secondary-container" : 
-                            "bg-surface-variant text-on-surface-variant"
-                          }`}>
-                            {isMatch ? <Search className="h-6 w-6" /> : isClaim ? <CheckCircle2 className="h-6 w-6" /> : <MessageSquare className="h-6 w-6" />}
+                          <div className="w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0 bg-secondary-container text-on-secondary-container">
+                            <CheckCircle2 className="h-6 w-6" />
                           </div>
                           <div className="flex-1">
                             <div className="flex justify-between items-start mb-1">
                               <h3 className="font-headline-md text-lg text-on-background">
-                                {isMatch ? t('alerts.potentialMatchFound') : isClaim ? t('alerts.itemClaimed') : t('alerts.newMessage')}
+                                New claim on "{itemMatch?.title || 'Unknown Item'}"
                               </h3>
                               <span className="font-label-md text-xs text-on-surface-variant">
-                                {notif.timestamp ? new Date(notif.timestamp.seconds ? notif.timestamp.seconds * 1000 : notif.timestamp).toLocaleDateString() : t('alerts.recently')}
+                                {claim.createdAt ? new Date(claim.createdAt.seconds ? claim.createdAt.seconds * 1000 : claim.createdAt).toLocaleDateString() : t('alerts.recently')}
                               </span>
                             </div>
-                            <p className="font-body-md text-sm text-on-surface mb-3 line-clamp-2">{notif.message}</p>
+                            <p className="font-body-md text-sm text-on-surface mb-3 line-clamp-2">Claimant answered your verification question.</p>
                             
-                            {isMatch && (
-                              <div className="bg-surface-container rounded-lg p-3 flex items-center gap-3 mt-2">
-                                <div className="w-10 h-10 rounded bg-surface-variant flex items-center justify-center">
-                                  <ImageIcon className="h-5 w-5 text-outline" />
-                                </div>
-                                <div>
-                                  <p className="font-label-md text-xs font-bold text-on-surface">{t('alerts.reviewMatch')}</p>
-                                  <p className="font-label-md text-[10px] text-on-surface-variant">{t('alerts.tapToViewDetails')}</p>
-                                </div>
-                                <button className="ml-auto text-primary hover:bg-surface-variant p-2 rounded-full transition-colors">
-                                  <ArrowRight className="h-4 w-4" />
-                                </button>
-                              </div>
-                            )}
-                            
-                            {isClaim && (
-                              <div className="flex items-center gap-2 mt-2">
-                                <span className="inline-flex items-center px-3 py-1 rounded-full bg-secondary-fixed-dim text-on-secondary-fixed font-label-md text-[11px]">
-                                  <CheckCircle2 className="h-3 w-3 mr-1" /> {t('alerts.closed')}
+                            <div className="flex items-center gap-2 mt-2">
+                              {claim.status === 'pending' ? (
+                                <span className="inline-flex items-center px-3 py-1 rounded-full bg-tertiary-container text-on-tertiary-container font-label-md text-[11px]">
+                                  Pending Review
                                 </span>
-                                <button onClick={() => { if (notif.itemId) { setSelectedItemId(notif.itemId); setActiveTab("itemDetail"); } }} className="text-secondary hover:underline font-label-md text-sm">{t('search.viewDetails')}</button>
-                              </div>
-                            )}
+                              ) : (
+                                <span className="inline-flex items-center px-3 py-1 rounded-full bg-surface-variant text-on-surface-variant font-label-md text-[11px]">
+                                  {claim.status}
+                                </span>
+                              )}
+                              <span className="text-secondary hover:underline font-label-md text-sm">Review Claim</span>
+                            </div>
                           </div>
                         </div>
                       </div>
                     );
                   })}
                   
-                  {notifications.length === 0 && (
+                  {incomingClaims.length === 0 && (
                     <div className="col-span-full py-16 text-center border-2 border-dashed border-outline-variant rounded-2xl bg-surface-container-lowest">
                       <div className="w-16 h-16 bg-surface-container rounded-full flex items-center justify-center mx-auto mb-4 border border-outline-variant">
                         <Bell className="h-8 w-8 text-outline" />
@@ -3780,12 +3665,14 @@ export default function App() {
                   )}
                 </div>
                 
-                {notifications.length > 0 && (
+                {incomingClaims.length > 0 && (
                   <div className="mt-8 flex justify-center">
                     <button className="px-6 py-2 rounded-full bg-surface-container text-on-surface border border-outline-variant hover:bg-surface-variant transition-colors font-label-md text-sm shadow-sm">
                       {t('alerts.loadOlderAlerts')}
                     </button>
                   </div>
+                )}
+                </>
                 )}
               </div>
             </section>
@@ -4054,17 +3941,24 @@ export default function App() {
 
                 {/* Tabs */}
                 <div className="flex space-x-8 border-b border-outline-variant mb-8 overflow-x-auto pb-px">
-                  <button className="font-label-md text-sm text-primary border-b-2 border-primary pb-3 px-1 whitespace-nowrap">
-                    {t('generated.string_273', 'Active (')} {items.filter(i => i.userId === auth.currentUser?.uid && !i.claimed).length})
+                  <button 
+                    onClick={() => setMyItemsTab('items')}
+                    className={`font-label-md text-sm pb-3 px-1 whitespace-nowrap ${myItemsTab === 'items' ? 'text-primary border-b-2 border-primary' : 'text-on-surface-variant hover:text-primary transition-colors'}`}
+                  >
+                    My Reports ({items.filter(i => i.userId === auth.currentUser?.uid).length})
                   </button>
-                  <button className="font-label-md text-sm text-on-surface-variant hover:text-primary transition-colors pb-3 px-1 whitespace-nowrap">
-                    {t('generated.string_274', 'Resolved (')} {items.filter(i => i.userId === auth.currentUser?.uid && i.claimed).length})
+                  <button 
+                    onClick={() => setMyItemsTab('claims')}
+                    className={`font-label-md text-sm pb-3 px-1 whitespace-nowrap ${myItemsTab === 'claims' ? 'text-primary border-b-2 border-primary' : 'text-on-surface-variant hover:text-primary transition-colors'}`}
+                  >
+                    My Claims ({myClaims.length})
                   </button>
                 </div>
 
-                {/* Bento Grid List */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-                  {items
+                {myItemsTab === 'items' ? (
+                  <>
+                    <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+                      {items
                     .filter((item) => item.userId === auth.currentUser?.uid)
                     .map((r) => {
                       return (
@@ -4164,7 +4058,19 @@ export default function App() {
                       </button>
                     </div>
                   )}
-                </div>
+                    </div>
+                  </>
+                ) : (
+                  <div className="mt-4">
+                    <MyClaimsView 
+                      claims={myClaims} 
+                      onViewItem={(itemId) => {
+                        setSelectedItemId(itemId);
+                        setActiveTab("itemDetail");
+                      }} 
+                    />
+                  </div>
+                )}
               </div>
             </section>
 {/* PANEL: PINNED ITEMS */}
