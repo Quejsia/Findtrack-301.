@@ -1309,14 +1309,14 @@ export default function App() {
                 FindTrack
               </div>
               <nav className="hidden md:flex items-center gap-6">
-                <button onClick={() => setCurrentView("landing")} className="text-[#01725a] border-b-2 border-[#01725a] pb-1 font-medium text-sm hover:text-[#01725a] transition-colors duration-200">Home</button>
-                <button onClick={() => setCurrentView("help")} className="text-[#666551] font-medium text-sm hover:text-[#01725a] transition-colors duration-200">How it Works</button>
-                <button onClick={() => setCurrentView("about")} className="text-[#666551] font-medium text-sm hover:text-[#01725a] transition-colors duration-200">Community</button>
-                <button onClick={() => setCurrentView("safety")} className="text-[#666551] font-medium text-sm hover:text-[#01725a] transition-colors duration-200">Safety</button>
+                <button onClick={() => setCurrentView("landing")} className="text-[#01725a] border-b-2 border-[#01725a] pb-1 font-medium text-sm hover:text-[#01725a] transition-colors duration-200">{t('sidebar.home')}</button>
+                <button onClick={() => setCurrentView("help")} className="text-[#666551] font-medium text-sm hover:text-[#01725a] transition-colors duration-200">{t('landing.howItWorks')}</button>
+                <button onClick={() => setCurrentView("about")} className="text-[#666551] font-medium text-sm hover:text-[#01725a] transition-colors duration-200">{t('landing.community')}</button>
+                <button onClick={() => setCurrentView("safety")} className="text-[#666551] font-medium text-sm hover:text-[#01725a] transition-colors duration-200">{t('landing.safety')}</button>
               </nav>
               <div className="flex items-center gap-4">
-                <button onClick={() => setCurrentView("login")} className="hidden md:block text-[#666551] font-medium text-sm hover:text-[#01725a] transition-colors duration-200 scale-95 active:scale-90">Login</button>
-                <button onClick={() => setCurrentView("signup")} className="bg-[#01725a] text-white px-4 py-2 rounded-lg font-medium text-sm hover:bg-[#00654f] transition-colors scale-95 active:scale-90">Get Started</button>
+                <button onClick={() => setCurrentView("login")} className="hidden md:block text-[#666551] font-medium text-sm hover:text-[#01725a] transition-colors duration-200 scale-95 active:scale-90">{t('landing.login')}</button>
+                <button onClick={() => setCurrentView("signup")} className="bg-[#01725a] text-white px-4 py-2 rounded-lg font-medium text-sm hover:bg-[#00654f] transition-colors scale-95 active:scale-90">{t('landing.getStarted')}</button>
                 {/* Mobile Menu Button */}
                 <button 
                   className="md:hidden p-2 text-[#666551] hover:text-[#01725a]"
@@ -1331,10 +1331,10 @@ export default function App() {
           {/* Mobile Nav Dropdown */}
           {landingMenuOpen && (
             <div className="md:hidden absolute top-16 left-0 right-0 bg-white shadow-xl z-50 p-6 flex flex-col gap-4 border-b border-slate-100">
-              <button onClick={() => { setCurrentView("landing"); setLandingMenuOpen(false); }} className="text-left font-medium text-slate-700 hover:text-[#01725a] py-2">Home</button>
-              <button onClick={() => { setCurrentView("help"); setLandingMenuOpen(false); }} className="text-left font-medium text-slate-700 hover:text-[#01725a] py-2">How it Works</button>
-              <button onClick={() => { setCurrentView("about"); setLandingMenuOpen(false); }} className="text-left font-medium text-slate-700 hover:text-[#01725a] py-2">Community</button>
-              <button onClick={() => { setCurrentView("safety"); setLandingMenuOpen(false); }} className="text-left font-medium text-slate-700 hover:text-[#01725a] py-2">Safety</button>
+              <button onClick={() => { setCurrentView("landing"); setLandingMenuOpen(false); }} className="text-left font-medium text-slate-700 hover:text-[#01725a] py-2">{t('sidebar.home')}</button>
+              <button onClick={() => { setCurrentView("help"); setLandingMenuOpen(false); }} className="text-left font-medium text-slate-700 hover:text-[#01725a] py-2">{t('landing.howItWorks')}</button>
+              <button onClick={() => { setCurrentView("about"); setLandingMenuOpen(false); }} className="text-left font-medium text-slate-700 hover:text-[#01725a] py-2">{t('landing.community')}</button>
+              <button onClick={() => { setCurrentView("safety"); setLandingMenuOpen(false); }} className="text-left font-medium text-slate-700 hover:text-[#01725a] py-2">{t('landing.safety')}</button>
               <hr className="border-slate-100 my-2" />
               <button 
                 onClick={() => {
@@ -1342,18 +1342,14 @@ export default function App() {
                   setCurrentView("login");
                 }}
                 className="text-left font-medium text-slate-700 hover:text-[#01725a] py-2"
-              >
-                Login
-              </button>
+              >{t('landing.login')}</button>
               <button 
                 onClick={() => {
                   setLandingMenuOpen(false);
                   setCurrentView("signup");
                 }}
                 className="bg-[#01725a] hover:bg-[#00654f] text-white px-6 py-3 rounded-lg font-semibold text-center transition-colors shadow-sm mt-2"
-              >
-                Get Started
-              </button>
+              >{t('landing.getStarted')}</button>
             </div>
           )}
 
@@ -1385,9 +1381,7 @@ export default function App() {
                     <button 
                       onClick={handleGuestBrowse}
                       className="w-full sm:w-auto border-2 border-[#01725a] text-[#01725a] px-6 py-3 rounded-lg font-semibold text-sm hover:bg-[#01725a]/5 transition-colors"
-                    >
-                      How it Works
-                    </button>
+                    >{t('landing.howItWorks')}</button>
                   </div>
                 </div>
               </div>
@@ -1482,14 +1476,14 @@ export default function App() {
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <nav className="flex flex-col gap-3">
-                  <a onClick={() => { setCurrentView("about"); window.history.pushState(null, "", "/about"); }} className="font-sans text-sm font-medium text-[#666551] hover:text-[#01725a] hover:underline transition-all opacity-80 hover:opacity-100 cursor-pointer">About Us</a>
-                  <a onClick={() => { setCurrentView("privacy"); window.history.pushState(null, "", "/privacy"); }} className="font-sans text-sm font-medium text-[#666551] hover:text-[#01725a] hover:underline transition-all opacity-80 hover:opacity-100 cursor-pointer">Privacy Policy</a>
-                  <a onClick={() => { setCurrentView("terms"); window.history.pushState(null, "", "/terms"); }} className="font-sans text-sm font-medium text-[#666551] hover:text-[#01725a] hover:underline transition-all opacity-80 hover:opacity-100 cursor-pointer">Terms of Service</a>
+                  <a onClick={() => { setCurrentView("about"); window.history.pushState(null, "", "/about"); }} className="font-sans text-sm font-medium text-[#666551] hover:text-[#01725a] hover:underline transition-all opacity-80 hover:opacity-100 cursor-pointer">{t('landing.aboutUs')}</a>
+                  <a onClick={() => { setCurrentView("privacy"); window.history.pushState(null, "", "/privacy"); }} className="font-sans text-sm font-medium text-[#666551] hover:text-[#01725a] hover:underline transition-all opacity-80 hover:opacity-100 cursor-pointer">{t('landing.privacyPolicy')}</a>
+                  <a onClick={() => { setCurrentView("terms"); window.history.pushState(null, "", "/terms"); }} className="font-sans text-sm font-medium text-[#666551] hover:text-[#01725a] hover:underline transition-all opacity-80 hover:opacity-100 cursor-pointer">{t('landing.termsOfService')}</a>
                 </nav>
                 <nav className="flex flex-col gap-3">
-                  <a onClick={() => { setCurrentView("safety"); window.history.pushState(null, "", "/safety"); }} className="font-sans text-sm font-medium text-[#666551] hover:text-[#01725a] hover:underline transition-all opacity-80 hover:opacity-100 cursor-pointer">Safety Guidelines</a>
-                  <a onClick={() => { setCurrentView("help"); window.history.pushState(null, "", "/help"); }} className="font-sans text-sm font-medium text-[#666551] hover:text-[#01725a] hover:underline transition-all opacity-80 hover:opacity-100 cursor-pointer">Help Center</a>
-                  <a onClick={() => { setCurrentView("contact"); window.history.pushState(null, "", "/contact"); }} className="font-sans text-sm font-medium text-[#666551] hover:text-[#01725a] hover:underline transition-all opacity-80 hover:opacity-100 cursor-pointer">Contact Us</a>
+                  <a onClick={() => { setCurrentView("safety"); window.history.pushState(null, "", "/safety"); }} className="font-sans text-sm font-medium text-[#666551] hover:text-[#01725a] hover:underline transition-all opacity-80 hover:opacity-100 cursor-pointer">{t('landing.safetyGuidelines')}</a>
+                  <a onClick={() => { setCurrentView("help"); window.history.pushState(null, "", "/help"); }} className="font-sans text-sm font-medium text-[#666551] hover:text-[#01725a] hover:underline transition-all opacity-80 hover:opacity-100 cursor-pointer">{t('landing.helpCenter')}</a>
+                  <a onClick={() => { setCurrentView("contact"); window.history.pushState(null, "", "/contact"); }} className="font-sans text-sm font-medium text-[#666551] hover:text-[#01725a] hover:underline transition-all opacity-80 hover:opacity-100 cursor-pointer">{t('landing.contactUs')}</a>
                 </nav>
               </div>
             </div>
@@ -1599,9 +1593,7 @@ export default function App() {
               <button 
                 className="w-full py-3 px-4 bg-primary text-on-primary rounded-lg font-body-lg text-lg font-medium hover:bg-primary-dim transition-colors shadow-sm flex items-center justify-center gap-3" 
                 type="submit"
-              >
-                Login
-              </button>
+              >{t('landing.login')}</button>
             </form>
 
             {/* Footer */}
@@ -1761,7 +1753,7 @@ export default function App() {
                   className="h-4 w-4 rounded border-outline-variant text-primary focus:ring-primary bg-surface-container-low"
                 />
                 <label className="ml-3 block font-body-md text-xs text-on-surface-variant" htmlFor="terms">
-                  I agree to the <button type="button" onClick={() => setCurrentView("terms")} className="text-primary hover:underline">Terms of Service</button> and <button type="button" onClick={() => setCurrentView("privacy")} className="text-primary hover:underline">Privacy Policy</button>.
+                  I agree to the <button type="button" onClick={() => setCurrentView("terms")} className="text-primary hover:underline">{t('landing.termsOfService')}</button> and <button type="button" onClick={() => setCurrentView("privacy")} className="text-primary hover:underline">{t('landing.privacyPolicy')}</button>.
                 </label>
               </div>
 
@@ -2071,9 +2063,7 @@ export default function App() {
                       fontWeight: "800",
                       lineHeight: 1.2,
                     }}
-                  >
-                    Privacy Policy
-                  </h1>
+                  >{t('landing.privacyPolicy')}</h1>
                   <p
                     style={{
                       fontSize: "13px",
@@ -2333,9 +2323,7 @@ export default function App() {
                       fontWeight: "800",
                       lineHeight: 1.2,
                     }}
-                  >
-                    Terms of Service
-                  </h1>
+                  >{t('landing.termsOfService')}</h1>
                   <p
                     style={{
                       fontSize: "13px",
@@ -2552,7 +2540,7 @@ export default function App() {
             </div>
           </header>
           <div style={{ maxWidth: "800px", margin: "40px auto", padding: "40px", background: "#fff", borderRadius: "12px", boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)" }}>
-            <h1 style={{ fontSize: "32px", fontWeight: "bold", color: "#00654f", marginBottom: "24px" }}>About Us</h1>
+            <h1 style={{ fontSize: "32px", fontWeight: "bold", color: "#00654f", marginBottom: "24px" }}>{t('landing.aboutUs')}</h1>
             <p style={{ fontSize: "16px", color: "#475569", lineHeight: "1.6", marginBottom: "20px" }}>
               FindTrack is a community-driven lost and found platform dedicated to helping people recover their lost items across the Philippines.
               Our mission is to foster a culture of honesty and trust (Bayanihan) by providing a secure and accessible platform for reporting and recovering lost belongings.
@@ -2574,7 +2562,7 @@ export default function App() {
             </div>
           </header>
           <div style={{ maxWidth: "800px", margin: "40px auto", padding: "40px", background: "#fff", borderRadius: "12px", boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)" }}>
-            <h1 style={{ fontSize: "32px", fontWeight: "bold", color: "#00654f", marginBottom: "24px" }}>Safety Guidelines</h1>
+            <h1 style={{ fontSize: "32px", fontWeight: "bold", color: "#00654f", marginBottom: "24px" }}>{t('landing.safetyGuidelines')}</h1>
             <p style={{ fontSize: "16px", color: "#475569", lineHeight: "1.6", marginBottom: "20px" }}>
               Your safety is our top priority. When meeting to return or retrieve a lost item, please keep the following guidelines in mind:
             </p>
@@ -2599,7 +2587,7 @@ export default function App() {
             </div>
           </header>
           <div style={{ maxWidth: "800px", margin: "40px auto", padding: "40px", background: "#fff", borderRadius: "12px", boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)" }}>
-            <h1 style={{ fontSize: "32px", fontWeight: "bold", color: "#00654f", marginBottom: "24px" }}>Help Center</h1>
+            <h1 style={{ fontSize: "32px", fontWeight: "bold", color: "#00654f", marginBottom: "24px" }}>{t('landing.helpCenter')}</h1>
             <p style={{ fontSize: "16px", color: "#475569", lineHeight: "1.6", marginBottom: "20px" }}>
               Need assistance with using FindTrack? You're in the right place.
             </p>
@@ -2638,7 +2626,7 @@ export default function App() {
             </div>
           </header>
           <div style={{ maxWidth: "800px", margin: "40px auto", padding: "40px", background: "#fff", borderRadius: "12px", boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)" }}>
-            <h1 style={{ fontSize: "32px", fontWeight: "bold", color: "#00654f", marginBottom: "24px" }}>Contact Us</h1>
+            <h1 style={{ fontSize: "32px", fontWeight: "bold", color: "#00654f", marginBottom: "24px" }}>{t('landing.contactUs')}</h1>
             <p style={{ fontSize: "16px", color: "#475569", lineHeight: "1.6", marginBottom: "20px" }}>
               We'd love to hear from you. Whether you have a question about our platform, need help with an item, or want to provide feedback, our team is ready to assist.
             </p>
@@ -2859,22 +2847,22 @@ export default function App() {
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
                   <div className="bg-[#D3E8E5] p-5 rounded-2xl flex flex-col items-center justify-center text-center shadow-sm">
                     <ShoppingBag className="w-8 h-8 text-[#1A7B72] mb-3" strokeWidth={1.5} />
-                    <div className="text-sm font-medium text-[#15605A] leading-tight mb-1">Items<br/>Reported:</div>
+                    <div className="text-sm font-medium text-[#15605A] leading-tight mb-1">{t('dashboard.itemsReported')}:</div>
                     <div className="text-3xl font-bold text-[#1A7B72]">{stats.lost + stats.found}</div>
                   </div>
                   <div className="bg-[#E2F0D9] p-5 rounded-2xl flex flex-col items-center justify-center text-center shadow-sm">
                     <Search className="w-8 h-8 text-[#1A7B72] mb-3" strokeWidth={1.5} />
-                    <div className="text-sm font-medium text-[#15605A] leading-tight mb-1">Items<br/>Found:</div>
+                    <div className="text-sm font-medium text-[#15605A] leading-tight mb-1">{t('dashboard.itemsFound')}:</div>
                     <div className="text-3xl font-bold text-[#1A7B72]">{stats.found}</div>
                   </div>
                   <div className="bg-[#D3E8E5] p-5 rounded-2xl flex flex-col items-center justify-center text-center shadow-sm">
                     <Users className="w-8 h-8 text-[#1A7B72] mb-3" strokeWidth={1.5} />
-                    <div className="text-sm font-medium text-[#15605A] leading-tight mb-1">Community<br/>Members:</div>
+                    <div className="text-sm font-medium text-[#15605A] leading-tight mb-1">{t('dashboard.communityMembers')}:</div>
                     <div className="text-3xl font-bold text-[#1A7B72]">{new Set(items.map(i => i.userId).filter(Boolean)).size || 1}</div>
                   </div>
                   <div className="bg-[#D3E8E5] p-5 rounded-2xl flex flex-col items-center justify-center text-center shadow-sm">
                     <CheckSquare className="w-8 h-8 text-[#1A7B72] mb-3" strokeWidth={1.5} />
-                    <div className="text-sm font-medium text-[#15605A] leading-tight mb-1">Recoveries<br/>This Week:</div>
+                    <div className="text-sm font-medium text-[#15605A] leading-tight mb-1">{t('dashboard.recoveriesThisWeek')}:</div>
                     <div className="text-3xl font-bold text-[#1A7B72]">{stats.claimed}</div>
                   </div>
               </div>
@@ -2883,32 +2871,32 @@ export default function App() {
               <div className="grid md:grid-cols-2 gap-6 mb-8 flex-1 min-h-[400px]">
                   {/* Recent Community Activity */}
                   <div className="bg-white rounded-3xl p-6 shadow-sm border border-slate-100 flex flex-col h-full">
-                    <h2 className="text-xl font-bold text-slate-900 mb-6">Recent Community Activity</h2>
+                    <h2 className="text-xl font-bold text-slate-900 mb-6">{t('dashboard.recentCommunityActivity')}</h2>
                     <div className="space-y-4 overflow-y-auto flex-1 pr-2">
                       {items.slice(0, 6).map((r) => (
                         <div key={r.id} className="text-sm border-b border-slate-50 pb-4 last:border-0">
-                          <span className="font-semibold text-slate-800">{r.type === 'lost' ? 'Lost' : 'Found'} {r.title}</span> {r.location ? `in ${r.location}` : ''} - 
+                          <span className="font-semibold text-slate-800">{r.type === 'lost' ? t('dashboard.lost') : t('dashboard.found')} {r.title}</span> {r.location ? `in ${r.location}` : ''} - 
                           <span className="text-slate-500 ml-1">Reported by {r.contactName?.split(' ')[0] || 'Member'} ({r.date ? new Date(r.date).toLocaleDateString() : 'recently'})</span>
                         </div>
                       ))}
-                      {items.length === 0 && <div className="text-slate-500 text-sm">No recent activity.</div>}
+                      {items.length === 0 && <div className="text-slate-500 text-sm">{t('dashboard.noRecentActivity')}</div>}
                     </div>
                   </div>
                   
                   {/* Private Messages */}
                   <div className="bg-white rounded-3xl p-6 shadow-sm border border-slate-100 flex flex-col h-full">
-                    <h2 className="text-xl font-bold text-slate-900 mb-6">Private Messages</h2>
+                    <h2 className="text-xl font-bold text-slate-900 mb-6">{t('dashboard.privateMessages')}</h2>
                     <div className="space-y-4 overflow-y-auto flex-1 pr-2 flex items-center justify-center flex-col text-slate-500">
                       <MessageSquare className="h-12 w-12 mb-3 text-slate-300" />
-                      <p className="text-sm font-medium">No messages yet</p>
-                      <p className="text-xs text-center mt-1">When someone contacts you about your reported item, it will appear here.</p>
+                      <p className="text-sm font-medium">{t('dashboard.noMessagesYet')}</p>
+                      <p className="text-xs text-center mt-1">{t('dashboard.whenSomeoneContactsYouAboutYourReportedItemItWillAppearHere')}</p>
                     </div>
                   </div>
               </div>
 
               {/* Footer Banner */}
               <div className="mt-auto bg-[#1A7B72] text-white text-center py-5 px-6 rounded-2xl font-medium shadow-md">
-                Every recovered item strengthens the community.
+                {t('dashboard.everyRecoveredItemStrengthensTheCommunity')}
               </div>
             </section>
             {/* PANEL: REPORT SUBMISSION */}
@@ -2918,21 +2906,21 @@ export default function App() {
             >
               <div className="max-w-3xl mx-auto space-y-8">
                 <header className="mb-8">
-                  <h2 className="font-headline-lg text-3xl font-bold text-on-surface">Report an Item</h2>
-                  <p className="font-body-md text-on-surface-variant mt-2">Fill in the details below. Our smart matching system will help find the owner or the item.</p>
+                  <h2 className="font-headline-lg text-3xl font-bold text-on-surface">{t('dashboard.reportAnItem')}</h2>
+                  <p className="font-body-md text-on-surface-variant mt-2">{t('dashboard.fillInTheDetailsBelowOurSmartMatchingSystemWillHelpFindTheOwnerOrTheItem')}</p>
                 </header>
 
                 <div className="bg-surface-container-lowest rounded-2xl border border-outline-variant shadow-sm overflow-hidden">
                   {/* Stepper Header */}
                   <div className="flex border-b border-outline-variant bg-surface-variant/50">
                     <div className={`flex-1 py-4 px-6 text-center text-sm font-bold border-b-2 ${reportStep >= 1 ? 'border-primary text-primary' : 'border-transparent text-outline'}`}>
-                      1. Basic Info
+                      {t('dashboard.1BasicInfo')}
                     </div>
                     <div className={`flex-1 py-4 px-6 text-center text-sm font-bold border-b-2 ${reportStep >= 2 ? 'border-primary text-primary' : 'border-transparent text-outline'}`}>
-                      2. Details
+                      {t('dashboard.2Details')}
                     </div>
                     <div className={`flex-1 py-4 px-6 text-center text-sm font-bold border-b-2 ${reportStep >= 3 ? 'border-primary text-primary' : 'border-transparent text-outline'}`}>
-                      3. Verification
+                      {t('dashboard.3Verification')}
                     </div>
                   </div>
 
@@ -5022,9 +5010,9 @@ export default function App() {
                       <h4 className="font-bold text-on-surface">FindTrack</h4>
                       <p className="text-xs text-on-surface-variant mt-1 mb-4">Version 2.0.0 (Beta)</p>
                       <div className="flex justify-center gap-4 text-xs font-bold text-primary">
-                        <button onClick={() => setCurrentView('privacy')}>Privacy Policy</button>
+                        <button onClick={() => setCurrentView('privacy')}>{t('landing.privacyPolicy')}</button>
                         <span>&bull;</span>
-                        <button onClick={() => setCurrentView('terms')}>Terms of Service</button>
+                        <button onClick={() => setCurrentView('terms')}>{t('landing.termsOfService')}</button>
                       </div>
                     </div>
                   </div>
@@ -5228,9 +5216,7 @@ export default function App() {
                 }}
                 className="w-full bg-primary text-on-primary font-label-md text-label-md py-3 px-6 rounded-lg shadow-md hover:bg-primary-dim transition-all duration-200 flex items-center justify-center gap-2"
               >
-                <LogIn className="h-[18px] w-[18px]" strokeWidth={2} />
-                Login
-              </button>
+                <LogIn className="h-[18px] w-[18px]" strokeWidth={2} />{t('landing.login')}</button>
               <button 
                 onClick={() => {
                   setShowGuestModal(false);
