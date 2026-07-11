@@ -3,6 +3,7 @@ import { Item, Match } from '../types';
 import { motion, AnimatePresence } from 'motion/react';
 import { Sparkles, BrainCircuit, CheckSquare, XCircle, AlertCircle, RefreshCw, Check } from 'lucide-react';
 import { auth } from '../firebase';
+import { useTranslation } from 'react-i18next';
 
 interface MatchmakerProps {
   item: Item;
@@ -18,6 +19,7 @@ interface AIMatch {
 }
 
 export default function Matchmaker({ item, allOppositeItems, onResolveItem, userUid }: MatchmakerProps) {
+  const { t } = useTranslation();
   const [loading, setLoading] = useState<boolean>(false);
   const [aiMatches, setAiMatches] = useState<AIMatch[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -95,13 +97,13 @@ export default function Matchmaker({ item, allOppositeItems, onResolveItem, user
       <div className="flex items-center justify-between gap-3 mb-3">
         <div className="flex items-center space-x-2">
           <BrainCircuit className="h-5 w-5 text-indigo-600" />
-          <h4 className="font-sans text-sm font-bold text-slate-900">Gemini AI Matchmaker</h4>
+          <h4 className="font-sans text-sm font-bold text-slate-900">{t('itemDetail.geminiAiMatchmaker')}</h4>
         </div>
 
         <button
           onClick={triggerAIMatch}
           disabled={loading || allOppositeItems.length === 0}
-          title="Recalculate Matches"
+          title={t('itemDetail.recalculateMatches')}
           className="rounded-lg p-1.5 text-indigo-600 hover:bg-indigo-50 disabled:opacity-40 transition-all shrink-0"
         >
           <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
@@ -109,13 +111,13 @@ export default function Matchmaker({ item, allOppositeItems, onResolveItem, user
       </div>
 
       <p className="font-sans text-xs text-slate-500 mb-4 leading-relaxed">
-        Our server-side cognitive models compare descriptions, locations, times, and categories in real-time to find links.
+        {t('itemDetail.cognitiveComparisonExplanation')}
       </p>
 
       {loading ? (
         <div className="flex flex-col items-center justify-center py-8 space-y-2">
           <Sparkles className="h-6 w-6 text-indigo-500 animate-spin" />
-          <p className="font-sans text-xs font-medium text-indigo-600">Generating cognitive similarity correlations...</p>
+          <p className="font-sans text-xs font-medium text-indigo-600">{t('itemDetail.generatingCognitiveSimilarity')}</p>
         </div>
       ) : error ? (
         <div className="flex items-start bg-red-50/85 p-3 rounded-lg border border-red-100 text-red-700 font-sans text-xs space-x-2">
@@ -125,12 +127,12 @@ export default function Matchmaker({ item, allOppositeItems, onResolveItem, user
       ) : allOppositeItems.length === 0 ? (
         <div className="flex items-center bg-slate-50 p-3 rounded-lg border border-slate-200 text-slate-500 font-sans text-xs space-x-2">
           <AlertCircle className="h-4 w-4 text-slate-400 shrink-0" />
-          <span>No opposite registry elements are currently available for matchmaking comparison.</span>
+          <span>{t('itemDetail.noOppositeElements')}</span>
         </div>
       ) : renderMatches.length === 0 ? (
         <div className="text-center py-6 border border-dashed border-slate-200 rounded-lg bg-white">
           <Sparkles className="h-5 w-5 text-slate-300 mx-auto mb-1.5" />
-          <p className="font-sans text-xs text-slate-400">No matching items resolved confidence score &gt; 35%.</p>
+          <p className="font-sans text-xs text-slate-400">{t('itemDetail.noConfidences')}</p>
         </div>
       ) : (
         <div className="space-y-3">
@@ -166,7 +168,7 @@ export default function Matchmaker({ item, allOppositeItems, onResolveItem, user
                     </div>
 
                     <span className={`inline-flex items-center rounded-md px-2 py-0.5 text-xs font-bold border shrink-0 ${scoreColor}`}>
-                      {match.confidenceScore}% Match
+                      {t('itemDetail.percentMatch', { percent: match.confidenceScore })}
                     </span>
                   </div>
 
@@ -191,11 +193,11 @@ export default function Matchmaker({ item, allOppositeItems, onResolveItem, user
                         ) : (
                           <Check className="h-3 w-3 text-emerald-400" />
                         )}
-                        <span>Resolve Match</span>
+                        <span>{t('itemDetail.resolveMatch')}</span>
                       </button>
                     ) : (
                       <span className="font-sans text-[10px] text-slate-450 shrink-0 italic">
-                        Login as creator to resolve
+                        {t('itemDetail.loginAsCreator')}
                       </span>
                     )}
                   </div>

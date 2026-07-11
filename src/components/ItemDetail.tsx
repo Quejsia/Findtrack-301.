@@ -424,7 +424,7 @@ export default function ItemDetail({
                   {item.type}
                 </span>
                 <span className="font-mono text-xs text-slate-500 font-semibold tracking-wide capitalize">
-                  {item.category} Registry Item
+                  {item.category} {t('itemDetail.registryItem')}
                 </span>
               </div>
 
@@ -510,7 +510,7 @@ export default function ItemDetail({
                             {item.contactName.charAt(0).toUpperCase()}
                           </div>
                           <div>
-                            <p className="font-sans text-[10px] text-slate-400 font-medium">Reporter (Your Listing)</p>
+                            <p className="font-sans text-[10px] text-slate-400 font-medium">{t('itemDetail.reporterYourListing')}</p>
                             <p className="font-sans text-xs text-slate-800 font-bold">{item.contactName}</p>
                           </div>
                         </div>
@@ -535,9 +535,9 @@ export default function ItemDetail({
                                 <Lock className="h-4 w-4" />
                               </div>
                               <div className="flex-1">
-                                <p className="font-sans text-xs font-bold text-slate-800">PII Privacy Lock Active</p>
+                                <p className="font-sans text-xs font-bold text-slate-800">{t('itemDetail.piiPrivacyLockActive')}</p>
                                 <p className="text-[11px] text-slate-500 font-medium mt-0.5 leading-relaxed">
-                                  This listing requires answering a verification question. Submit a claim demonstrating you are the true owner to unlock contact credentials.
+                                  {t('itemDetail.piiLockExplanation')}
                                 </p>
                               </div>
                             </div>
@@ -547,7 +547,7 @@ export default function ItemDetail({
                               <div className="p-4 bg-white border border-slate-200/80 rounded-md shadow-sm space-y-3">
                                 <div className="flex items-center justify-between">
                                   <span className="text-[10px] uppercase font-bold text-slate-400 font-sans tracking-wide">
-                                    Claim Response History
+                                    {t('itemDetail.claimResponseHistory')}
                                   </span>
                                   <span className={`inline-flex items-center gap-1 text-[9px] font-bold px-2 py-0.5 rounded-md uppercase ${
                                     existingClaim.status === 'pending' ? 'bg-amber-100 text-amber-800' : 'bg-rose-100 text-rose-800'
@@ -561,15 +561,15 @@ export default function ItemDetail({
                                 </p>
                                 
                                 <p className="text-[11px] text-slate-600 font-semibold font-sans">
-                                  <Key className="h-3 w-3 inline text-slate-400 mr-1" /> Your submitted answer: <span className="font-normal font-sans italic text-slate-500">"{existingClaim.providedAnswer}"</span>
+                                  <Key className="h-3 w-3 inline text-slate-400 mr-1" /> {t('itemDetail.yourSubmittedAnswer')} <span className="font-normal font-sans italic text-slate-500">"{existingClaim.providedAnswer}"</span>
                                 </p>
 
                                 <div className="flex items-center space-x-2 pt-1 border-t border-slate-100">
                                   <div className="h-1.5 w-1.5 rounded-full bg-amber-500 animate-ping" />
                                   <p className="text-[10px] text-slate-500 font-medium">
                                     {existingClaim.status === 'pending' 
-                                      ? 'Under review by the reporter. You can message them to expedite verification.' 
-                                      : 'Declined by reporter. Double check your details and try re-submitting if needed.'}
+                                      ? t('itemDetail.underReviewByReporter') 
+                                      : t('itemDetail.declinedByReporter')}
                                   </p>
                                 </div>
                                 
@@ -585,7 +585,7 @@ export default function ItemDetail({
                                     className="w-full flex items-center justify-center space-x-1.5 bg-teal-850 hover:bg-teal-900 border border-teal-800 text-white font-sans text-xs font-bold py-3.5 px-4 rounded-md shadow-md cursor-pointer transition active:scale-95 duration-200"
                                   >
                                     <MessageSquare className="h-4 w-4 shrink-0 text-white/90" />
-                                    <span>Message Finder</span>
+                                    <span>{t('itemDetail.messageFinder')}</span>
                                   </button>
                                   
                                   {existingClaim.status === 'rejected' && (
@@ -595,7 +595,7 @@ export default function ItemDetail({
                                       className="w-full flex items-center justify-center space-x-1.5 py-3.5 px-4 rounded-md bg-slate-900 text-white font-sans text-xs font-bold hover:bg-slate-800 transition active:scale-95 duration-200 cursor-pointer shadow-md"
                                     >
                                       <ShieldQuestion className="h-4 w-4 text-emerald-400 shrink-0" />
-                                      <span>Submit Custom Proof</span>
+                                      <span>{t('itemDetail.submitCustomProof')}</span>
                                     </button>
                                   )}
                                 </div>
@@ -614,7 +614,7 @@ export default function ItemDetail({
                                   className="w-full flex items-center justify-center space-x-1.5 bg-teal-850 hover:bg-teal-900 border border-teal-800 text-white font-sans text-xs font-bold py-3.5 px-4 rounded-md shadow-md cursor-pointer transition active:scale-95 duration-200"
                                 >
                                   <MessageSquare className="h-4 w-4 shrink-0 text-white/90" />
-                                  <span>Message Finder</span>
+                                  <span>{t('itemDetail.messageFinder')}</span>
                                 </button>
                                 
                                 <button
@@ -623,7 +623,7 @@ export default function ItemDetail({
                                   className="w-full flex items-center justify-center space-x-1.5 bg-white border border-slate-300 hover:bg-slate-50/50 text-slate-700 font-sans text-xs font-bold py-3.5 px-4 rounded-md shadow-sm cursor-pointer transition active:scale-95 duration-200"
                                 >
                                   <CheckCircle2 className="h-4 w-4 shrink-0 text-teal-600" />
-                                  <span>Prove Ownership & Claim</span>
+                                  <span>{t('itemDetail.proveOwnershipAndClaim')}</span>
                                 </button>
                               </div>
                             )}
@@ -647,7 +647,7 @@ export default function ItemDetail({
                                   <PhoneCall className="h-4 w-4" />
                                 </div>
                                 <div className="min-w-0 flex-1">
-                                  <p className="font-sans text-[10px] text-slate-400 font-medium">Contact Coordinates</p>
+                                  <p className="font-sans text-[10px] text-slate-400 font-medium">{t('itemDetail.contactCoordinates')}</p>
                                   <p className="font-sans text-xs text-slate-800 font-bold truncate">{item.contactInfo}</p>
                                 </div>
                               </div>
@@ -657,7 +657,7 @@ export default function ItemDetail({
                               <div className="flex items-center gap-2 bg-emerald-50 border border-emerald-100 rounded-md p-3 text-emerald-800 font-sans text-xs">
                                 <ShieldCheck className="h-4.5 w-4.5 text-emerald-500 shrink-0" />
                                 <p className="font-medium text-[11px] leading-snug">
-                                  <strong>Proof Approved:</strong> The reporter authenticated your answer. Safe transactions are unlocked!
+                                  <strong>{t('itemDetail.proofApproved')}</strong> {t('itemDetail.proofApprovedExplanation')}
                                 </p>
                               </div>
                             )}
@@ -674,7 +674,7 @@ export default function ItemDetail({
                                 className="w-full flex items-center justify-center space-x-1.5 bg-teal-850 hover:bg-teal-900 border border-teal-800 text-[#1a1a1a] font-sans text-xs font-bold py-3.5 px-4 rounded-md shadow-md cursor-pointer transition active:scale-95 duration-200"
                               >
                                 <MessageSquare className="h-4 w-4 shrink-0 text-[#1a1a1a]" />
-                                <span>Direct Chat Room</span>
+                                <span>{t('itemDetail.directChatRoom')}</span>
                               </button>
 
                               {!existingClaim && (
@@ -704,9 +704,9 @@ export default function ItemDetail({
                     <div className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-amber-50 border border-amber-100 text-amber-500">
                       <Lock className="h-4 w-4" />
                     </div>
-                    <p className="font-bold text-slate-800">Credentials Layer Locked</p>
+                    <p className="font-bold text-slate-800">{t('itemDetail.credentialsLayerLocked')}</p>
                     <p className="text-[11px] leading-relaxed max-w-sm mx-auto">
-                      For PII privacy preservation, contact information can only be viewed by authenticated users. Please sign in with your account to access details.
+                      {t('itemDetail.piiPrivacyPreservation')}
                     </p>
                   </div>
                 )}
@@ -728,7 +728,7 @@ export default function ItemDetail({
               <div className="flex flex-wrap items-center justify-between text-slate-400 font-sans text-[10px] pt-4 border-t border-slate-100 gap-2">
                 <span className="flex items-center gap-1 uppercase font-semibold">
                   <FileClock className="h-3.5 w-3.5 text-slate-350" />
-                  <span>Registered: {formattedPostedDate}</span>
+                  <span>{t('itemDetail.registered')}{formattedPostedDate}</span>
                 </span>
 
                 {/* Owner controls: allow Delete */}
@@ -744,7 +744,7 @@ export default function ItemDetail({
                     ) : (
                       <Trash2 className="h-3.5 w-3.5" />
                     )}
-                    <span className="font-bold">Delete Entry</span>
+                    <span className="font-bold">{t('itemDetail.deleteEntry')}</span>
                   </button>
                 )}
               </div>
@@ -782,26 +782,26 @@ export default function ItemDetail({
                 <ShieldCheck className="h-10 w-10 text-teal-700" strokeWidth={1.5} />
               </div>
               
-              <h2 className="font-semibold text-[24px] text-gray-900 mb-3 tracking-tight">"Prove It" Verification</h2>
+              <h2 className="font-semibold text-[24px] text-gray-900 mb-3 tracking-tight">{t('itemDetail.proveItVerification')}</h2>
               
               <p className="text-[14px] text-gray-600 mb-6 px-2">
-                Authenticate your claims ownership details below for <strong>{item.title}</strong> so the listing recorder can verify securely.
+                {t('itemDetail.authenticateYourClaims')} <strong>{item.title}</strong> {t('itemDetail.soListingRecorder')}
               </p>
 
               <form onSubmit={handleSubmit} className="w-full flex flex-col gap-4 text-left">
                 <div className="space-y-2">
                   <label className="block text-[9px] font-mono font-bold text-slate-400 uppercase tracking-widest text-center">
-                    VERIFICATION QUESTION
+                    {t('itemDetail.verificationQuestion')}
                   </label>
                   {hasSecurityQuestion ? (
                     <div className="bg-amber-50 border border-amber-200 rounded-md p-4 text-amber-900 text-center">
-                      <p className="font-bold text-xs mb-1"><Key className="h-3 w-3 inline" /> OWNER'S SECRET QUESTION</p>
+                      <p className="font-bold text-xs mb-1"><Key className="h-3 w-3 inline" /> {t('itemDetail.ownersSecretQuestion')}</p>
                       <p className="font-sans text-xs italic leading-relaxed">"{item.securityQuestion}"</p>
                     </div>
                   ) : (
                     <div className="bg-slate-50 border border-slate-205/65 rounded-md p-4 text-center">
                       <p className="font-sans text-xs text-slate-800 leading-relaxed font-medium">
-                        How can we verify that this is your item? Describe it in detail.
+                        {t('itemDetail.howCanWeVerify')}
                       </p>
                     </div>
                   )}
@@ -809,7 +809,7 @@ export default function ItemDetail({
                 
                 <div className={`space-y-2 ${isShaking ? 'animate-shake border-red-500' : ''}`}>
                   <label htmlFor="claimer-answer-modal" className="block text-[9px] font-mono font-bold text-slate-400 uppercase tracking-widest mt-2 text-center">
-                    YOUR CONFIDENTIAL ANSWER
+                    {t('itemDetail.yourConfidentialAnswer')}
                   </label>
                   <textarea
                     id="claimer-answer-modal"
@@ -819,12 +819,12 @@ export default function ItemDetail({
                       setAnswer(e.target.value);
                       setIsShaking(false);
                     }}
-                    placeholder={hasSecurityQuestion ? "Type your exact answer here..." : "Provide specific details only the owner would know (e.g. scratches, contents)..."}
+                    placeholder={hasSecurityQuestion ? t('itemDetail.typeExactAnswer') : t('itemDetail.provideSpecificDetails')}
                     className="w-full border border-slate-300 rounded-lg p-3 text-sm focus:border-teal-500 focus:ring-1 focus:ring-teal-500 outline-none resize-none transition"
                     required
                   />
                   {isShaking && (
-                    <p className="text-red-500 text-xs font-medium text-center">Please provide a valid answer to proceed.</p>
+                    <p className="text-red-500 text-xs font-medium text-center">{t('itemDetail.pleaseProvideValidAnswer')}</p>
                   )}
                 </div>
 
@@ -837,7 +837,7 @@ export default function ItemDetail({
                     {submittingClaim ? (
                       <span className="flex items-center gap-2">
                         <div className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                        Encrypting...
+                        {t('itemDetail.encrypting', 'Encrypting...')}
                       </span>
                     ) : (
                       <span className="flex items-center gap-2">
@@ -874,6 +874,7 @@ interface ChatViewProps {
 }
 
 function ChatView({ chatId, currentUserUid, itemTitle, otherUserId, reporterName, onBack }: ChatViewProps) {
+  const { t } = useTranslation();
   const [messages, setMessages] = useState<any[]>([]);
   const [inputText, setInputText] = useState('');
   const [loading, setLoading] = useState(true);

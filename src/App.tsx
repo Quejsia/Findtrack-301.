@@ -2939,30 +2939,30 @@ export default function App() {
                     {/* STEP 1: Basic Info */}
                     <div className={`space-y-6 ${reportStep === 1 ? 'block' : 'hidden'}`}>
                       <div className="space-y-3">
-                        <label className="block font-label-md font-bold text-on-surface">I am reporting a...</label>
+                        <label className="block font-label-md font-bold text-on-surface">{t('report.iAmReportingA')}</label>
                         <div className="grid grid-cols-2 gap-4">
                           <label className={`cursor-pointer border rounded-xl p-4 flex flex-col items-center gap-2 transition-all ${reportType === "lost" ? "border-error text-error bg-error/5 ring-2 ring-error/20" : "border-outline-variant text-on-surface-variant hover:bg-surface-variant"}`}>
                             <input type="radio" name="reportType" value="lost" checked={reportType === "lost"} onChange={() => setReportType("lost")} className="sr-only" />
                             <Search className="h-6 w-6" />
-                            <span className="font-bold">Lost Item</span>
+                            <span className="font-bold">{t('report.lostItem')}</span>
                           </label>
                           <label className={`cursor-pointer border rounded-xl p-4 flex flex-col items-center gap-2 transition-all ${reportType === "found" ? "border-primary text-primary bg-primary/5 ring-2 ring-primary/20" : "border-outline-variant text-on-surface-variant hover:bg-surface-variant"}`}>
                             <input type="radio" name="reportType" value="found" checked={reportType === "found"} onChange={() => setReportType("found")} className="sr-only" />
                             <PackageCheck className="h-6 w-6" />
-                            <span className="font-bold">Found Item</span>
+                            <span className="font-bold">{t('report.foundItem')}</span>
                           </label>
                         </div>
                       </div>
 
                       <div className="space-y-2">
-                        <label className="block font-label-md font-bold text-on-surface">Item Title</label>
-                        <input type="text" required value={reportTitle} onChange={(e) => setReportTitle(e.target.value)} placeholder="e.g. Blue Hydroflask" className="w-full bg-surface-variant border-none rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary outline-none" />
+                        <label className="block font-label-md font-bold text-on-surface">{t('report.itemTitle')}</label>
+                        <input type="text" required value={reportTitle} onChange={(e) => setReportTitle(e.target.value)} placeholder={t('report.itemTitlePlaceholder')} className="w-full bg-surface-variant border-none rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary outline-none" />
                       </div>
 
                       <div className="space-y-2">
-                        <label className="block font-label-md font-bold text-on-surface">Location {reportType === "lost" ? "Lost" : "Found"}</label>
+                        <label className="block font-label-md font-bold text-on-surface">{reportType === "lost" ? t('report.locationLost') : t('report.locationFound')}</label>
                         <div className="relative">
-                          <input type="text" required value={reportLocation} onChange={(e) => setReportLocation(e.target.value)} placeholder="e.g. Library 2nd Floor" className="w-full bg-surface-variant border-none rounded-xl pr-12 pl-4 py-3 focus:ring-2 focus:ring-primary outline-none" />
+                          <input type="text" required value={reportLocation} onChange={(e) => setReportLocation(e.target.value)} placeholder={t('report.locationPlaceholder')} className="w-full bg-surface-variant border-none rounded-xl pr-12 pl-4 py-3 focus:ring-2 focus:ring-primary outline-none" />
                           <MapPin className="absolute right-4 top-1/2 -translate-y-1/2 h-5 w-5 text-outline pointer-events-none" />
                         </div>
                       </div>
@@ -3036,7 +3036,7 @@ export default function App() {
                       ) : <div></div>}
                       
                       <button type="submit" disabled={isUploading} className="px-6 py-2.5 rounded-full font-label-md font-bold bg-primary text-on-primary hover:bg-primary-dim transition-colors flex items-center gap-2 shadow-sm disabled:opacity-70">
-                        {isUploading ? "Uploading..." : reportStep < 3 ? "Continue" : (
+                        {isUploading ? "Uploading..." : reportStep < 3 ? t('report.continue') : (
                           <><Send className="h-4 w-4" /> Submit Report</>
                         )}
                       </button>
@@ -3059,7 +3059,7 @@ export default function App() {
                     <div className="absolute inset-0 opacity-10 bg-cover bg-center"></div>
                     <div className="relative z-10">
                       <h2 className="font-headline-lg text-3xl font-bold text-primary mb-2">{t('search.findLostItems')}</h2>
-                      <p className="font-body-lg text-on-surface-variant mb-6">{t('search.searchThroughOurCommunityDatabaseToFindWhatYouReLookingFor')}</p>
+                      <p className="font-body-lg text-on-surface-variant mb-6">{t('search.searchThroughOurCommunityDatabaseToFindWhatYoureLookingFor')}</p>
                       <div className="relative flex items-center w-full shadow-sm rounded-lg overflow-hidden border border-outline-variant focus-within:border-primary transition-colors bg-surface">
                         <div className="pl-4 text-on-surface-variant">
                           <Search className="h-6 w-6" />
@@ -3080,16 +3080,16 @@ export default function App() {
                     <div className="bg-surface-container rounded-xl p-4 flex-1 border border-outline-variant/30 flex flex-col justify-center hover:shadow-md transition-shadow">
                       <div className="flex items-center justify-between">
                         <div>
-                          <h3 className="font-label-md text-xs text-on-surface-variant uppercase tracking-wider mb-1">Status</h3>
+                          <h3 className="font-label-md text-xs text-on-surface-variant uppercase tracking-wider mb-1">{t('search.status')}</h3>
                           <select 
                             value={sFilter}
                             onChange={(e) => setSFilter(e.target.value)}
                             className="bg-transparent border-none p-0 font-headline-md text-lg text-primary focus:ring-0 cursor-pointer outline-none font-bold"
                           >
                             <option value="all">{t('search.allItems')}</option>
-                            <option value="lost">Lost Only</option>
-                            <option value="found">Found Only</option>
-                            <option value="claimed">Resolved</option>
+                            <option value="lost">{t('search.lostOnly')}</option>
+                            <option value="found">{t('search.foundOnly')}</option>
+                            <option value="claimed">{t('search.resolved')}</option>
                           </select>
                         </div>
                         <div className="w-10 h-10 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center">
@@ -3101,7 +3101,7 @@ export default function App() {
                     <div className="bg-tertiary-container/20 rounded-xl p-4 flex-1 border border-tertiary-container/30 flex flex-col justify-center hover:shadow-md transition-shadow">
                       <div className="flex items-center justify-between">
                         <div className="w-full pr-2">
-                          <h3 className="font-label-md text-xs text-tertiary uppercase tracking-wider mb-1">Location</h3>
+                          <h3 className="font-label-md text-xs text-tertiary uppercase tracking-wider mb-1">{t('search.location')}</h3>
                           <input 
                             value={sLoc}
                             onChange={(e) => setSLoc(e.target.value)}
@@ -3120,12 +3120,12 @@ export default function App() {
                 {/* Dynamic Categories highlight info bar */}
                 {categoryKeywords && (
                   <div className="mb-8 bg-primary-container/30 border border-primary-container/50 text-on-primary-container py-3 px-4 rounded-xl flex items-center justify-between">
-                    <span className="font-body-md">Filtered by Category: <strong className="capitalize">{categoryKeywords[0]}</strong></span>
+                    <span className="font-body-md">{t('search.filteredByCategory')}<strong className="capitalize">{categoryKeywords[0]}</strong></span>
                     <button
                       onClick={() => setCategoryKeywords(null)}
                       className="font-label-md text-sm font-bold text-primary hover:text-primary-dim underline"
                     >
-                      Clear Category Filter
+                      {t('search.clearCategoryFilter')}
                     </button>
                   </div>
                 )}
@@ -3135,7 +3135,7 @@ export default function App() {
                   <div className="mb-8 bg-surface-container-low rounded-xl p-6 border border-primary-container shadow-sm">
                     <div className="flex items-center gap-2 text-primary font-headline-md font-bold mb-4">
                       <Bot className="h-6 w-6" />
-                      Smart Suggestions — Possible matches
+                      {t('search.smartSuggestions')}
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                       {smartMatches.map(({ report, score }) => {
@@ -3156,7 +3156,7 @@ export default function App() {
                             </div>
                             <div className="flex items-center text-xs font-bold text-primary">
                               <CheckCircle2 className="h-3.5 w-3.5 mr-1" />{" "}
-                              {pct}% AI Match Confidence
+                              {t('search.aiMatchConfidence', { percent: pct })}
                             </div>
                           </div>
                         );
@@ -3202,7 +3202,7 @@ export default function App() {
                             r.type === 'found' ? 'bg-secondary-container text-on-secondary-container' : 'bg-error-container text-on-error-container'
                           }`}>
                             {r.claimed ? <CheckCircle2 className="h-[14px] w-[14px]" /> : r.type === "found" ? <CheckCircle2 className="h-[14px] w-[14px]" /> : <Search className="h-[14px] w-[14px]" />}
-                            {r.claimed ? "CLAIMED" : r.type === "found" ? "Found" : "Lost"}
+                            {r.claimed ? t('search.claimed') : r.type === "found" ? t('search.found') : t('search.lost')}
                           </div>
                           <button
                             onClick={(e) => {
@@ -3255,8 +3255,8 @@ export default function App() {
                     <div className="w-16 h-16 bg-primary-container/30 rounded-full flex items-center justify-center mb-4 border border-primary-container">
                       <Search className="h-8 w-8 text-primary" />
                     </div>
-                    <h3 className="font-headline-md text-lg font-bold text-on-surface mb-2">No items found</h3>
-                    <p className="font-body-md text-on-surface-variant">Try adjusting your search filters or keywords.</p>
+                    <h3 className="font-headline-md text-lg font-bold text-on-surface mb-2">{t('search.noItemsFound')}</h3>
+                    <p className="font-body-md text-on-surface-variant">{t('search.tryAdjustingFilters')}</p>
                   </div>
                 )}
               </div>
@@ -3655,19 +3655,19 @@ export default function App() {
               <div className="pt-8 px-4 md:px-8 pb-32 max-w-5xl mx-auto w-full">
                 <div className="mb-8 flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
                   <div>
-                    <h2 className="font-headline-lg text-3xl font-bold text-on-background mb-2">Alerts & Notifications</h2>
-                    <p className="font-body-md text-on-surface-variant">Stay updated on your reported items and community activity.</p>
+                    <h2 className="font-headline-lg text-3xl font-bold text-on-background mb-2">{t('alerts.pageTitle')}</h2>
+                    <p className="font-body-md text-on-surface-variant">{t('alerts.pageSubtitle')}</p>
                   </div>
                   <div className="hidden sm:flex gap-2">
                     <button 
                       onClick={() => markAllAlertsRead()}
                       className="px-4 py-2 rounded-full border border-outline-variant font-label-md text-sm text-on-surface-variant hover:bg-surface-variant transition-colors"
                     >
-                      Mark all read
+                      {t('alerts.markAllRead')}
                     </button>
                     <button className="px-4 py-2 rounded-full border border-outline-variant font-label-md text-sm text-on-surface-variant hover:bg-surface-variant transition-colors flex items-center gap-1">
                       <Filter className="h-4 w-4" />
-                      Filter
+                      {t('alerts.filter')}
                     </button>
                   </div>
                 </div>
@@ -3683,12 +3683,12 @@ export default function App() {
                       </div>
                       <div className="flex-1">
                         <div className="flex justify-between items-start mb-1">
-                          <h3 className="font-headline-md text-lg text-on-background">Community Safety Alert</h3>
-                          <span className="font-label-md text-xs text-on-surface-variant whitespace-nowrap ml-2">Just now</span>
+                          <h3 className="font-headline-md text-lg text-on-background">{t('alerts.communitySafetyAlert')}</h3>
+                          <span className="font-label-md text-xs text-on-surface-variant whitespace-nowrap ml-2">{t('alerts.justNow')}</span>
                         </div>
-                        <p className="font-body-md text-on-surface mb-3">Increase in reported lost keys in the Downtown Business District. Please ensure your belongings are secure.</p>
+                        <p className="font-body-md text-on-surface mb-3">{t('alerts.safetyAlertText')}</p>
                         <div className="flex items-center gap-2">
-                          <span className="inline-flex items-center px-2 py-1 rounded-md bg-surface-variant text-on-surface-variant font-label-md text-[10px] uppercase tracking-wider">Announcement</span>
+                          <span className="inline-flex items-center px-2 py-1 rounded-md bg-surface-variant text-on-surface-variant font-label-md text-[10px] uppercase tracking-wider">{t('alerts.announcement')}</span>
                         </div>
                       </div>
                     </div>
@@ -3700,12 +3700,12 @@ export default function App() {
                       <Bell className="w-[120px] h-[120px]" />
                     </div>
                     <div>
-                      <h3 className="font-headline-md text-lg text-on-primary mb-1">Unread Alerts</h3>
-                      <p className="font-body-md text-primary-fixed-dim opacity-90">You have new activity</p>
+                      <h3 className="font-headline-md text-lg text-on-primary mb-1">{t('alerts.unreadAlerts')}</h3>
+                      <p className="font-body-md text-primary-fixed-dim opacity-90">{t('alerts.youHaveNewActivity')}</p>
                     </div>
                     <div className="mt-4 flex items-baseline gap-2">
                       <span className="font-headline-lg text-5xl font-bold leading-none">{notifications.filter(n => !n.read).length}</span>
-                      <span className="font-body-md opacity-90">Pending reviews</span>
+                      <span className="font-body-md opacity-90">{t('alerts.pendingReviews')}</span>
                     </div>
                   </div>
 
@@ -3732,10 +3732,10 @@ export default function App() {
                           <div className="flex-1">
                             <div className="flex justify-between items-start mb-1">
                               <h3 className="font-headline-md text-lg text-on-background">
-                                {isMatch ? "Potential Match Found!" : isClaim ? "Item Claimed" : "New Message"}
+                                {isMatch ? t('alerts.potentialMatchFound') : isClaim ? t('alerts.itemClaimed') : t('alerts.newMessage')}
                               </h3>
                               <span className="font-label-md text-xs text-on-surface-variant">
-                                {notif.timestamp ? new Date(notif.timestamp.seconds ? notif.timestamp.seconds * 1000 : notif.timestamp).toLocaleDateString() : 'Recently'}
+                                {notif.timestamp ? new Date(notif.timestamp.seconds ? notif.timestamp.seconds * 1000 : notif.timestamp).toLocaleDateString() : t('alerts.recently')}
                               </span>
                             </div>
                             <p className="font-body-md text-sm text-on-surface mb-3 line-clamp-2">{notif.message}</p>
@@ -3746,8 +3746,8 @@ export default function App() {
                                   <ImageIcon className="h-5 w-5 text-outline" />
                                 </div>
                                 <div>
-                                  <p className="font-label-md text-xs font-bold text-on-surface">Review Match</p>
-                                  <p className="font-label-md text-[10px] text-on-surface-variant">Tap to view details</p>
+                                  <p className="font-label-md text-xs font-bold text-on-surface">{t('alerts.reviewMatch')}</p>
+                                  <p className="font-label-md text-[10px] text-on-surface-variant">{t('alerts.tapToViewDetails')}</p>
                                 </div>
                                 <button className="ml-auto text-primary hover:bg-surface-variant p-2 rounded-full transition-colors">
                                   <ArrowRight className="h-4 w-4" />
@@ -3758,7 +3758,7 @@ export default function App() {
                             {isClaim && (
                               <div className="flex items-center gap-2 mt-2">
                                 <span className="inline-flex items-center px-3 py-1 rounded-full bg-secondary-fixed-dim text-on-secondary-fixed font-label-md text-[11px]">
-                                  <CheckCircle2 className="h-3 w-3 mr-1" /> Closed
+                                  <CheckCircle2 className="h-3 w-3 mr-1" /> {t('alerts.closed')}
                                 </span>
                                 <button onClick={() => { if (notif.itemId) { setSelectedItemId(notif.itemId); setActiveTab("itemDetail"); } }} className="text-secondary hover:underline font-label-md text-sm">{t('search.viewDetails')}</button>
                               </div>
@@ -3774,8 +3774,8 @@ export default function App() {
                       <div className="w-16 h-16 bg-surface-container rounded-full flex items-center justify-center mx-auto mb-4 border border-outline-variant">
                         <Bell className="h-8 w-8 text-outline" />
                       </div>
-                      <h3 className="font-headline-md text-lg font-bold text-on-surface mb-2">You're all caught up</h3>
-                      <p className="font-body-md text-on-surface-variant">There are no new notifications or alerts at this time.</p>
+                      <h3 className="font-headline-md text-lg font-bold text-on-surface mb-2">{t('alerts.youreAllCaughtUp')}</h3>
+                      <p className="font-body-md text-on-surface-variant">{t('alerts.noNewNotifications')}</p>
                     </div>
                   )}
                 </div>
@@ -3783,7 +3783,7 @@ export default function App() {
                 {notifications.length > 0 && (
                   <div className="mt-8 flex justify-center">
                     <button className="px-6 py-2 rounded-full bg-surface-container text-on-surface border border-outline-variant hover:bg-surface-variant transition-colors font-label-md text-sm shadow-sm">
-                      Load Older Alerts
+                      {t('alerts.loadOlderAlerts')}
                     </button>
                   </div>
                 )}
@@ -3830,11 +3830,11 @@ export default function App() {
                                 <Heart className="h-4 w-4" fill="currentColor" />{t('profile.communityMember')}</span>
                               <span className="text-on-surface-variant font-body-md flex items-center gap-1">
                                 <MapPin className="h-4 w-4" />
-                                {profileLocation || "{t('profile.locationNotSet')}"}
+                                {profileLocation || t('profile.locationNotSet')}
                               </span>
                             </div>
                             <p className="mt-4 font-body-md text-on-surface-variant max-w-2xl">
-                              {profileBio || "{t('profile.updateYourProfileToAddABio')}"}
+                              {profileBio || t('profile.updateYourProfileToAddABio')}
                             </p>
                           </div>
                           <button onClick={() => document.getElementById("profName")?.focus()} className="bg-surface-container-high border border-outline-variant text-on-surface hover:bg-surface-variant px-4 py-2 rounded-lg font-label-md text-sm transition-colors flex items-center justify-center gap-2 shadow-sm shrink-0 w-full md:w-auto">
