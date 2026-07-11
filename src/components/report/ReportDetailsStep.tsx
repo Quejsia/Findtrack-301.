@@ -75,7 +75,6 @@ export const ReportDetailsStep: React.FC<Props> = ({
           <div className="space-y-2">
             <label className="block font-label-md font-bold text-on-surface">Description</label>
             <textarea
-              required
               value={reportDesc}
               onChange={(e) => setReportDesc(e.target.value)}
               rows={4}

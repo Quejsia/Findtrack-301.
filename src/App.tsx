@@ -2911,17 +2911,45 @@ export default function App() {
                   <form
                     onSubmit={async (e) => {
                       e.preventDefault();
-                      if (reportStep < 3) {
-                        setReportStep(reportStep + 1);
+                      
+                      // Custom Step Validation with Toast Messages (fixes silent blocks inside iframes)
+                      if (reportStep === 1) {
+                        if (!reportTitle.trim()) {
+                          triggerToast("❌ Item title is required.", "error");
+                          return;
+                        }
+                        if (!reportLocation.trim()) {
+                          triggerToast(reportType === "lost" ? "❌ Location lost is required." : "❌ Location found is required.", "error");
+                          return;
+                        }
+                        setReportStep(2);
                         return;
                       }
-                      await handleReportSubmit(e);
-                      setReportStep(1);
+                      
+                      if (reportStep === 2) {
+                        if (!reportDesc.trim()) {
+                          triggerToast("❌ Detailed description is required.", "error");
+                          return;
+                        }
+                        setReportStep(3);
+                        return;
+                      }
+                      
+                      if (reportStep === 3) {
+                        if (!reportSecurityQuestion.trim()) {
+                          triggerToast("❌ Verification question is required.", "error");
+                          return;
+                        }
+                        await handleReportSubmit(e);
+                        setReportStep(1);
+                        return;
+                      }
                     }}
                     className="p-6 md:p-8 space-y-6"
                   >
                     {/* STEP 1: Basic Info */}
-                    <div className={`space-y-6 ${reportStep === 1 ? 'block' : 'hidden'}`}>
+                    {reportStep === 1 && (
+                    <div className="space-y-6">
                       <div className="space-y-3">
                         <label className="block font-label-md font-bold text-on-surface">{t('report.iAmReportingA')}</label>
                         <div className="grid grid-cols-2 gap-4">
@@ -2937,23 +2965,22 @@ export default function App() {
                           </label>
                         </div>
                       </div>
-
                       <div className="space-y-2">
                         <label className="block font-label-md font-bold text-on-surface">{t('report.itemTitle')}</label>
-                        <input type="text" required value={reportTitle} onChange={(e) => setReportTitle(e.target.value)} placeholder={t('report.itemTitlePlaceholder')} className="w-full bg-surface-variant border-none rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary outline-none" />
+                        <input type="text" value={reportTitle} onChange={(e) => setReportTitle(e.target.value)} placeholder={t('report.itemTitlePlaceholder')} className="w-full bg-surface-variant border-none rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary outline-none" />
                       </div>
-
                       <div className="space-y-2">
                         <label className="block font-label-md font-bold text-on-surface">{reportType === "lost" ? t('report.locationLost') : t('report.locationFound')}</label>
                         <div className="relative">
-                          <input type="text" required value={reportLocation} onChange={(e) => setReportLocation(e.target.value)} placeholder={t('report.locationPlaceholder')} className="w-full bg-surface-variant border-none rounded-xl pr-12 pl-4 py-3 focus:ring-2 focus:ring-primary outline-none" />
+                          <input type="text" value={reportLocation} onChange={(e) => setReportLocation(e.target.value)} placeholder={t('report.locationPlaceholder')} className="w-full bg-surface-variant border-none rounded-xl pr-12 pl-4 py-3 focus:ring-2 focus:ring-primary outline-none" />
                           <MapPin className="absolute right-4 top-1/2 -translate-y-1/2 h-5 w-5 text-outline pointer-events-none" />
                         </div>
                       </div>
                     </div>
-
+                    )}
                     {/* STEP 2: Details */}
-                    <div className={`space-y-6 ${reportStep === 2 ? 'block' : 'hidden'}`}>
+                    {reportStep === 2 && (
+                    <div className="space-y-6">
                       <ReportDetailsStep 
                         reportType={reportType}
                         reportCategory={reportCategory}
@@ -2969,9 +2996,10 @@ export default function App() {
                         setReportImageFile={setReportImageFile}
                       />
                     </div>
-
+                    )}
                     {/* STEP 3: Verification */}
-                    <div className={`space-y-6 ${reportStep === 3 ? 'block' : 'hidden'}`}>
+                    {reportStep === 3 && (
+                    <div className="space-y-6">
                       <ReportVerificationStep 
                         reportSecurityQuestion={reportSecurityQuestion}
                         setReportSecurityQuestion={setReportSecurityQuestion}
@@ -2980,6 +3008,7 @@ export default function App() {
                         reportCategory={reportCategory}
                       />
                     </div>
+                    )}
 
                     {/* Footer Actions */}
                     <div className="pt-6 border-t border-outline-variant flex justify-between items-center mt-8">
@@ -3500,6 +3529,8 @@ export default function App() {
 
                           <ClaimSubmissionForm
                             itemId={r.id}
+                            itemTitle={r.title}
+                            imageUrl={r.imageUrl || r.image || ""}
                             finderId={r.userId}
                             securityQuestion={r.securityQuestion || 'Describe this item in enough detail to prove ownership (e.g. scratches, contents, background).'}
                             onCancel={() => setActiveTab("itemDetail")}

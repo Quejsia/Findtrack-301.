@@ -44,7 +44,6 @@ export const ReportVerificationStep: React.FC<Props> = ({
             <label className="block font-label-md font-bold text-on-surface">Custom Verification Question</label>
             <input
               type="text"
-              required
               value={reportSecurityQuestion}
               onChange={(e) => setReportSecurityQuestion(e.target.value)}
               placeholder='e.g., "What is the color of the strap at the back?"'

@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import { ShieldCheck, Info, ArrowRight, CheckCircle2, Lightbulb } from 'lucide-react';
 import { db, auth } from '../../firebase';
-import { setDoc, doc } from 'firebase/firestore';
+import { setDoc, doc, serverTimestamp } from 'firebase/firestore';
 
 interface Props {
   itemId: string;
+  itemTitle: string;
+  imageUrl?: string;
   finderId: string;
   securityQuestion: string;
   onCancel: () => void;
@@ -13,6 +15,8 @@ interface Props {
 
 export const ClaimSubmissionForm: React.FC<Props> = ({
   itemId,
+  itemTitle,
+  imageUrl,
   finderId,
   securityQuestion,
   onCancel,
@@ -30,16 +34,23 @@ export const ClaimSubmissionForm: React.FC<Props> = ({
     
     setIsSubmitting(true);
     try {
-      const claimId = "claim_" + Date.now();
+      const claimId = "claim_" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
       await setDoc(doc(db, "claims", claimId), {
+        id: claimId,
         itemId,
-        finderId,
+        itemTitle,
+        imageUrl: imageUrl || "",
         claimerId: auth.currentUser.uid,
+        claimerName: auth.currentUser.displayName || 'Representative Name',
+        claimerEmail: auth.currentUser.email || '',
+        claimerContact: auth.currentUser.phoneNumber || '',
+        finderId,
         securityQuestion,
         providedAnswer: answer,
         status: "pending",
         isReadByFinder: false,
-        createdAt: new Date(),
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
       });
       setIsSuccess(true);
     } catch (error) {
