@@ -4255,7 +4255,7 @@ export default function App() {
                         <Smartphone className="text-on-primary-container h-8 w-8" />
                       </div>
                       <span className="bg-surface-variant text-on-surface-variant font-label-md text-xs px-3 py-1 rounded-full border border-outline-variant/20">
-                        {items.filter(i => ["phone", "laptop", "tablet", "charger", "headphone", "earphone", "computer", "iphone", "samsung", "ipad", "macbook"].some(kw => i.title.toLowerCase().includes(kw) || i.desc?.toLowerCase().includes(kw))).length} {t('generated.string_292', 'Active')}
+                        {items.filter(i => ["phone", "laptop", "tablet", "charger", "headphone", "earphone", "computer", "iphone", "samsung", "ipad", "macbook"].some(kw => (i?.title || "").toLowerCase().includes(kw) || (i?.desc || "").toLowerCase().includes(kw))).length} {t('generated.string_292', 'Active')}
                       </span>
                     </div>
                     <div className="relative z-10 mt-auto">
@@ -4280,7 +4280,7 @@ export default function App() {
                         <Package className="text-on-tertiary-container h-6 w-6" />
                       </div>
                       <span className="bg-surface-variant text-on-surface-variant font-label-md text-[10px] px-2 py-1 rounded-full">
-                        {items.filter(i => ["bag", "backpack", "purse", "wallet", "luggage", "suitcase", "handbag"].some(kw => i.title.toLowerCase().includes(kw) || i.desc?.toLowerCase().includes(kw))).length} {t('generated.string_292', 'Active')}
+                        {items.filter(i => ["bag", "backpack", "purse", "wallet", "luggage", "suitcase", "handbag"].some(kw => (i?.title || "").toLowerCase().includes(kw) || (i?.desc || "").toLowerCase().includes(kw))).length} {t('generated.string_292', 'Active')}
                       </span>
                     </div>
                     <div className="relative z-10 mt-auto">
@@ -4305,7 +4305,7 @@ export default function App() {
                         <Heart className="text-error h-6 w-6" fill="currentColor" />
                       </div>
                       <span className="bg-surface-variant text-on-surface-variant font-label-md text-[10px] px-2 py-1 rounded-full">
-                        {items.filter(i => ["dog", "cat", "pet", "bird", "animal", "puppy", "kitten", "collar"].some(kw => i.title.toLowerCase().includes(kw) || i.desc?.toLowerCase().includes(kw))).length} {t('generated.string_292', 'Active')}
+                        {items.filter(i => ["dog", "cat", "pet", "bird", "animal", "puppy", "kitten", "collar"].some(kw => (i?.title || "").toLowerCase().includes(kw) || (i?.desc || "").toLowerCase().includes(kw))).length} {t('generated.string_292', 'Active')}
                       </span>
                     </div>
                     <div className="relative z-10 mt-auto">
@@ -4328,7 +4328,7 @@ export default function App() {
                         <FileText className="text-on-secondary-container h-8 w-8" />
                       </div>
                       <span className="bg-surface-variant text-on-surface-variant font-label-md text-[10px] px-2 py-1 rounded-full">
-                        {items.filter(i => ["document", "id", "passport", "license", "card", "paper", "folder"].some(kw => i.title.toLowerCase().includes(kw) || i.desc?.toLowerCase().includes(kw))).length} {t('generated.string_292', 'Active')}
+                        {items.filter(i => ["document", "id", "passport", "license", "card", "paper", "folder"].some(kw => (i?.title || "").toLowerCase().includes(kw) || (i?.desc || "").toLowerCase().includes(kw))).length} {t('generated.string_292', 'Active')}
                       </span>
                     </div>
                     <div className="relative z-10 mt-auto">
@@ -4353,7 +4353,7 @@ export default function App() {
                         <Tag className="text-on-surface h-6 w-6" />
                       </div>
                       <span className="bg-surface-variant text-on-surface-variant font-label-md text-[10px] px-2 py-1 rounded-full">
-                        {items.filter(i => ["jacket", "shirt", "pants", "uniform", "shoes", "hat", "scarf", "coat", "clothing"].some(kw => i.title.toLowerCase().includes(kw) || i.desc?.toLowerCase().includes(kw))).length} {t('generated.string_292', 'Active')}
+                        {items.filter(i => ["jacket", "shirt", "pants", "uniform", "shoes", "hat", "scarf", "coat", "clothing"].some(kw => (i?.title || "").toLowerCase().includes(kw) || (i?.desc || "").toLowerCase().includes(kw))).length} {t('generated.string_292', 'Active')}
                       </span>
                     </div>
                     <div className="relative z-10 mt-auto">
@@ -4374,7 +4374,7 @@ export default function App() {
                         <Clock className="text-on-surface h-6 w-6" />
                       </div>
                       <span className="bg-surface-variant text-on-surface-variant font-label-md text-[10px] px-2 py-1 rounded-full">
-                        {items.filter(i => ["ring", "necklace", "bracelet", "watch", "earring", "jewelry", "diamond", "gold", "silver"].some(kw => i.title.toLowerCase().includes(kw) || i.desc?.toLowerCase().includes(kw))).length} {t('generated.string_292', 'Active')}
+                        {items.filter(i => ["ring", "necklace", "bracelet", "watch", "earring", "jewelry", "diamond", "gold", "silver"].some(kw => (i?.title || "").toLowerCase().includes(kw) || (i?.desc || "").toLowerCase().includes(kw))).length} {t('generated.string_292', 'Active')}
                       </span>
                     </div>
                     <div className="relative z-10 mt-auto">
@@ -4395,7 +4395,7 @@ export default function App() {
                         <Key className="text-on-surface h-6 w-6" />
                       </div>
                       <span className="bg-surface-variant text-on-surface-variant font-label-md text-[10px] px-2 py-1 rounded-full">
-                        {items.filter(i => ["key", "keychain", "fob", "car key"].some(kw => i.title.toLowerCase().includes(kw) || i.desc?.toLowerCase().includes(kw))).length} {t('generated.string_292', 'Active')}
+                        {items.filter(i => ["key", "keychain", "fob", "car key"].some(kw => (i?.title || "").toLowerCase().includes(kw) || (i?.desc || "").toLowerCase().includes(kw))).length} {t('generated.string_292', 'Active')}
                       </span>
                     </div>
                     <div className="relative z-10 mt-auto">
@@ -5236,9 +5236,9 @@ function computeMatchScore(a: any, b: any) {
   if (a.claimed || b.claimed) return 0;
 
   const textA =
-    `${a.title} ${a.desc || a.description || ""} ${a.location}`.toLowerCase();
+    `${a?.title || ""} ${a?.desc || a?.description || ""} ${a?.location || ""}`.toLowerCase();
   const textB =
-    `${b.title} ${b.desc || b.description || ""} ${b.location}`.toLowerCase();
+    `${b?.title || ""} ${b?.desc || b?.description || ""} ${b?.location || ""}`.toLowerCase();
 
   const stopWords = new Set([
     "a",
