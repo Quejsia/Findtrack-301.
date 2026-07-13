@@ -174,7 +174,12 @@ export default function App() {
 
   // App alerts, loading states & real-time sync list
   const [items, setItems] = useState<ItemReport[]>([]);
+  const [newMatchesNotif, setNewMatchesNotif] = useState<boolean>(true);
+  const [communityAlertsNotif, setCommunityAlertsNotif] = useState<boolean>(true);
   const incomingClaims = useIncomingClaims(auth.currentUser?.uid);
+  const activeIncomingClaims = useMemo(() => {
+    return newMatchesNotif ? incomingClaims : [];
+  }, [newMatchesNotif, incomingClaims]);
   const myClaims = useMyClaims(auth.currentUser?.uid);
   const [toasts, setToasts] = useState<
     { id: string; msg: string; type: "success" | "error" }[]
@@ -255,12 +260,12 @@ export default function App() {
   const [profileName, setProfileName] = useState("Student");
   const [profileLocation, setProfileLocation] = useState("");
   const [profileBio, setProfileBio] = useState("");
-  
+
   const [selectedReviewClaim, setSelectedReviewClaim] = useState<Claim | null>(null);
 
   const markAlertRead = (id: string) => markClaimAsRead(id);
   const markAllAlertsRead = () => {
-    incomingClaims.filter(c => !c.isReadByFinder).forEach(c => markClaimAsRead(c.id));
+    activeIncomingClaims.filter(c => !c.isReadByFinder).forEach(c => markClaimAsRead(c.id));
   };
 
   const [profileEmail, setProfileEmail] = useState("");
@@ -345,6 +350,8 @@ export default function App() {
               );
             }
             if (parsed.contact) setProfileContact(parsed.contact);
+            if (parsed.location) setProfileLocation(parsed.location);
+            if (parsed.bio) setProfileBio(parsed.bio);
             if (parsed.avatar && !parsed.avatar.includes("guest")) {
               setProfileAvatar(parsed.avatar);
             }
@@ -358,6 +365,37 @@ export default function App() {
         } catch (e) {
           console.error(e);
         }
+
+        // Fetch/sync user settings from Firestore database
+        const userDocRef = doc(db, "users", currentUser.uid);
+        getDoc(userDocRef).then((docSnap) => {
+          if (docSnap.exists()) {
+            const data = docSnap.data();
+            if (data.name) setProfileName(data.name);
+            if (data.contact) setProfileContact(data.contact);
+            if (data.location) setProfileLocation(data.location);
+            if (data.bio) setProfileBio(data.bio);
+            if (data.avatar) setProfileAvatar(data.avatar);
+            if (data.newMatchesNotif !== undefined) setNewMatchesNotif(data.newMatchesNotif);
+            if (data.communityAlertsNotif !== undefined) setCommunityAlertsNotif(data.communityAlertsNotif);
+          } else {
+            // First time login - create database record
+            const initialData = {
+              name: currentUser.displayName || currentUser.email?.split("@")[0] || "User",
+              email: currentUser.email || "",
+              contact: "",
+              location: "",
+              bio: "",
+              avatar: "https://api.dicebear.com/8.x/avataaars/svg?seed=default",
+              newMatchesNotif: true,
+              communityAlertsNotif: true,
+              createdAt: new Date().toISOString()
+            };
+            setDoc(userDocRef, initialData).catch(console.error);
+          }
+        }).catch((err) => {
+          console.error("Failed to fetch user settings from Firestore:", err);
+        });
 
         // Block unverified email users from accessing protected views (dashboard)
         const path = window.location.pathname;
@@ -716,7 +754,7 @@ export default function App() {
   };
 
   // Save profile modifications
-  const handleSaveProfile = () => {
+  const handleSaveProfile = async () => {
     if (profileName === "Guest") {
       setShowGuestModal(true);
       return;
@@ -727,9 +765,28 @@ export default function App() {
       email: profileEmail,
       contact: profileContact,
       avatar: profileAvatar,
+      location: profileLocation,
+      bio: profileBio,
     };
     localStorage.setItem("userProfile", JSON.stringify(updated));
-    triggerToast("✅ Profile saved successfully!", "success");
+
+    if (auth.currentUser) {
+      try {
+        const userDocRef = doc(db, "users", auth.currentUser.uid);
+        await setDoc(userDocRef, {
+          ...updated,
+          newMatchesNotif,
+          communityAlertsNotif,
+          updatedAt: new Date().toISOString()
+        }, { merge: true });
+        triggerToast("✅ Profile saved successfully!", "success");
+      } catch (err) {
+        console.error("Failed to save profile in database:", err);
+        triggerToast("❌ Failed to save changes to database", "error");
+      }
+    } else {
+      triggerToast("✅ Profile saved successfully!", "success");
+    }
   };
 
   // Image upload reading state
@@ -1524,27 +1581,6 @@ export default function App() {
               <p className="font-body-lg text-lg text-on-surface-variant">Welcome back to the community.</p>
             </div>
 
-            {(!["localhost", "127.0.0.1"].includes(window.location.hostname) &&
-              !window.location.hostname.endsWith(".run.app") &&
-              !window.location.hostname.endsWith(".web.app") &&
-              !window.location.hostname.endsWith(".firebaseapp.com")) && (
-              <div 
-                onClick={() => {
-                  setRefererBlockedDomain(window.location.hostname);
-                  setShowRefererModal(true);
-                }}
-                className="mb-6 p-3 bg-amber-50 hover:bg-amber-100 border border-amber-200 rounded-xl flex items-start gap-2.5 cursor-pointer transition-colors text-left text-xs text-amber-900 shadow-sm"
-              >
-                <span className="text-sm shrink-0">⚠️</span>
-                <div>
-                  <p className="font-semibold mb-0.5">Custom Domain Configuration</p>
-                  <p className="text-amber-800 leading-normal">
-                    Using a custom domain like <span className="font-mono bg-amber-100/50 px-1 py-0.5 rounded">{window.location.hostname}</span>? Ensure it is authorized in Firebase. <strong className="underline font-semibold block mt-1">View authorization steps →</strong>
-                  </p>
-                </div>
-              </div>
-            )}
-
             {/* Form */}
             <form onSubmit={handleLoginSubmit} name="login" className="space-y-6">
               {/* Email Field */}
@@ -1654,27 +1690,6 @@ export default function App() {
                 </button>
               </p>
             </div>
-
-            {(!["localhost", "127.0.0.1"].includes(window.location.hostname) &&
-              !window.location.hostname.endsWith(".run.app") &&
-              !window.location.hostname.endsWith(".web.app") &&
-              !window.location.hostname.endsWith(".firebaseapp.com")) && (
-              <div 
-                onClick={() => {
-                  setRefererBlockedDomain(window.location.hostname);
-                  setShowRefererModal(true);
-                }}
-                className="mb-4 p-3 bg-amber-50 hover:bg-amber-100 border border-amber-200 rounded-xl flex items-start gap-2.5 cursor-pointer transition-colors text-left text-xs text-amber-900 shadow-sm"
-              >
-                <span className="text-sm shrink-0">⚠️</span>
-                <div>
-                  <p className="font-semibold mb-0.5">Custom Domain Configuration</p>
-                  <p className="text-amber-800 leading-normal">
-                    Using a custom domain like <span className="font-mono bg-amber-100/50 px-1 py-0.5 rounded">{window.location.hostname}</span>? Ensure it is authorized in Firebase. <strong className="underline font-semibold block mt-1">View authorization steps →</strong>
-                  </p>
-                </div>
-              </div>
-            )}
 
             {/* Form */}
             <form onSubmit={handleSignupSubmit} name="signup" className="space-y-4">
@@ -2764,7 +2779,7 @@ export default function App() {
             </nav>
 
             {/* Footer Items */}
-            <div className="p-4 px-6 border-t border-white/10 shrink-0 mt-auto">
+            <div className="p-4 px-6 border-t border-white/10 shrink-0 mt-auto hidden md:block">
               {profileName === "Guest" ? (
                 <button 
                   onClick={() => handleGuestBrowse()}
@@ -2839,7 +2854,7 @@ export default function App() {
                   className="p-2 text-on-surface-variant hover:bg-surface-container rounded-full transition-colors relative"
                 >
                   <Bell className="h-6 w-6" />
-                  {incomingClaims.filter(c => !c.isReadByFinder).length > 0 && <span className="absolute top-1 right-1 w-2 h-2 bg-error rounded-full"></span>}
+                  {activeIncomingClaims.filter(c => !c.isReadByFinder).length > 0 && <span className="absolute top-1 right-1 w-2 h-2 bg-error rounded-full"></span>}
                 </button>
                 <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold cursor-pointer">
                   {profileName === "Guest" ? "G" : profileName.charAt(0).toUpperCase()}
@@ -3668,27 +3683,29 @@ export default function App() {
                 {/* Bento Grid Layout for Alerts */}
                 <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
                   {/* High Priority Alert - Spans full width on mobile, 8 cols on desktop */}
-                  <div className="md:col-span-8 bg-surface-container-lowest rounded-xl p-6 shadow-[0_2px_12px_rgba(0,0,0,0.04)] border border-outline-variant/30 hover:shadow-md transition-shadow relative overflow-hidden group cursor-pointer">
-                    <div className="absolute top-0 left-0 w-1 h-full bg-error-container"></div>
-                    <div className="flex gap-4">
-                      <div className="w-12 h-12 rounded-full bg-error-container/20 flex items-center justify-center flex-shrink-0 text-error-container">
-                        <AlertTriangle className="h-6 w-6" />
-                      </div>
-                      <div className="flex-1">
-                        <div className="flex justify-between items-start mb-1">
-                          <h3 className="font-headline-md text-lg text-on-background">{t('alerts.communitySafetyAlert')}</h3>
-                          <span className="font-label-md text-xs text-on-surface-variant whitespace-nowrap ml-2">{t('alerts.justNow')}</span>
+                  {communityAlertsNotif && (
+                    <div className="md:col-span-8 bg-surface-container-lowest rounded-xl p-6 shadow-[0_2px_12px_rgba(0,0,0,0.04)] border border-outline-variant/30 hover:shadow-md transition-shadow relative overflow-hidden group cursor-pointer">
+                      <div className="absolute top-0 left-0 w-1 h-full bg-error-container"></div>
+                      <div className="flex gap-4">
+                        <div className="w-12 h-12 rounded-full bg-error-container/20 flex items-center justify-center flex-shrink-0 text-error-container">
+                          <AlertTriangle className="h-6 w-6" />
                         </div>
-                        <p className="font-body-md text-on-surface mb-3">{t('alerts.safetyAlertText')}</p>
-                        <div className="flex items-center gap-2">
-                          <span className="inline-flex items-center px-2 py-1 rounded-md bg-surface-variant text-on-surface-variant font-label-md text-[10px] uppercase tracking-wider">{t('alerts.announcement')}</span>
+                        <div className="flex-1">
+                          <div className="flex justify-between items-start mb-1">
+                            <h3 className="font-headline-md text-lg text-on-background">{t('alerts.communitySafetyAlert')}</h3>
+                            <span className="font-label-md text-xs text-on-surface-variant whitespace-nowrap ml-2">{t('alerts.justNow')}</span>
+                          </div>
+                          <p className="font-body-md text-on-surface mb-3">{t('alerts.safetyAlertText')}</p>
+                          <div className="flex items-center gap-2">
+                            <span className="inline-flex items-center px-2 py-1 rounded-md bg-surface-variant text-on-surface-variant font-label-md text-[10px] uppercase tracking-wider">{t('alerts.announcement')}</span>
+                          </div>
                         </div>
                       </div>
                     </div>
-                  </div>
+                  )}
 
                   {/* Quick Stat / Summary Card */}
-                  <div className="md:col-span-4 bg-primary text-on-primary rounded-xl p-6 shadow-sm flex flex-col justify-between relative overflow-hidden">
+                  <div className={`${communityAlertsNotif ? "md:col-span-4" : "md:col-span-12"} bg-primary text-on-primary rounded-xl p-6 shadow-sm flex flex-col justify-between relative overflow-hidden`}>
                     <div className="absolute -right-4 -top-4 opacity-10">
                       <Bell className="w-[120px] h-[120px]" />
                     </div>
@@ -3697,12 +3714,12 @@ export default function App() {
                       <p className="font-body-md text-primary-fixed-dim opacity-90">{t('alerts.youHaveNewActivity')}</p>
                     </div>
                     <div className="mt-4 flex items-baseline gap-2">
-                      <span className="font-headline-lg text-5xl font-bold leading-none">{incomingClaims.filter(n => !n.isReadByFinder).length}</span>
+                      <span className="font-headline-lg text-5xl font-bold leading-none">{activeIncomingClaims.filter(n => !n.isReadByFinder).length}</span>
                       <span className="font-body-md opacity-90">{t('alerts.pendingReviews')}</span>
                     </div>
                   </div>
 
-                  {incomingClaims.map((claim) => {
+                  {activeIncomingClaims.map((claim) => {
                     const isUnread = !claim.isReadByFinder;
                     const itemMatch = items.find(i => i.id === claim.itemId);
                     
@@ -3749,7 +3766,7 @@ export default function App() {
                     );
                   })}
                   
-                  {incomingClaims.length === 0 && (
+                  {activeIncomingClaims.length === 0 && (
                     <div className="col-span-full py-16 text-center border-2 border-dashed border-outline-variant rounded-2xl bg-surface-container-lowest">
                       <div className="w-16 h-16 bg-surface-container rounded-full flex items-center justify-center mx-auto mb-4 border border-outline-variant">
                         <Bell className="h-8 w-8 text-outline" />
@@ -3760,7 +3777,7 @@ export default function App() {
                   )}
                 </div>
                 
-                {incomingClaims.length > 0 && (
+                {activeIncomingClaims.length > 0 && (
                   <div className="mt-8 flex justify-center">
                     <button className="px-6 py-2 rounded-full bg-surface-container text-on-surface border border-outline-variant hover:bg-surface-variant transition-colors font-label-md text-sm shadow-sm">
                       {t('alerts.loadOlderAlerts')}
@@ -3852,7 +3869,7 @@ export default function App() {
                   {/* Personal Information Form */}
                   <div className="col-span-1 lg:col-span-8 bg-surface-container-lowest rounded-xl shadow-sm border border-surface-variant p-6 md:p-8">
                     <h3 className="font-headline-md text-xl text-on-surface mb-6 border-b border-surface-variant pb-4">{t('profile.personalInformation')}</h3>
-                    <form className="space-y-6" onSubmit={(e) => { e.preventDefault(); triggerToast("Profile updated successfully", "success"); }}>
+                    <form className="space-y-6" onSubmit={(e) => { e.preventDefault(); handleSaveProfile(); }}>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         {/* Input Group */}
                         <div>
@@ -3963,7 +3980,26 @@ export default function App() {
                               <span className="font-body-md text-xs text-on-surface-variant">{t('profile.getNotifiedWhenAFoundItemMatchesYourReport')}</span>
                             </div>
                             <div className="relative">
-                              <input defaultChecked className="sr-only peer" type="checkbox" />
+                              <input 
+                                type="checkbox"
+                                checked={newMatchesNotif}
+                                onChange={async (e) => {
+                                  const newVal = e.target.checked;
+                                  setNewMatchesNotif(newVal);
+                                  if (auth.currentUser) {
+                                    try {
+                                      await setDoc(doc(db, "users", auth.currentUser.uid), {
+                                        newMatchesNotif: newVal
+                                      }, { merge: true });
+                                      triggerToast("🔔 Preference updated", "success");
+                                    } catch (err) {
+                                      console.error(err);
+                                      triggerToast("❌ Failed to update preference", "error");
+                                    }
+                                  }
+                                }}
+                                className="sr-only peer" 
+                              />
                               <div className="w-11 h-6 bg-surface-variant peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-primary rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
                             </div>
                           </label>
@@ -3973,7 +4009,26 @@ export default function App() {
                               <span className="font-body-md text-xs text-on-surface-variant">{t('profile.importantAlertsInYourPrimaryLocation')}</span>
                             </div>
                             <div className="relative">
-                              <input defaultChecked className="sr-only peer" type="checkbox" />
+                              <input 
+                                type="checkbox"
+                                checked={communityAlertsNotif}
+                                onChange={async (e) => {
+                                  const newVal = e.target.checked;
+                                  setCommunityAlertsNotif(newVal);
+                                  if (auth.currentUser) {
+                                    try {
+                                      await setDoc(doc(db, "users", auth.currentUser.uid), {
+                                        communityAlertsNotif: newVal
+                                      }, { merge: true });
+                                      triggerToast("🔔 Preference updated", "success");
+                                    } catch (err) {
+                                      console.error(err);
+                                      triggerToast("❌ Failed to update preference", "error");
+                                    }
+                                  }
+                                }}
+                                className="sr-only peer" 
+                              />
                               <div className="w-11 h-6 bg-surface-variant peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-primary rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
                             </div>
                           </label>

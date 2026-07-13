@@ -251,5 +251,11 @@ service cloud.firestore {
         && isValidMessage(incoming())
         && incoming().createdAt == request.time;
     }
+
+    // --- Users Collection Rules ---
+    match /users/{userId} {
+      allow read: if isSignedIn();
+      allow write, update, delete: if isSignedIn() && request.auth.uid == userId;
+    }
   }
 }
