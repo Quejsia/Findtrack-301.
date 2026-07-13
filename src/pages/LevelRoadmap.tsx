@@ -438,10 +438,29 @@ export const LevelRoadmap: React.FC<LevelRoadmapProps> = ({
                       <span className="font-mono text-sm font-bold text-on-surface-variant w-4">
                         {idx + 1}
                       </span>
-                      <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold shrink-0 ${
+                      <div className={`w-8 h-8 rounded-full overflow-hidden flex items-center justify-center text-xs font-bold shrink-0 ${
                         user.isCurrentUser ? "bg-primary text-on-primary" : "bg-surface-variant text-on-surface-variant"
                       }`}>
-                        {user.avatar}
+                        {user.avatar && (user.avatar.startsWith("http") || user.avatar.startsWith("/")) ? (
+                          <img 
+                            src={user.avatar} 
+                            alt={user.name} 
+                            referrerPolicy="no-referrer"
+                            className="w-full h-full object-cover"
+                            onError={(e) => {
+                              // Fall back gracefully to the first letter if loading fails
+                              e.currentTarget.style.display = 'none';
+                              const parent = e.currentTarget.parentElement;
+                              if (parent) {
+                                const fallbackSpan = document.createElement('span');
+                                fallbackSpan.textContent = user.name ? user.name.charAt(0).toUpperCase() : "U";
+                                parent.appendChild(fallbackSpan);
+                              }
+                            }}
+                          />
+                        ) : (
+                          <span>{user.avatar || (user.name ? user.name.charAt(0).toUpperCase() : "U")}</span>
+                        )}
                       </div>
                       <div className="min-w-0">
                         <p className="font-headline-sm text-sm text-on-surface truncate">

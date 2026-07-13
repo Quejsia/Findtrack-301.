@@ -3824,7 +3824,25 @@ export default function App() {
                       {/* Avatar Container with 'Level' Ring */}
                       <div className="relative group cursor-pointer shrink-0">
                         <div className="w-32 h-32 md:w-40 md:h-40 rounded-full border-4 border-tertiary-container shadow-md overflow-hidden relative bg-surface-variant flex items-center justify-center text-4xl font-bold text-on-surface-variant">
-                          {profileName.charAt(0).toUpperCase()}
+                          {profileAvatar && (profileAvatar.startsWith("http") || profileAvatar.startsWith("/")) ? (
+                            <img 
+                              src={profileAvatar} 
+                              alt={profileName} 
+                              referrerPolicy="no-referrer"
+                              className="w-full h-full object-cover"
+                              onError={(e) => {
+                                e.currentTarget.style.display = 'none';
+                                const fallback = document.getElementById("profile-avatar-fallback");
+                                if (fallback) fallback.style.display = 'flex';
+                              }}
+                            />
+                          ) : null}
+                          <span 
+                            id="profile-avatar-fallback"
+                            style={{ display: profileAvatar && (profileAvatar.startsWith("http") || profileAvatar.startsWith("/")) ? 'none' : 'flex' }}
+                          >
+                            {profileName.charAt(0).toUpperCase()}
+                          </span>
                           <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                             <Camera className="h-8 w-8 text-white" />
                           </div>
@@ -4425,7 +4443,7 @@ export default function App() {
                 {/* Page Header */}
                 <div className="mb-12">
                   <h2 className="font-headline-lg text-4xl font-bold text-primary mb-2">{t('sidebar.categories', 'Browse Categories')}</h2>
-                  <p className="font-body-lg text-on-surface-variant max-w-2xl">{t('generated.string_291', "Find what you're looking for by exploring our organized categories. We've classified items to help you navigate through reports efficiently.")}</p>
+                  <p className="font-body-lg text-on-surface-variant max-w-2xl">{t('categories.desc', "Find what you're looking for by exploring our organized categories. We've classified items to help you navigate through reports efficiently.")}</p>
                 </div>
                 
                 {/* Bento Grid for Categories */}
@@ -4446,12 +4464,12 @@ export default function App() {
                         <Smartphone className="text-on-primary-container h-8 w-8" />
                       </div>
                       <span className="bg-surface-variant text-on-surface-variant font-label-md text-xs px-3 py-1 rounded-full border border-outline-variant/20">
-                        {items.filter(i => ["phone", "laptop", "tablet", "charger", "headphone", "earphone", "computer", "iphone", "samsung", "ipad", "macbook"].some(kw => (i?.title || "").toLowerCase().includes(kw) || (i?.desc || "").toLowerCase().includes(kw))).length} {t('generated.string_292', 'Active')}
+                        {items.filter(i => ["phone", "laptop", "tablet", "charger", "headphone", "earphone", "computer", "iphone", "samsung", "ipad", "macbook"].some(kw => (i?.title || "").toLowerCase().includes(kw) || (i?.desc || "").toLowerCase().includes(kw))).length} {t('categories.active', 'Active')}
                       </span>
                     </div>
                     <div className="relative z-10 mt-auto">
-                      <h3 className="font-headline-md text-3xl font-bold text-primary mb-2 group-hover:text-primary-dim transition-colors">{t('generated.string_293', 'Electronics')}</h3>
-                      <p className="font-body-md text-base text-on-surface-variant max-w-sm">{t('generated.string_294', 'Phones, laptops, tablets, and other digital devices reported lost or found recently.')}</p>
+                      <h3 className="font-headline-md text-3xl font-bold text-primary mb-2 group-hover:text-primary-dim transition-colors">{t('categories.electronics', 'Electronics')}</h3>
+                      <p className="font-body-md text-base text-on-surface-variant max-w-sm">{t('categories.electronics_desc', 'Phones, laptops, tablets, and other digital devices reported lost or found recently.')}</p>
                     </div>
                   </div>
 
@@ -4471,12 +4489,12 @@ export default function App() {
                         <Package className="text-on-tertiary-container h-6 w-6" />
                       </div>
                       <span className="bg-surface-variant text-on-surface-variant font-label-md text-[10px] px-2 py-1 rounded-full">
-                        {items.filter(i => ["bag", "backpack", "purse", "wallet", "luggage", "suitcase", "handbag"].some(kw => (i?.title || "").toLowerCase().includes(kw) || (i?.desc || "").toLowerCase().includes(kw))).length} {t('generated.string_292', 'Active')}
+                        {items.filter(i => ["bag", "backpack", "purse", "wallet", "luggage", "suitcase", "handbag"].some(kw => (i?.title || "").toLowerCase().includes(kw) || (i?.desc || "").toLowerCase().includes(kw))).length} {t('categories.active', 'Active')}
                       </span>
                     </div>
                     <div className="relative z-10 mt-auto">
-                      <h3 className="font-body-lg text-lg font-bold text-on-surface mb-1 group-hover:text-tertiary transition-colors">{t('generated.string_295', 'Bags & Luggage')}</h3>
-                      <p className="font-body-md text-sm text-on-surface-variant line-clamp-2">{t('generated.string_296', 'Backpacks, purses, suitcases and other carry-ons.')}</p>
+                      <h3 className="font-body-lg text-lg font-bold text-on-surface mb-1 group-hover:text-tertiary transition-colors">{t('categories.bags', 'Bags & Luggage')}</h3>
+                      <p className="font-body-md text-sm text-on-surface-variant line-clamp-2">{t('categories.bags_desc', 'Backpacks, purses, suitcases and other carry-ons.')}</p>
                     </div>
                   </div>
 
@@ -4496,12 +4514,12 @@ export default function App() {
                         <Heart className="text-error h-6 w-6" fill="currentColor" />
                       </div>
                       <span className="bg-surface-variant text-on-surface-variant font-label-md text-[10px] px-2 py-1 rounded-full">
-                        {items.filter(i => ["dog", "cat", "pet", "bird", "animal", "puppy", "kitten", "collar"].some(kw => (i?.title || "").toLowerCase().includes(kw) || (i?.desc || "").toLowerCase().includes(kw))).length} {t('generated.string_292', 'Active')}
+                        {items.filter(i => ["dog", "cat", "pet", "bird", "animal", "puppy", "kitten", "collar"].some(kw => (i?.title || "").toLowerCase().includes(kw) || (i?.desc || "").toLowerCase().includes(kw))).length} {t('categories.active', 'Active')}
                       </span>
                     </div>
                     <div className="relative z-10 mt-auto">
-                      <h3 className="font-body-lg text-lg font-bold text-on-surface mb-1 group-hover:text-error transition-colors">{t('generated.string_297', 'Pets & Animals')}</h3>
-                      <p className="font-body-md text-sm text-on-surface-variant line-clamp-2">{t('generated.string_298', 'Lost dogs, cats, and other companion animals.')}</p>
+                      <h3 className="font-body-lg text-lg font-bold text-on-surface mb-1 group-hover:text-error transition-colors">{t('categories.pets', 'Pets & Animals')}</h3>
+                      <p className="font-body-md text-sm text-on-surface-variant line-clamp-2">{t('categories.pets_desc', 'Lost dogs, cats, and other companion animals.')}</p>
                     </div>
                   </div>
 
@@ -4519,14 +4537,14 @@ export default function App() {
                         <FileText className="text-on-secondary-container h-8 w-8" />
                       </div>
                       <span className="bg-surface-variant text-on-surface-variant font-label-md text-[10px] px-2 py-1 rounded-full">
-                        {items.filter(i => ["document", "id", "passport", "license", "card", "paper", "folder"].some(kw => (i?.title || "").toLowerCase().includes(kw) || (i?.desc || "").toLowerCase().includes(kw))).length} {t('generated.string_292', 'Active')}
+                        {items.filter(i => ["document", "id", "passport", "license", "card", "paper", "folder"].some(kw => (i?.title || "").toLowerCase().includes(kw) || (i?.desc || "").toLowerCase().includes(kw))).length} {t('categories.active', 'Active')}
                       </span>
                     </div>
                     <div className="relative z-10 mt-auto">
-                      <h3 className="font-body-lg text-2xl font-bold text-secondary mb-2 group-hover:text-primary transition-colors">{t('generated.string_299', 'Documents & IDs')}</h3>
-                      <p className="font-body-md text-sm text-on-surface-variant mb-4">{t('generated.string_300', "Passports, driver's licenses, IDs, and important paperwork.")}</p>
+                      <h3 className="font-body-lg text-2xl font-bold text-secondary mb-2 group-hover:text-primary transition-colors">{t('categories.documents', 'Documents & IDs')}</h3>
+                      <p className="font-body-md text-sm text-on-surface-variant mb-4">{t('categories.documents_desc', "Passports, driver's licenses, IDs, and important paperwork.")}</p>
                       <div className="flex items-center text-primary font-label-md text-xs group-hover:translate-x-1 transition-transform">
-                        {t('generated.string_301', 'Explore')} <ArrowRight className="h-4 w-4 ml-1" />
+                        {t('categories.explore', 'Explore')} <ArrowRight className="h-4 w-4 ml-1" />
                       </div>
                     </div>
                   </div>
@@ -4544,11 +4562,11 @@ export default function App() {
                         <Tag className="text-on-surface h-6 w-6" />
                       </div>
                       <span className="bg-surface-variant text-on-surface-variant font-label-md text-[10px] px-2 py-1 rounded-full">
-                        {items.filter(i => ["jacket", "shirt", "pants", "uniform", "shoes", "hat", "scarf", "coat", "clothing"].some(kw => (i?.title || "").toLowerCase().includes(kw) || (i?.desc || "").toLowerCase().includes(kw))).length} {t('generated.string_292', 'Active')}
+                        {items.filter(i => ["jacket", "shirt", "pants", "uniform", "shoes", "hat", "scarf", "coat", "clothing"].some(kw => (i?.title || "").toLowerCase().includes(kw) || (i?.desc || "").toLowerCase().includes(kw))).length} {t('categories.active', 'Active')}
                       </span>
                     </div>
                     <div className="relative z-10 mt-auto">
-                      <h3 className="font-body-lg text-lg font-bold text-on-surface mb-1 group-hover:text-primary transition-colors">{t('generated.string_302', 'Clothing')}</h3>
+                      <h3 className="font-body-lg text-lg font-bold text-on-surface mb-1 group-hover:text-primary transition-colors">{t('categories.clothing', 'Clothing')}</h3>
                     </div>
                   </div>
 
@@ -4565,11 +4583,11 @@ export default function App() {
                         <Clock className="text-on-surface h-6 w-6" />
                       </div>
                       <span className="bg-surface-variant text-on-surface-variant font-label-md text-[10px] px-2 py-1 rounded-full">
-                        {items.filter(i => ["ring", "necklace", "bracelet", "watch", "earring", "jewelry", "diamond", "gold", "silver"].some(kw => (i?.title || "").toLowerCase().includes(kw) || (i?.desc || "").toLowerCase().includes(kw))).length} {t('generated.string_292', 'Active')}
+                        {items.filter(i => ["ring", "necklace", "bracelet", "watch", "earring", "jewelry", "diamond", "gold", "silver"].some(kw => (i?.title || "").toLowerCase().includes(kw) || (i?.desc || "").toLowerCase().includes(kw))).length} {t('categories.active', 'Active')}
                       </span>
                     </div>
                     <div className="relative z-10 mt-auto">
-                      <h3 className="font-body-lg text-lg font-bold text-on-surface mb-1 group-hover:text-primary transition-colors">{t('generated.string_303', 'Jewelry & Watches')}</h3>
+                      <h3 className="font-body-lg text-lg font-bold text-on-surface mb-1 group-hover:text-primary transition-colors">{t('categories.jewelry', 'Jewelry & Watches')}</h3>
                     </div>
                   </div>
 
@@ -4586,7 +4604,7 @@ export default function App() {
                         <Key className="text-on-surface h-6 w-6" />
                       </div>
                       <span className="bg-surface-variant text-on-surface-variant font-label-md text-[10px] px-2 py-1 rounded-full">
-                        {items.filter(i => ["key", "keychain", "fob", "car key"].some(kw => (i?.title || "").toLowerCase().includes(kw) || (i?.desc || "").toLowerCase().includes(kw))).length} {t('generated.string_292', 'Active')}
+                        {items.filter(i => ["key", "keychain", "fob", "car key"].some(kw => (i?.title || "").toLowerCase().includes(kw) || (i?.desc || "").toLowerCase().includes(kw))).length} {t('categories.active', 'Active')}
                       </span>
                     </div>
                     <div className="relative z-10 mt-auto">
