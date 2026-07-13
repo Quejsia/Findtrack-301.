@@ -14,6 +14,7 @@ import {
   where, 
   onSnapshot,
   getDoc,
+  getDocs,
   addDoc,
   updateDoc,
   orderBy
@@ -126,9 +127,34 @@ export default function ItemDetail({
   }) : 'Just now';
 
   const handleDelete = async () => {
-    if (!window.confirm('Are you absolutely sure you want to delete this listing?')) return;
     setDeleting(true);
     try {
+      // Query for any approved claims on this item
+      const claimsRef = collection(db, "claims");
+      const q = query(claimsRef, where("itemId", "==", item.id), where("status", "==", "approved"));
+      const querySnapshot = await getDocs(q);
+      
+      let hasApprovedClaim = false;
+      let claimantName = "";
+      
+      if (!querySnapshot.empty) {
+        hasApprovedClaim = true;
+        const approvedClaimDoc = querySnapshot.docs[0].data() as Claim;
+        claimantName = approvedClaimDoc.claimerName || "Someone";
+      }
+
+      let confirmed = false;
+      if (hasApprovedClaim) {
+        confirmed = window.confirm(`This item has already been claimed by ${claimantName}. Are you sure you want to delete it? This cannot be undone and will remove their access to your contact credentials.`);
+      } else {
+        confirmed = window.confirm(`Are you sure you want to delete this listing? This cannot be undone.`);
+      }
+
+      if (!confirmed) {
+        setDeleting(false);
+        return;
+      }
+
       await onDeleteItem(item.id);
       onClose();
     } catch (err) {

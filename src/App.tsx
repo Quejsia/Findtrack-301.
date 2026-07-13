@@ -14,6 +14,7 @@ import {
   query,
   doc,
   getDoc,
+  getDocs,
   setDoc,
   updateDoc,
   deleteDoc,
@@ -82,7 +83,7 @@ import {
   Clock,
   Menu, Grid,
   Archive, Pin, Shapes, BarChart2, HeartHandshake, HelpCircle,
-  ArrowLeft, Share, Bot, RefreshCw, BadgeCheck, MessageSquare, Gavel, Shield , Scan , Settings , AlertTriangle, Star, Heart, TrendingUp, ArrowDownUp, FileText, Image as ImageIcon, LogIn } from "lucide-react"
+  ArrowLeft, Share, Bot, RefreshCw, BadgeCheck, MessageSquare, Gavel, Shield , Scan , Settings , AlertTriangle, Star, Heart, TrendingUp, ArrowDownUp, FileText, Image as ImageIcon, LogIn, Trash2 } from "lucide-react"
 import { uploadToCloudinary } from "./lib/cloudinary";
 
 interface ItemReport {
@@ -899,24 +900,55 @@ export default function App() {
       setShowGuestModal(true);
       return;
     }
-    if (
-      !confirm("Delete this report entry permanently? This cannot be undone.")
-    )
-      return;
 
     try {
+      // Query for any approved claims on this item
+      const claimsRef = collection(db, "claims");
+      const q = query(claimsRef, where("itemId", "==", itemId), where("status", "==", "approved"));
+      const querySnapshot = await getDocs(q);
+      
+      let hasApprovedClaim = false;
+      let claimantName = "";
+      
+      if (!querySnapshot.empty) {
+        hasApprovedClaim = true;
+        const approvedClaimDoc = querySnapshot.docs[0].data() as Claim;
+        claimantName = approvedClaimDoc.claimerName || "Someone";
+      }
+
+      let confirmed = false;
+      if (hasApprovedClaim) {
+        confirmed = window.confirm(`This item has already been claimed by ${claimantName}. Are you sure you want to delete it? This cannot be undone and will remove their access to your contact credentials.`);
+      } else {
+        confirmed = window.confirm(`Are you sure you want to delete this listing? This cannot be undone.`);
+      }
+
+      if (!confirmed) return;
+
+      // Delete the main item document
       await deleteDoc(doc(db, "items", itemId));
       
-      // Delete from itemSecrets private collection as well
+      // Delete from itemSecrets private collection
       try {
         await deleteDoc(doc(db, "itemSecrets", itemId));
       } catch (secErr) {
         console.error("Failed to delete item secrets:", secErr);
       }
 
+      // Clean up orphaned claims pointing to this deleted item
+      try {
+        const allClaimsQ = query(collection(db, "claims"), where("itemId", "==", itemId));
+        const allClaimsSnap = await getDocs(allClaimsQ);
+        for (const claimDoc of allClaimsSnap.docs) {
+          await deleteDoc(doc(db, "claims", claimDoc.id));
+        }
+      } catch (claimsCleanErr) {
+        console.error("Failed to delete associated claims:", claimsCleanErr);
+      }
+
       setPinnedIds((prev) => prev.filter((id) => id !== itemId));
       triggerToast("🗑️ Item deleted", "error");
-      setActiveTab("search");
+      setActiveTab("home"); // Navigate back to Home
     } catch (err) {
       console.error(err);
       triggerToast("❌ Deletion rejected.", "error");
@@ -3259,6 +3291,11 @@ export default function App() {
                     </div>
                   );
 
+                const isOwner = user && r.userId === user.uid;
+                const hasSecurityQuestion = !!r.securityQuestion && r.securityQuestion.trim().length > 0;
+                const existingClaimForThisUser = myClaims.find(c => c.itemId === r.id);
+                const isUnlocked = isOwner || !hasSecurityQuestion || (existingClaimForThisUser && existingClaimForThisUser.status === 'approved');
+
                 return (
                   <div className="max-w-7xl mx-auto space-y-6 sm:space-y-8 pb-12">
                     {/* Page Header */}
@@ -3412,13 +3449,45 @@ export default function App() {
                                 </p>
                                 <BadgeCheck className="h-4 w-4 text-primary shrink-0" />
                               </div>
-                              <p className="text-[14px] font-body-md text-on-surface-variant mt-0.5 select-none filter blur-[4px] opacity-70">
-                                hidden.email@example.com
-                              </p>
+                              {isUnlocked ? (
+                                <p className="text-[14px] font-body-md text-on-surface font-semibold mt-0.5 select-text break-words bg-primary-container/20 px-2 py-1 rounded border border-primary/10">
+                                  {r.contactInfo}
+                                </p>
+                              ) : (
+                                <div className="space-y-1">
+                                  <p className="text-[14px] font-body-md text-on-surface-variant mt-0.5 select-none filter blur-[4px] opacity-70">
+                                    hidden.email@example.com
+                                  </p>
+                                  <div className="flex items-center gap-1 text-[11px] text-error font-medium">
+                                    <Lock className="h-3 w-3" />
+                                    <span>Locked behind Prove-It Layer</span>
+                                  </div>
+                                </div>
+                              )}
                             </div>
                           </div>
 
                           <div className="space-y-3 pt-2">
+                            {existingClaimForThisUser && (
+                              <div className={`p-3 rounded-lg border text-xs font-medium ${
+                                existingClaimForThisUser.status === 'approved' 
+                                  ? 'bg-[#e6f4ea] border-[#34a853]/30 text-[#137333]' 
+                                  : existingClaimForThisUser.status === 'rejected'
+                                  ? 'bg-[#fce8e6] border-[#ea4335]/30 text-[#c5221f]'
+                                  : 'bg-[#fef7e0] border-[#fbbc05]/30 text-[#b06000]'
+                              }`}>
+                                <div className="flex items-center justify-between mb-1">
+                                  <span className="font-bold uppercase tracking-wider text-[10px]">Claim Status</span>
+                                  <span className="font-bold uppercase tracking-wider text-[10px]">{existingClaimForThisUser.status}</span>
+                                </div>
+                                <p className="leading-relaxed">
+                                  {existingClaimForThisUser.status === 'approved' && "✓ Your ownership proof was approved. Contact credentials are unlocked above."}
+                                  {existingClaimForThisUser.status === 'pending' && "⌛ Your claim is currently under manual review by the owner."}
+                                  {existingClaimForThisUser.status === 'rejected' && "❌ Your claim was declined by the owner."}
+                                </p>
+                              </div>
+                            )}
+
                             <button 
                               onClick={() => {
                                 if (profileName === 'Guest') {
@@ -3432,19 +3501,35 @@ export default function App() {
                               <MessageSquare className="h-4 w-4" />
                               Contact Chat Room
                             </button>
-                            <button 
-                              onClick={() => {
-                                if (profileName === 'Guest') {
-                                  setShowGuestModal(true);
-                                } else {
-                                  setActiveTab("claimItem");
-                                }
-                              }}
-                              className="w-full py-3 bg-transparent border-2 border-secondary text-secondary hover:bg-secondary-container hover:text-on-secondary-container text-[12px] font-label-md font-bold rounded-lg transition-colors flex items-center justify-center gap-2"
-                            >
-                              <Gavel className="h-4 w-4" />
-                              Log Ownership Claim
-                            </button>
+
+                            {/* Show Log Ownership Claim button only if they are not the owner, there's a security question, and they don't have an approved claim. */}
+                            {!isOwner && hasSecurityQuestion && (!existingClaimForThisUser || existingClaimForThisUser.status !== 'approved') && (
+                              <button 
+                                onClick={() => {
+                                  if (profileName === 'Guest') {
+                                    setShowGuestModal(true);
+                                  } else {
+                                    setActiveTab("claimItem");
+                                  }
+                                }}
+                                disabled={existingClaimForThisUser?.status === 'pending'}
+                                className="w-full py-3 bg-transparent border-2 border-secondary text-secondary hover:bg-secondary-container hover:text-on-secondary-container text-[12px] font-label-md font-bold rounded-lg transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
+                              >
+                                <Gavel className="h-4 w-4" />
+                                {existingClaimForThisUser?.status === 'pending' ? 'Claim Pending Review' : 'Log Ownership Claim'}
+                              </button>
+                            )}
+
+                            {/* Bug 1: Delete button visible ONLY to the item's original reporter/owner */}
+                            {isOwner && (
+                              <button 
+                                onClick={() => deleteItem(r.id)}
+                                className="w-full py-3 bg-transparent border-2 border-error text-error hover:bg-error-container hover:text-on-error-container text-[12px] font-label-md font-bold rounded-lg transition-colors flex items-center justify-center gap-2 mt-4"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                                Delete Listing
+                              </button>
+                            )}
                           </div>
                         </div>
                       </div>
