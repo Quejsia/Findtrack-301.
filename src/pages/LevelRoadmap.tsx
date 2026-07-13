@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import { 
   ArrowLeft, 
   Star, 
@@ -11,10 +11,12 @@ import {
   HelpCircle,
   TrendingUp,
   Users,
-  MapPin,
-  CheckCircle2
+  CheckCircle2,
+  Loader2
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { db } from "../firebase";
+import { collection, onSnapshot } from "firebase/firestore";
 
 interface ItemReport {
   id: string;
@@ -48,8 +50,42 @@ export const LevelRoadmap: React.FC<LevelRoadmapProps> = ({
   onBack
 }) => {
   const { t } = useTranslation();
+  const [dbUsers, setDbUsers] = useState<any[]>([]);
+  const [loadingUsers, setLoadingUsers] = useState<boolean>(true);
 
-  // 1. Calculate user statistics
+  // Level thresholds
+  // Level 1: Novice Finder (0 - 44 pts)
+  // Level 2: Vigilant Citizen (45 - 119 pts)
+  // Level 3: Community Guardian (120 - 249 pts)
+  // Level 4: Beacon of Hope (250 - 499 pts)
+  // Level 5: FindTrack Legend (500+ pts)
+  const levels = useMemo(() => [
+    { level: 1, name: t("level.rank1", "Novice Finder"), minPoints: 0, maxPoints: 44, badgeColor: "bg-surface-variant border-outline-variant", icon: Star, description: t("level.rank1Desc", "Start your journey. Keep an eye out for missing belongings in your community.") },
+    { level: 2, name: t("level.rank2", "Vigilant Citizen"), minPoints: 45, maxPoints: 119, badgeColor: "bg-primary-container border-primary", icon: ShieldCheck, description: t("level.rank2Desc", "Active community reporter. Your reports help restore security and peace of mind.") },
+    { level: 3, name: t("level.rank3", "Community Guardian"), minPoints: 120, maxPoints: 249, badgeColor: "bg-secondary-container border-secondary", icon: Heart, description: t("level.rank3Desc", "A pillar of Bayanihan. Generous with effort, you help bridge connections.") },
+    { level: 4, name: t("level.rank4", "Beacon of Hope"), minPoints: 250, maxPoints: 499, badgeColor: "bg-tertiary-container border-tertiary", icon: Sparkles, description: t("level.rank4Desc", "Extremely reliable. Recognized for your quick eyes and numerous successful returns.") },
+    { level: 5, name: t("level.rank5", "FindTrack Legend"), minPoints: 500, maxPoints: Infinity, badgeColor: "bg-amber-100 border-amber-500", icon: Trophy, description: t("level.rank5Desc", "The ultimate community hero. Revered by the entire community for your integrity.") }
+  ], [t]);
+
+  // Subscribe to real-time users collection in Firestore
+  useEffect(() => {
+    const usersCollection = collection(db, "users");
+    const unsubscribe = onSnapshot(usersCollection, (snapshot) => {
+      const list: any[] = [];
+      snapshot.forEach((docSnap) => {
+        list.push({ id: docSnap.id, ...docSnap.data() });
+      });
+      setDbUsers(list);
+      setLoadingUsers(false);
+    }, (error) => {
+      console.error("Error fetching users for leaderboard:", error);
+      setLoadingUsers(false);
+    });
+
+    return unsubscribe;
+  }, []);
+
+  // Calculate stats for current logged-in user
   const userItemsCount = useMemo(() => {
     if (!userId) return 0;
     return items.filter((i) => i.userId === userId).length;
@@ -65,25 +101,11 @@ export const LevelRoadmap: React.FC<LevelRoadmapProps> = ({
     return (userItemsCount * 15) + (userReunitedCount * 50);
   }, [userItemsCount, userReunitedCount]);
 
-  // Level thresholds
-  // Level 1: Novice Finder (0 - 44 pts)
-  // Level 2: Vigilant Citizen (45 - 119 pts)
-  // Level 3: Community Guardian (120 - 249 pts)
-  // Level 4: Beacon of Hope (250 - 499 pts)
-  // Level 5: FindTrack Legend (500+ pts)
-  const levels = [
-    { level: 1, name: t("level.rank1", "Novice Finder"), minPoints: 0, maxPoints: 44, badgeColor: "bg-surface-variant border-outline-variant", icon: Star, description: t("level.rank1Desc", "Start your journey. Keep an eye out for missing belongings around campus.") },
-    { level: 2, name: t("level.rank2", "Vigilant Citizen"), minPoints: 45, maxPoints: 119, badgeColor: "bg-primary-container border-primary", icon: ShieldCheck, description: t("level.rank2Desc", "Active community reporter. Your reports help restore security and peace of mind.") },
-    { level: 3, name: t("level.rank3", "Community Guardian"), minPoints: 120, maxPoints: 249, badgeColor: "bg-secondary-container border-secondary", icon: Heart, description: t("level.rank3Desc", "A pillar of Bayanihan. Generous with effort, you help bridge connections.") },
-    { level: 4, name: t("level.rank4", "Beacon of Hope"), minPoints: 250, maxPoints: 499, badgeColor: "bg-tertiary-container border-tertiary", icon: Sparkles, description: t("level.rank4Desc", "Extremely reliable. Recognized for your quick eyes and numerous successful returns.") },
-    { level: 5, name: t("level.rank5", "FindTrack Legend"), minPoints: 500, maxPoints: Infinity, badgeColor: "bg-amber-100 border-amber-500", icon: Trophy, description: t("level.rank5Desc", "The ultimate community hero. Revered by students and staff alike for your integrity.") }
-  ];
-
-  // Determine current level and next level info
+  // Determine current level and next level info for the logged-in user
   const currentLevelInfo = useMemo(() => {
     const levelObj = levels.find(l => totalPoints >= l.minPoints && totalPoints <= l.maxPoints);
     return levelObj || levels[levels.length - 1];
-  }, [totalPoints]);
+  }, [totalPoints, levels]);
 
   const nextLevelInfo = useMemo(() => {
     const currentIndex = levels.findIndex(l => l.level === currentLevelInfo.level);
@@ -91,7 +113,7 @@ export const LevelRoadmap: React.FC<LevelRoadmapProps> = ({
       return levels[currentIndex + 1];
     }
     return null;
-  }, [currentLevelInfo]);
+  }, [currentLevelInfo, levels]);
 
   // Progress percentage toward next level
   const progressPercent = useMemo(() => {
@@ -103,8 +125,8 @@ export const LevelRoadmap: React.FC<LevelRoadmapProps> = ({
     return Math.min(100, Math.max(0, Math.floor((pointsInCurrentRange / rangeTotal) * 100)));
   }, [totalPoints, currentLevelInfo, nextLevelInfo]);
 
-  // 2. Achievements status
-  const achievements = [
+  // Achievements status
+  const achievements = useMemo(() => [
     {
       id: "first_spark",
       title: t("level.ach1Title", "First Spark"),
@@ -150,16 +172,69 @@ export const LevelRoadmap: React.FC<LevelRoadmapProps> = ({
       icon: Sparkles,
       color: "text-purple-500 bg-purple-50 border-purple-200"
     }
-  ];
+  ], [userItemsCount, userReunitedCount, profileLocation, profileBio, t]);
 
-  // 3. Simulated/Mock Local Leaderboard for high-trust feeling
-  const mockLeaderboard = [
-    { name: "Maria Clara Santos", level: 5, points: 580, reports: 12, reunited: 8, avatar: "M" },
-    { name: "Juan dela Cruz", level: 4, points: 410, reports: 9, reunited: 5, avatar: "J" },
-    { name: profileName, level: currentLevelInfo.level, points: totalPoints, reports: userItemsCount, reunited: userReunitedCount, avatar: profileName.charAt(0).toUpperCase(), isCurrentUser: true },
-    { name: "Sandro Valdez", level: 3, points: 195, reports: 8, reunited: 1, avatar: "S" },
-    { name: "Kylie Alcantara", level: 2, points: 75, reports: 5, reunited: 0, avatar: "K" }
-  ].sort((a, b) => b.points - a.points);
+  // Construct actual real-time Leaderboard list
+  const realLeaderboard = useMemo(() => {
+    let list = [...dbUsers];
+
+    // Ensure current user is always in the list even if they haven't synced with Firestore yet
+    if (userId) {
+      const existsIndex = list.findIndex(u => u.id === userId);
+      const currentUserProfile = {
+        id: userId,
+        name: profileName || "Anonymous User",
+        location: profileLocation || "",
+        bio: profileBio || "",
+        avatar: profileName ? profileName.charAt(0).toUpperCase() : "U"
+      };
+
+      if (existsIndex > -1) {
+        list[existsIndex] = {
+          ...list[existsIndex],
+          ...currentUserProfile,
+          name: profileName || list[existsIndex].name || list[existsIndex].displayName || "Anonymous User",
+          location: profileLocation || list[existsIndex].location || "",
+          bio: profileBio || list[existsIndex].bio || ""
+        };
+      } else {
+        list.push(currentUserProfile);
+      }
+    }
+
+    // Map each user to their dynamic reports and reunited counts using real items data
+    const mappedList = list.map((user) => {
+      const reports = items.filter((i) => i.userId === user.id).length;
+      const reunited = items.filter((i) => i.userId === user.id && i.claimed).length;
+      const points = (reports * 15) + (reunited * 50);
+
+      // Level based on total points
+      let lvl = 1;
+      if (points >= 500) lvl = 5;
+      else if (points >= 250) lvl = 4;
+      else if (points >= 120) lvl = 3;
+      else if (points >= 45) lvl = 2;
+
+      return {
+        id: user.id,
+        name: user.name || user.displayName || "Anonymous Finder",
+        reports,
+        reunited,
+        points,
+        level: lvl,
+        avatar: user.avatar || (user.name ? user.name.charAt(0).toUpperCase() : (user.displayName ? user.displayName.charAt(0).toUpperCase() : "U")),
+        isCurrentUser: user.id === userId
+      };
+    });
+
+    // Sort by points, then reports
+    return mappedList.sort((a, b) => {
+      if (b.points !== a.points) {
+        return b.points - a.points;
+      }
+      return b.reports - a.reports;
+    });
+  }, [dbUsers, items, userId, profileName, profileLocation, profileBio]);
 
   const CurrentIcon = currentLevelInfo.icon;
 
@@ -175,7 +250,7 @@ export const LevelRoadmap: React.FC<LevelRoadmapProps> = ({
           <ArrowLeft className="h-5 w-5" />
           <span>{t("level.backToProfile", "Back to Profile")}</span>
         </button>
-        <span className="font-mono text-xs text-on-surface-variant/70 tracking-wider">FINDTRACK GAMIFICATION</span>
+        <span className="font-mono text-xs text-on-surface-variant/70 tracking-wider">FINDTRACK REWARDS</span>
       </div>
 
       {/* Hero Impact Badge Header */}
@@ -336,53 +411,60 @@ export const LevelRoadmap: React.FC<LevelRoadmapProps> = ({
         <div className="md:col-span-4 space-y-6">
           <div className="flex items-center gap-2 mb-2">
             <Users className="h-5 w-5 text-primary" />
-            <h2 className="font-headline-md text-xl font-bold text-on-surface">Campus Heroes</h2>
+            <h2 className="font-headline-md text-xl font-bold text-on-surface">Leaderboard</h2>
           </div>
 
           <div className="bg-surface-container-lowest rounded-xl border border-surface-variant overflow-hidden shadow-sm">
             <div className="p-4 bg-primary/5 border-b border-surface-variant flex items-center justify-between">
-              <span className="font-label-md text-xs uppercase font-bold text-primary tracking-wider">Top Contributors</span>
-              <HelpCircle className="h-4 w-4 text-on-surface-variant/60 cursor-help" title="Based on total items reported and safely reunited." />
+              <span className="font-label-md text-xs uppercase font-bold text-primary tracking-wider font-semibold">Top Contributors</span>
+              <HelpCircle className="h-4 w-4 text-on-surface-variant/60 cursor-help" title="Rankings based on total items reported and successfully reunited." />
             </div>
 
-            <div className="divide-y divide-surface-variant/60">
-              {mockLeaderboard.map((user, idx) => (
-                <div 
-                  key={idx} 
-                  className={`p-4 flex items-center justify-between transition-colors ${
-                    user.isCurrentUser ? "bg-primary-container/15 font-semibold" : ""
-                  }`}
-                >
-                  <div className="flex items-center gap-3 min-w-0">
-                    <span className="font-mono text-sm font-bold text-on-surface-variant w-4">
-                      {idx + 1}
-                    </span>
-                    <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold shrink-0 ${
-                      user.isCurrentUser ? "bg-primary text-on-primary" : "bg-surface-variant text-on-surface-variant"
-                    }`}>
-                      {user.avatar}
+            {loadingUsers ? (
+              <div className="p-8 flex flex-col items-center justify-center text-on-surface-variant/70 text-xs gap-2">
+                <Loader2 className="h-5 w-5 animate-spin text-primary" />
+                <span>Loading rankings...</span>
+              </div>
+            ) : (
+              <div className="divide-y divide-surface-variant/60">
+                {realLeaderboard.map((user, idx) => (
+                  <div 
+                    key={user.id} 
+                    className={`p-4 flex items-center justify-between transition-colors ${
+                      user.isCurrentUser ? "bg-primary-container/15 font-semibold" : ""
+                    }`}
+                  >
+                    <div className="flex items-center gap-3 min-w-0">
+                      <span className="font-mono text-sm font-bold text-on-surface-variant w-4">
+                        {idx + 1}
+                      </span>
+                      <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold shrink-0 ${
+                        user.isCurrentUser ? "bg-primary text-on-primary" : "bg-surface-variant text-on-surface-variant"
+                      }`}>
+                        {user.avatar}
+                      </div>
+                      <div className="min-w-0">
+                        <p className="font-headline-sm text-sm text-on-surface truncate">
+                          {user.name} {user.isCurrentUser && <span className="text-[10px] bg-primary text-on-primary px-1.5 py-0.5 rounded-full ml-1 font-bold">YOU</span>}
+                        </p>
+                        <p className="text-[10px] text-on-surface-variant flex items-center gap-1 mt-0.5">
+                          <Star className="h-3 w-3 text-amber-500" fill="currentColor" /> Level {user.level} Rank
+                        </p>
+                      </div>
                     </div>
-                    <div className="min-w-0">
-                      <p className="font-headline-sm text-sm text-on-surface truncate">
-                        {user.name} {user.isCurrentUser && <span className="text-[10px] bg-primary text-on-primary px-1.5 py-0.5 rounded-full ml-1 font-bold">YOU</span>}
+
+                    <div className="text-right shrink-0">
+                      <p className="font-mono text-xs font-bold text-on-surface">
+                        {user.points} pts
                       </p>
-                      <p className="text-[10px] text-on-surface-variant flex items-center gap-1 mt-0.5">
-                        <Star className="h-3 w-3 text-amber-500" fill="currentColor" /> Level {user.level} Rank
+                      <p className="text-[9px] text-on-surface-variant/80">
+                        {user.reports} rep • {user.reunited} reun
                       </p>
                     </div>
                   </div>
-
-                  <div className="text-right shrink-0">
-                    <p className="font-mono text-xs font-bold text-on-surface">
-                      {user.points} pts
-                    </p>
-                    <p className="text-[9px] text-on-surface-variant/80">
-                      {user.reports} rep • {user.reunited} reun
-                    </p>
-                  </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
             
             {/* Gamification Guide */}
             <div className="p-4 bg-surface-container-low border-t border-surface-variant text-center space-y-2">

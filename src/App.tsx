@@ -183,6 +183,21 @@ export default function App() {
     return newMatchesNotif ? incomingClaims : [];
   }, [newMatchesNotif, incomingClaims]);
   const myClaims = useMyClaims(auth.currentUser?.uid);
+  
+  // Dynamic Points and Level Calculation for current user to keep synchronized
+  const currentUserPointsAndLevel = useMemo(() => {
+    if (!auth.currentUser?.uid) return { points: 0, level: 1 };
+    const reports = items.filter((i) => i.userId === auth.currentUser?.uid).length;
+    const reunited = items.filter((i) => i.userId === auth.currentUser?.uid && i.claimed).length;
+    const points = (reports * 15) + (reunited * 50);
+    let level = 1;
+    if (points >= 500) level = 5;
+    else if (points >= 250) level = 4;
+    else if (points >= 120) level = 3;
+    else if (points >= 45) level = 2;
+    return { points, level };
+  }, [items, auth.currentUser?.uid]);
+
   const [toasts, setToasts] = useState<
     { id: string; msg: string; type: "success" | "error" }[]
   >([]);
@@ -3820,7 +3835,7 @@ export default function App() {
                           className="absolute -bottom-2 -right-2 bg-tertiary text-on-tertiary hover:bg-tertiary-dim px-3 py-1 rounded-full shadow-md flex items-center gap-1 border-2 border-surface-container-lowest transition-colors cursor-pointer select-none"
                         >
                           <Star className="h-4 w-4 text-on-tertiary" fill="currentColor" />
-                          <span className="font-label-md text-[10px] uppercase font-bold tracking-wider">Level {Math.max(1, Math.floor(items.filter(i => i.userId === auth.currentUser?.uid).length / 5))}</span>
+                          <span className="font-label-md text-[10px] uppercase font-bold tracking-wider">Level {currentUserPointsAndLevel.level}</span>
                         </div>
                       </div>
                       
