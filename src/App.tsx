@@ -779,13 +779,13 @@ export default function App() {
           communityAlertsNotif,
           updatedAt: new Date().toISOString()
         }, { merge: true });
-        triggerToast("✅ Profile saved successfully!", "success");
+        triggerToast("Profile saved successfully!", "success");
       } catch (err) {
         console.error("Failed to save profile in database:", err);
         triggerToast("❌ Failed to save changes to database", "error");
       }
     } else {
-      triggerToast("✅ Profile saved successfully!", "success");
+      triggerToast("Profile saved successfully!", "success");
     }
   };
 
@@ -3991,7 +3991,7 @@ export default function App() {
                                       await setDoc(doc(db, "users", auth.currentUser.uid), {
                                         newMatchesNotif: newVal
                                       }, { merge: true });
-                                      triggerToast("🔔 Preference updated", "success");
+                                      triggerToast("Preference updated", "success");
                                     } catch (err) {
                                       console.error(err);
                                       triggerToast("❌ Failed to update preference", "error");
@@ -4020,7 +4020,7 @@ export default function App() {
                                       await setDoc(doc(db, "users", auth.currentUser.uid), {
                                         communityAlertsNotif: newVal
                                       }, { merge: true });
-                                      triggerToast("🔔 Preference updated", "success");
+                                      triggerToast("Preference updated", "success");
                                     } catch (err) {
                                       console.error(err);
                                       triggerToast("❌ Failed to update preference", "error");
