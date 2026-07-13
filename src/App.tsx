@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import SettingsPage from './pages/Settings';
+import { LevelRoadmap } from "./pages/LevelRoadmap";
+import { Trophy } from "lucide-react";
 import {
   User,
   onAuthStateChanged,
@@ -3813,15 +3815,18 @@ export default function App() {
                           </div>
                         </div>
                         {/* Badge */}
-                        <div className="absolute -bottom-2 -right-2 bg-tertiary text-on-tertiary px-3 py-1 rounded-full shadow-md flex items-center gap-1 border-2 border-surface-container-lowest">
-                          <Star className="h-4 w-4" fill="currentColor" />
+                        <div 
+                          onClick={() => setActiveTab("levelRoadmap")}
+                          className="absolute -bottom-2 -right-2 bg-tertiary text-on-tertiary hover:bg-tertiary-dim px-3 py-1 rounded-full shadow-md flex items-center gap-1 border-2 border-surface-container-lowest transition-colors cursor-pointer select-none"
+                        >
+                          <Star className="h-4 w-4 text-on-tertiary" fill="currentColor" />
                           <span className="font-label-md text-[10px] uppercase font-bold tracking-wider">Level {Math.max(1, Math.floor(items.filter(i => i.userId === auth.currentUser?.uid).length / 5))}</span>
                         </div>
                       </div>
                       
                       {/* User Info */}
                       <div className="flex-1 text-center md:text-left mt-4 md:mt-0 w-full">
-                        <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
+                        <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-4">
                           <div>
                             <h1 className="font-headline-lg text-4xl text-on-surface">{profileName}</h1>
                             <div className="flex flex-wrap items-center justify-center md:justify-start gap-2 mt-2">
@@ -3836,8 +3841,25 @@ export default function App() {
                               {profileBio || t('profile.updateYourProfileToAddABio')}
                             </p>
                           </div>
-                          <button onClick={() => document.getElementById("profName")?.focus()} className="bg-surface-container-high border border-outline-variant text-on-surface hover:bg-surface-variant px-4 py-2 rounded-lg font-label-md text-sm transition-colors flex items-center justify-center gap-2 shadow-sm shrink-0 w-full md:w-auto">
-                            <Settings className="h-[18px] w-[18px]" />{t('profile.editProfile')}</button>
+                          
+                          <div className="flex flex-col sm:flex-row gap-3 shrink-0 w-full lg:w-auto">
+                            <button 
+                              onClick={() => setActiveTab("levelRoadmap")}
+                              className="bg-primary text-on-primary hover:bg-primary-dim px-4 py-2 rounded-lg font-label-md text-sm transition-colors flex items-center justify-center gap-2 shadow-sm shrink-0 w-full sm:w-auto cursor-pointer"
+                              style={{ minHeight: "44px" }}
+                            >
+                              <Trophy className="h-[18px] w-[18px]" />
+                              <span>View Level Roadmap</span>
+                            </button>
+                            <button 
+                              onClick={() => document.getElementById("profName")?.focus()} 
+                              className="bg-surface-container-high border border-outline-variant text-on-surface hover:bg-surface-variant px-4 py-2 rounded-lg font-label-md text-sm transition-colors flex items-center justify-center gap-2 shadow-sm shrink-0 w-full sm:w-auto cursor-pointer"
+                              style={{ minHeight: "44px" }}
+                            >
+                              <Settings className="h-[18px] w-[18px]" />
+                              {t('profile.editProfile')}
+                            </button>
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -4068,6 +4090,20 @@ export default function App() {
                   </div>
                 </div>
               </div>
+            </section>
+{/* PANEL: LEVEL ROADMAP */}
+            <section
+              id="levelRoadmap"
+              className={`${activeTab === "levelRoadmap" ? "block" : "hidden"} flex-1 flex flex-col min-w-0`}
+            >
+              <LevelRoadmap 
+                items={items}
+                userId={auth.currentUser?.uid}
+                profileName={profileName}
+                profileLocation={profileLocation}
+                profileBio={profileBio}
+                onBack={() => setActiveTab("profile")}
+              />
             </section>
 {/* PANEL: MY ITEMS */}
             <section
