@@ -66,7 +66,7 @@ export default function Header({ user, loadingAuth, onOpenNewItemModal, onOpenAu
                 <div className="h-6 w-px bg-slate-200"></div>
 
                 <div className="flex items-center space-x-2.5 bg-slate-50 border border-slate-100 rounded-xl p-1.5 pr-3">
-                  {user.photoURL ? (
+                  {user.photoURL && !user.photoURL.includes("dicebear.com") ? (
                     <img
                       src={user.photoURL}
                       alt={user.displayName || "User"}
@@ -167,7 +167,7 @@ export default function Header({ user, loadingAuth, onOpenNewItemModal, onOpenAu
               {user ? (
                 <div className="space-y-4 pt-4 border-t border-slate-100">
                   <div className="flex items-center space-x-3 px-1">
-                    {user.photoURL ? (
+                    {user.photoURL && !user.photoURL.includes("dicebear.com") ? (
                       <img
                         src={user.photoURL}
                         alt="User"

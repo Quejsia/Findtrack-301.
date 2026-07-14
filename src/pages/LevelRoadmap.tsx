@@ -215,6 +215,8 @@ export const LevelRoadmap: React.FC<LevelRoadmapProps> = ({
       else if (points >= 120) lvl = 3;
       else if (points >= 45) lvl = 2;
 
+      const cleanAvatar = user.avatar && !user.avatar.includes("dicebear.com") && !user.avatar.includes("guest") ? user.avatar : "";
+
       return {
         id: user.id,
         name: user.name || user.displayName || "Anonymous Finder",
@@ -222,7 +224,7 @@ export const LevelRoadmap: React.FC<LevelRoadmapProps> = ({
         reunited,
         points,
         level: lvl,
-        avatar: user.avatar || (user.name ? user.name.charAt(0).toUpperCase() : (user.displayName ? user.displayName.charAt(0).toUpperCase() : "U")),
+        avatar: cleanAvatar || (user.name ? user.name.charAt(0).toUpperCase() : (user.displayName ? user.displayName.charAt(0).toUpperCase() : "U")),
         isCurrentUser: user.id === userId
       };
     });
