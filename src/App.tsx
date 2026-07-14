@@ -287,9 +287,7 @@ export default function App() {
 
   const [profileEmail, setProfileEmail] = useState("");
   const [profileContact, setProfileContact] = useState("");
-  const [profileAvatar, setProfileAvatar] = useState(
-    "https://api.dicebear.com/8.x/avataaars/svg?seed=default",
-  );
+  const [profileAvatar, setProfileAvatar] = useState("");
 
   // Pinned item list IDs (local storage synchronization)
   const [pinnedIds, setPinnedIds] = useState<string[]>([]);
@@ -369,8 +367,10 @@ export default function App() {
             if (parsed.contact) setProfileContact(parsed.contact);
             if (parsed.location) setProfileLocation(parsed.location);
             if (parsed.bio) setProfileBio(parsed.bio);
-            if (parsed.avatar && !parsed.avatar.includes("guest")) {
+            if (parsed.avatar && !parsed.avatar.includes("guest") && !parsed.avatar.includes("dicebear.com")) {
               setProfileAvatar(parsed.avatar);
+            } else {
+              setProfileAvatar("");
             }
           } else {
             setProfileName(
@@ -392,7 +392,11 @@ export default function App() {
             if (data.contact) setProfileContact(data.contact);
             if (data.location) setProfileLocation(data.location);
             if (data.bio) setProfileBio(data.bio);
-            if (data.avatar) setProfileAvatar(data.avatar);
+            if (data.avatar && !data.avatar.includes("dicebear.com")) {
+              setProfileAvatar(data.avatar);
+            } else {
+              setProfileAvatar("");
+            }
             if (data.newMatchesNotif !== undefined) setNewMatchesNotif(data.newMatchesNotif);
             if (data.communityAlertsNotif !== undefined) setCommunityAlertsNotif(data.communityAlertsNotif);
           } else {
@@ -403,7 +407,7 @@ export default function App() {
               contact: "",
               location: "",
               bio: "",
-              avatar: "https://api.dicebear.com/8.x/avataaars/svg?seed=default",
+              avatar: "",
               newMatchesNotif: true,
               communityAlertsNotif: true,
               createdAt: new Date().toISOString()
@@ -755,7 +759,7 @@ export default function App() {
       name: "Guest",
       email: "",
       contact: "",
-      avatar: "https://api.dicebear.com/8.x/avataaars/svg?seed=guest",
+      avatar: "",
     };
     localStorage.setItem("userProfile", JSON.stringify(guestUser));
     localStorage.setItem(
@@ -3823,7 +3827,7 @@ export default function App() {
                     <div className="p-6 md:p-8 flex flex-col md:flex-row items-center md:items-start gap-8 relative z-10">
                       {/* Avatar Container with 'Level' Ring */}
                       <div className="relative group cursor-pointer shrink-0">
-                        <div className="w-32 h-32 md:w-40 md:h-40 rounded-full border-4 border-tertiary-container shadow-md overflow-hidden relative bg-surface-variant flex items-center justify-center text-4xl font-bold text-on-surface-variant">
+                        <div className="w-32 h-32 md:w-40 md:h-40 rounded-full border-4 border-tertiary-container shadow-md overflow-hidden relative bg-primary-container flex items-center justify-center text-5xl font-extrabold text-[#005d49] uppercase">
                           {profileAvatar && (profileAvatar.startsWith("http") || profileAvatar.startsWith("/")) ? (
                             <img 
                               src={profileAvatar} 
@@ -4543,9 +4547,11 @@ export default function App() {
                     <div className="relative z-10 mt-auto">
                       <h3 className="font-body-lg text-2xl font-bold text-secondary mb-2 group-hover:text-primary transition-colors">{t('categories.documents', 'Documents & IDs')}</h3>
                       <p className="font-body-md text-sm text-on-surface-variant mb-4">{t('categories.documents_desc', "Passports, driver's licenses, IDs, and important paperwork.")}</p>
-                      <div className="flex items-center text-primary font-label-md text-xs group-hover:translate-x-1 transition-transform">
-                        {t('categories.explore', 'Explore')} <ArrowRight className="h-4 w-4 ml-1" />
-                      </div>
+                      {items.filter(i => ["document", "id", "passport", "license", "card", "paper", "folder"].some(kw => (i?.title || "").toLowerCase().includes(kw) || (i?.desc || "").toLowerCase().includes(kw))).length > 0 && (
+                        <div className="flex items-center text-primary font-label-md text-xs group-hover:translate-x-1 transition-transform">
+                          {t('categories.explore', 'Explore')} <ArrowRight className="h-4 w-4 ml-1" />
+                        </div>
+                      )}
                     </div>
                   </div>
 

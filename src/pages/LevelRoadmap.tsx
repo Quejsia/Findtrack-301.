@@ -63,7 +63,7 @@ export const LevelRoadmap: React.FC<LevelRoadmapProps> = ({
     { level: 1, name: t("level.rank1", "Novice Finder"), minPoints: 0, maxPoints: 44, badgeColor: "bg-surface-variant border-outline-variant", icon: Star, description: t("level.rank1Desc", "Start your journey. Keep an eye out for missing belongings in your community.") },
     { level: 2, name: t("level.rank2", "Vigilant Citizen"), minPoints: 45, maxPoints: 119, badgeColor: "bg-primary-container border-primary", icon: ShieldCheck, description: t("level.rank2Desc", "Active community reporter. Your reports help restore security and peace of mind.") },
     { level: 3, name: t("level.rank3", "Community Guardian"), minPoints: 120, maxPoints: 249, badgeColor: "bg-secondary-container border-secondary", icon: Heart, description: t("level.rank3Desc", "A pillar of Bayanihan. Generous with effort, you help bridge connections.") },
-    { level: 4, name: t("level.rank4", "Beacon of Hope"), minPoints: 250, maxPoints: 499, badgeColor: "bg-tertiary-container border-tertiary", icon: Sparkles, description: t("level.rank4Desc", "Extremely reliable. Recognized for your quick eyes and numerous successful returns.") },
+    { level: 4, name: t("level.rank4", "Beacon of Hope"), minPoints: 250, maxPoints: 499, badgeColor: "bg-[#fab83f]/20 border-[#fab83f]/60", icon: Sparkles, description: t("level.rank4Desc", "Extremely reliable. Recognized for your quick eyes and numerous successful returns.") },
     { level: 5, name: t("level.rank5", "FindTrack Legend"), minPoints: 500, maxPoints: Infinity, badgeColor: "bg-amber-100 border-amber-500", icon: Trophy, description: t("level.rank5Desc", "The ultimate community hero. Revered by the entire community for your integrity.") }
   ], [t]);
 
