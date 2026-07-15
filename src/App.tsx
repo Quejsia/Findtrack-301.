@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import SettingsPage from './pages/Settings';
 import { LevelRoadmap } from "./pages/LevelRoadmap";
-import { Trophy } from "lucide-react";
+import { Trophy, Coffee as CoffeeIcon } from "lucide-react";
 import {
   User,
   onAuthStateChanged,
@@ -1284,7 +1284,7 @@ export default function App() {
         let trendText = "0%";
         if (rate >= 75) {
           trendIcon = "trending_up";
-          trendColor = "text-[#01725a] bg-[#9af4d6]/30";
+          trendColor = "text-primary bg-[#9af4d6]/30";
           trendText = "+5%";
         } else if (rate >= 50) {
           trendIcon = "trending_up";
@@ -1292,7 +1292,7 @@ export default function App() {
           trendText = "+2%";
         } else if (rate < 30 && g.total > 1) {
           trendIcon = "trending_down";
-          trendColor = "text-[#af3d3b] bg-[#fa746f]/20";
+          trendColor = "text-error bg-[#fa746f]/20";
           trendText = "-3%";
         }
         return {
@@ -1374,7 +1374,7 @@ export default function App() {
 
   // Complete clean JSX structure wrapping converted index.html tags
   return (
-    <div className="relative min-h-screen bg-[#f0f4f8]">
+    <div className="relative min-h-screen bg-surface-container">
       {/* ── TOAST MESSAGES FLOATER ── */}
       <div className="toast-container" id="toastContainer">
         {toasts.map((t) => (
@@ -1388,32 +1388,32 @@ export default function App() {
       {(currentView === "login" ||
         currentView === "signup" ||
         currentView === "verify-email") && (
-        <div className="fixed inset-0 bg-[#fdfae7] z-0"></div>
+        <div className="fixed inset-0 bg-surface-container-low z-0"></div>
       )}
 
       {/* ── VIEW 1: LANDING PAGE ── */}
       {currentView === "landing" && (
-        <div className="bg-[#fffbff] text-[#393927] font-sans antialiased overflow-x-hidden min-h-screen flex flex-col">
+        <div className="bg-surface text-on-surface font-sans antialiased overflow-x-hidden min-h-screen flex flex-col">
           {/* TopNavBar */}
-          <header className="w-full top-0 z-50 bg-[#fffbff] shadow-sm sticky">
+          <header className="w-full top-0 z-50 bg-surface shadow-sm sticky">
             <div className="flex justify-between items-center h-16 px-4 md:px-8 max-w-7xl mx-auto">
-              <div className="font-sans text-2xl font-bold text-[#01725a] tracking-tight flex items-center gap-2">
+              <div className="font-sans text-2xl font-bold text-primary tracking-tight flex items-center gap-2">
                 <img src="/logo.png" alt="FindTrack Logo" className="w-10 h-10 object-contain p-1 mx-1" onError={(e) => { e.currentTarget.style.display='none'; e.currentTarget.nextElementSibling?.classList.remove('hidden'); }} />
-                <MapPin className="h-6 w-6 text-[#01725a] hidden" />
+                <MapPin className="h-6 w-6 text-primary hidden" />
                 FindTrack
               </div>
               <nav className="hidden md:flex items-center gap-6">
-                <button onClick={() => setCurrentView("landing")} className="text-[#01725a] border-b-2 border-[#01725a] pb-1 font-medium text-sm hover:text-[#01725a] transition-colors duration-200">{t('sidebar.home')}</button>
-                <button onClick={() => setCurrentView("help")} className="text-[#666551] font-medium text-sm hover:text-[#01725a] transition-colors duration-200">{t('landing.howItWorks')}</button>
-                <button onClick={() => setCurrentView("about")} className="text-[#666551] font-medium text-sm hover:text-[#01725a] transition-colors duration-200">{t('landing.community')}</button>
-                <button onClick={() => setCurrentView("safety")} className="text-[#666551] font-medium text-sm hover:text-[#01725a] transition-colors duration-200">{t('landing.safety')}</button>
+                <button onClick={() => setCurrentView("landing")} className="text-primary border-b-2 border-primary pb-1 font-medium text-sm hover:text-primary transition-colors duration-200">{t('sidebar.home')}</button>
+                <button onClick={() => setCurrentView("help")} className="text-on-surface-variant font-medium text-sm hover:text-primary transition-colors duration-200">{t('landing.howItWorks')}</button>
+                <button onClick={() => setCurrentView("about")} className="text-on-surface-variant font-medium text-sm hover:text-primary transition-colors duration-200">{t('landing.community')}</button>
+                <button onClick={() => setCurrentView("safety")} className="text-on-surface-variant font-medium text-sm hover:text-primary transition-colors duration-200">{t('landing.safety')}</button>
               </nav>
               <div className="flex items-center gap-4">
-                <button onClick={() => setCurrentView("login")} className="hidden md:block text-[#666551] font-medium text-sm hover:text-[#01725a] transition-colors duration-200 scale-95 active:scale-90">{t('landing.login')}</button>
-                <button onClick={() => setCurrentView("signup")} className="bg-[#01725a] text-white px-4 py-2 rounded-lg font-medium text-sm hover:bg-[#00654f] transition-colors scale-95 active:scale-90">{t('landing.getStarted')}</button>
+                <button onClick={() => setCurrentView("login")} className="hidden md:block text-on-surface-variant font-medium text-sm hover:text-primary transition-colors duration-200 scale-95 active:scale-90">{t('landing.login')}</button>
+                <button onClick={() => setCurrentView("signup")} className="w-full sm:w-auto bg-primary text-white px-6 py-3 rounded-xl font-bold shadow-md hover:bg-primary-dim transition-colors flex items-center justify-center gap-2">{t('landing.getStarted')}</button>
                 {/* Mobile Menu Button */}
                 <button 
-                  className="md:hidden p-2 text-[#666551] hover:text-[#01725a]"
+                  className="md:hidden p-2 text-on-surface-variant hover:text-primary"
                   onClick={() => setLandingMenuOpen(!landingMenuOpen)}
                 >
                   {landingMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
@@ -1424,25 +1424,25 @@ export default function App() {
 
           {/* Mobile Nav Dropdown */}
           {landingMenuOpen && (
-            <div className="md:hidden absolute top-16 left-0 right-0 bg-white shadow-xl z-50 p-6 flex flex-col gap-4 border-b border-slate-100">
-              <button onClick={() => { setCurrentView("landing"); setLandingMenuOpen(false); }} className="text-left font-medium text-slate-700 hover:text-[#01725a] py-2">{t('sidebar.home')}</button>
-              <button onClick={() => { setCurrentView("help"); setLandingMenuOpen(false); }} className="text-left font-medium text-slate-700 hover:text-[#01725a] py-2">{t('landing.howItWorks')}</button>
-              <button onClick={() => { setCurrentView("about"); setLandingMenuOpen(false); }} className="text-left font-medium text-slate-700 hover:text-[#01725a] py-2">{t('landing.community')}</button>
-              <button onClick={() => { setCurrentView("safety"); setLandingMenuOpen(false); }} className="text-left font-medium text-slate-700 hover:text-[#01725a] py-2">{t('landing.safety')}</button>
-              <hr className="border-slate-100 my-2" />
+            <div className="md:hidden absolute top-16 left-0 right-0 bg-surface-container-lowest shadow-xl z-50 p-6 flex flex-col gap-4 border-b border-outline-variant/50">
+              <button onClick={() => { setCurrentView("landing"); setLandingMenuOpen(false); }} className="text-left font-medium text-on-surface hover:text-primary py-2">{t('sidebar.home')}</button>
+              <button onClick={() => { setCurrentView("help"); setLandingMenuOpen(false); }} className="text-left font-medium text-on-surface hover:text-primary py-2">{t('landing.howItWorks')}</button>
+              <button onClick={() => { setCurrentView("about"); setLandingMenuOpen(false); }} className="text-left font-medium text-on-surface hover:text-primary py-2">{t('landing.community')}</button>
+              <button onClick={() => { setCurrentView("safety"); setLandingMenuOpen(false); }} className="text-left font-medium text-on-surface hover:text-primary py-2">{t('landing.safety')}</button>
+              <hr className="border-outline-variant/50 my-2" />
               <button 
                 onClick={() => {
                   setLandingMenuOpen(false);
                   setCurrentView("login");
                 }}
-                className="text-left font-medium text-slate-700 hover:text-[#01725a] py-2"
+                className="text-left font-medium text-on-surface hover:text-primary py-2"
               >{t('landing.login')}</button>
               <button 
                 onClick={() => {
                   setLandingMenuOpen(false);
                   setCurrentView("signup");
                 }}
-                className="bg-[#01725a] hover:bg-[#00654f] text-white px-6 py-3 rounded-lg font-semibold text-center transition-colors shadow-sm mt-2"
+                className="bg-primary hover:bg-primary-dim text-white px-6 py-3 rounded-xl font-semibold text-center transition-colors shadow-sm mt-2"
               >{t('landing.getStarted')}</button>
             </div>
           )}
@@ -1452,29 +1452,29 @@ export default function App() {
             <section className="relative min-h-[921px] flex items-center justify-center overflow-hidden">
               <div className="absolute inset-0 z-0">
                 <img className="w-full h-full object-cover object-center" alt="Hero background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCDC3YRMFuO-lEwm9bKTIguR-1belAnXoHIgeigQ3q4SUYgObcsSiNUjHnpR_ZfqvyDsqJKY7pe4fPQ9fAxiXPLcUxQOJOcX6tgsnNpBIFjznIY1JDEnT0amN_j0g91NAtN4xOqL_xe6gYYA1U5PBGH18oRD2F1fn_Z1eAqQ2CYzkwKBwB-0d16PaU0F6IfiXoXHmT6Txuseum5Be0PuKe26wtdeMNMjFB0UJczwaKK0iUeWAfbVmcG-yd4WQJ83LfWGXw7GPVkDQ"/>
-                <div className="absolute inset-0 bg-[#fffbff]/30 backdrop-blur-[2px]"></div>
+                <div className="absolute inset-0 bg-surface/30 backdrop-blur-[2px]"></div>
                 <div className="absolute inset-0 bg-gradient-to-t from-[#fffbff] via-transparent to-transparent"></div>
               </div>
               <div className="relative z-10 max-w-7xl mx-auto px-4 md:px-8 text-center mt-8 w-full">
-                <div className="bg-white/85 backdrop-blur-md border border-white/30 p-8 md:p-12 rounded-xl inline-block max-w-3xl shadow-lg w-full">
+                <div className="bg-surface-container-lowest/85 backdrop-blur-md border border-white/30 p-8 md:p-12 rounded-xl inline-block max-w-3xl shadow-lg w-full">
                   <img src="/logo.png" alt="FindTrack Logo" className="w-40 h-40 object-contain mx-auto mb-6 drop-shadow-md p-3 mt-2" onError={(e) => { e.currentTarget.style.display='none'; }} />
-                  <h1 className="font-sans text-4xl md:text-[48px] md:leading-[56px] font-bold text-[#00654f] mb-4">
+                  <h1 className="font-sans text-4xl md:text-[48px] md:leading-[56px] font-bold text-primary-dim mb-4">
                     Find what's lost.<br/>Restore community trust.
                   </h1>
-                  <p className="font-sans text-lg text-[#666551] mb-8 max-w-2xl mx-auto">
+                  <p className="font-sans text-lg text-on-surface-variant mb-8 max-w-2xl mx-auto">
                     FindTrack helps Filipinos recover lost belongings through trusted community reporting and verified recovery workflows.
                   </p>
                   <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
                     <button 
                       onClick={() => setCurrentView("signup")}
-                      className="w-full sm:w-auto bg-[#fab83f] text-[#553900] px-6 py-3 rounded-lg font-semibold text-sm shadow-md hover:bg-[#ebaa32] transition-colors flex items-center justify-center gap-2"
+                      className="w-full sm:w-auto bg-primary text-white px-6 py-3 rounded-xl font-bold text-sm shadow-md hover:bg-primary-dim transition-colors flex items-center justify-center gap-2"
                     >
                       <PlusCircle className="w-5 h-5" />
                       Start Reporting
                     </button>
                     <button 
                       onClick={handleGuestBrowse}
-                      className="w-full sm:w-auto border-2 border-[#01725a] text-[#01725a] px-6 py-3 rounded-lg font-semibold text-sm hover:bg-[#01725a]/5 transition-colors"
+                      className="w-full sm:w-auto border-2 border-primary text-primary px-6 py-3 rounded-xl font-bold text-sm hover:bg-primary/5 transition-colors flex items-center justify-center gap-2"
                     >{t('landing.howItWorks')}</button>
                   </div>
                 </div>
@@ -1485,71 +1485,71 @@ export default function App() {
             <section className="py-24 bg-[#ffffff]">
               <div className="max-w-7xl mx-auto px-4 md:px-8">
                 <div className="text-center mb-16">
-                  <h2 className="font-sans text-3xl md:text-4xl font-bold text-[#00654f] mb-2">Three Pillars of Recovery</h2>
-                  <p className="font-sans text-base text-[#666551] max-w-xl mx-auto">A seamless workflow designed to bring your items back home.</p>
+                  <h2 className="font-sans text-3xl md:text-4xl font-bold text-primary-dim mb-2">Three Pillars of Recovery</h2>
+                  <p className="font-sans text-base text-on-surface-variant max-w-xl mx-auto">A seamless workflow designed to bring your items back home.</p>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   {/* Pillar 1 */}
-                  <div className="bg-[#f7f4df] rounded-xl p-6 flex flex-col items-start border border-[#bcbaa2]/30 hover:shadow-md transition-shadow">
+                  <div className="bg-surface-container rounded-xl p-6 flex flex-col items-start border border-[#bcbaa2]/30 hover:shadow-md transition-shadow">
                     <div className="w-12 h-12 bg-[#9af4d6] text-[#005d49] rounded-full flex items-center justify-center mb-4">
                       <FileSearch className="w-6 h-6" />
                     </div>
-                    <h3 className="font-sans text-xl font-bold text-[#00654f] mb-2">Report</h3>
-                    <p className="font-sans text-base text-[#666551]">Quickly document lost or found items with AI-assisted details for precise matching.</p>
+                    <h3 className="font-sans text-xl font-bold text-primary-dim mb-2">Report</h3>
+                    <p className="font-sans text-base text-on-surface-variant">Quickly document lost or found items with AI-assisted details for precise matching.</p>
                   </div>
                   {/* Pillar 2 */}
-                  <div className="bg-[#fdfae7] rounded-xl p-6 flex flex-col items-start border border-[#bcbaa2]/30 hover:shadow-md transition-shadow">
+                  <div className="bg-surface-container-low rounded-xl p-6 flex flex-col items-start border border-[#bcbaa2]/30 hover:shadow-md transition-shadow">
                     <div className="w-12 h-12 bg-[#b5eedb] text-[#235b4c] rounded-full flex items-center justify-center mb-4">
                       <MessageSquareHeart className="w-6 h-6" />
                     </div>
-                    <h3 className="font-sans text-xl font-bold text-[#00654f] mb-2">Connect</h3>
-                    <p className="font-sans text-base text-[#666551]">Securely message community members when a match is found, protecting your privacy.</p>
+                    <h3 className="font-sans text-xl font-bold text-primary-dim mb-2">Connect</h3>
+                    <p className="font-sans text-base text-on-surface-variant">Securely message community members when a match is found, protecting your privacy.</p>
                   </div>
                   {/* Pillar 3 */}
-                  <div className="bg-[#f7f4df] rounded-xl p-6 flex flex-col items-start border border-[#bcbaa2]/30 hover:shadow-md transition-shadow">
-                    <div className="w-12 h-12 bg-[#fab83f] text-[#553900] rounded-full flex items-center justify-center mb-4">
+                  <div className="bg-surface-container rounded-xl p-6 flex flex-col items-start border border-[#bcbaa2]/30 hover:shadow-md transition-shadow">
+                    <div className="w-12 h-12 bg-tertiary-container text-on-tertiary-container rounded-full flex items-center justify-center mb-4">
                       <Handshake className="w-6 h-6" />
                     </div>
-                    <h3 className="font-sans text-xl font-bold text-[#00654f] mb-2">Recover</h3>
-                    <p className="font-sans text-base text-[#666551]">Follow verified hand-off protocols to ensure items return home safely and securely.</p>
+                    <h3 className="font-sans text-xl font-bold text-primary-dim mb-2">Recover</h3>
+                    <p className="font-sans text-base text-on-surface-variant">Follow verified hand-off protocols to ensure items return home safely and securely.</p>
                   </div>
                 </div>
               </div>
             </section>
 
             {/* Community Section */}
-            <section className="py-24 bg-[#f7f4df]">
+            <section className="py-24 bg-surface-container">
               <div className="max-w-7xl mx-auto px-4 md:px-8">
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
                   <div>
-                    <h2 className="font-sans text-3xl md:text-4xl font-bold text-[#00654f] mb-4">By the Community,<br/>For the Community.</h2>
-                    <p className="font-sans text-lg text-[#666551] mb-6">Built on the foundation of Bayanihan, FindTrack empowers everyday Filipinos to look out for one another.</p>
+                    <h2 className="font-sans text-3xl md:text-4xl font-bold text-primary-dim mb-4">By the Community,<br/>For the Community.</h2>
+                    <p className="font-sans text-lg text-on-surface-variant mb-6">Built on the foundation of Bayanihan, FindTrack empowers everyday Filipinos to look out for one another.</p>
                     <div className="flex gap-6 mb-8">
                       <div>
-                        <div className="font-sans text-3xl font-bold text-[#01725a]">{new Set(items.map(i => i.userId)).size}</div>
-                        <div className="font-sans text-sm font-medium text-[#666551]">{t('profile.communityMember')}s</div>
+                        <div className="font-sans text-3xl font-bold text-primary">{new Set(items.map(i => i.userId)).size}</div>
+                        <div className="font-sans text-sm font-medium text-on-surface-variant">{t('profile.communityMember')}s</div>
                       </div>
                       <div className="w-px bg-[#bcbaa2]/50"></div>
                       <div>
-                        <div className="font-sans text-3xl font-bold text-[#fab83f]">{stats.claimed}</div>
-                        <div className="font-sans text-sm font-medium text-[#666551]">Successful Recoveries</div>
+                        <div className="font-sans text-3xl font-bold text-tertiary-container">{stats.claimed}</div>
+                        <div className="font-sans text-sm font-medium text-on-surface-variant">Successful Recoveries</div>
                       </div>
                     </div>
                     {/* Testimonial Card (Placeholder for content team) */}
-                    <div className="bg-white rounded-xl p-6 border border-[#bcbaa2]/30 shadow-sm relative opacity-70">
+                    <div className="bg-surface-container-lowest rounded-xl p-6 border border-[#bcbaa2]/30 shadow-sm relative opacity-70">
                       <Quote className="absolute top-4 right-4 text-[#bcbaa2]/30 w-10 h-10" />
-                      <p className="font-sans text-base text-[#393927] mb-4 italic relative z-10">[Content Team: Insert real community testimonial here]</p>
+                      <p className="font-sans text-base text-on-surface mb-4 italic relative z-10">[Content Team: Insert real community testimonial here]</p>
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-full bg-slate-200 overflow-hidden">
                         </div>
                         <div>
-                          <div className="font-sans text-sm text-[#393927] font-bold">[User Name]</div>
-                          <div className="font-sans text-[10px] font-medium text-[#666551]">Community Hero</div>
+                          <div className="font-sans text-sm text-on-surface font-bold">[User Name]</div>
+                          <div className="font-sans text-[10px] font-medium text-on-surface-variant">Community Hero</div>
                         </div>
                       </div>
                     </div>
                   </div>
-                  <div className="relative h-[400px] lg:h-[500px] rounded-xl overflow-hidden shadow-lg border border-[#bcbaa2]/20">
+                  <div className="relative h-96 lg:h-auto rounded-xl overflow-hidden shadow-lg border border-[#bcbaa2]/20">
                     <img className="w-full h-full object-cover" alt="Community" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBxlGOvC8tUv_qZ8mbCzoTfeO2pcAAWluudEQ74nJYhDiM6dKFkJnXAMN2tK4YBhxIv0KPww3WsGnpb6KywmxGohTQ6i90nv7w2u0RVCecjGnzgkXMAWIJCDNduz3N6uzUJzOO2X6hUbk8TdWW4cPEa870HJ5Ah1QvAKbwvSknJT3Vri6FIhh8Mm_4iOGeknwaECR9sIKas-PM3QZqG2o9wpOSp-eQc4Fnpoc0yWIHqiDg4zXr3mFK3NE8g9xXChlUOf26yIrPeeg"/>
                   </div>
                 </div>
@@ -1558,26 +1558,26 @@ export default function App() {
           </main>
 
           {/* Footer */}
-          <footer className="bg-[#ebe9cf] border-t border-[#bcbaa2]/30 w-full mt-auto">
+          <footer className="bg-surface-variant border-t border-[#bcbaa2]/30 w-full mt-auto">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 py-8 px-4 md:px-8 max-w-7xl mx-auto">
               <div>
-                <div className="font-sans text-2xl font-bold text-[#393927] mb-4 flex items-center gap-2">
+                <div className="font-sans text-2xl font-bold text-on-surface mb-4 flex items-center gap-2">
                   <img src="/logo.png" alt="FindTrack Logo" className="w-10 h-10 object-contain p-1 mx-1" onError={(e) => { e.currentTarget.style.display='none'; e.currentTarget.nextElementSibling?.classList.remove('hidden'); }} />
-                  <MapPin className="h-6 w-6 text-[#01725a] hidden"/>
+                  <MapPin className="h-6 w-6 text-primary hidden"/>
                   FindTrack
                 </div>
-                <p className="font-sans text-base text-[#666551] max-w-sm mb-4">© 2026 FindTrack Philippines. Empowering communities through trust and recovery.</p>
+                <p className="font-sans text-base text-on-surface-variant max-w-sm mb-4">© 2026 FindTrack Philippines. Empowering communities through trust and recovery.</p>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <nav className="flex flex-col gap-3">
-                  <a onClick={() => { setCurrentView("about"); window.history.pushState(null, "", "/about"); }} className="font-sans text-sm font-medium text-[#666551] hover:text-[#01725a] hover:underline transition-all opacity-80 hover:opacity-100 cursor-pointer">{t('landing.aboutUs')}</a>
-                  <a onClick={() => { setCurrentView("privacy"); window.history.pushState(null, "", "/privacy"); }} className="font-sans text-sm font-medium text-[#666551] hover:text-[#01725a] hover:underline transition-all opacity-80 hover:opacity-100 cursor-pointer">{t('landing.privacyPolicy')}</a>
-                  <a onClick={() => { setCurrentView("terms"); window.history.pushState(null, "", "/terms"); }} className="font-sans text-sm font-medium text-[#666551] hover:text-[#01725a] hover:underline transition-all opacity-80 hover:opacity-100 cursor-pointer">{t('landing.termsOfService')}</a>
+                  <a onClick={() => { setCurrentView("about"); window.history.pushState(null, "", "/about"); }} className="font-sans text-sm font-medium text-on-surface-variant hover:text-primary hover:underline transition-all opacity-80 hover:opacity-100 cursor-pointer">{t('landing.aboutUs')}</a>
+                  <a onClick={() => { setCurrentView("privacy"); window.history.pushState(null, "", "/privacy"); }} className="font-sans text-sm font-medium text-on-surface-variant hover:text-primary hover:underline transition-all opacity-80 hover:opacity-100 cursor-pointer">{t('landing.privacyPolicy')}</a>
+                  <a onClick={() => { setCurrentView("terms"); window.history.pushState(null, "", "/terms"); }} className="font-sans text-sm font-medium text-on-surface-variant hover:text-primary hover:underline transition-all opacity-80 hover:opacity-100 cursor-pointer">{t('landing.termsOfService')}</a>
                 </nav>
                 <nav className="flex flex-col gap-3">
-                  <a onClick={() => { setCurrentView("safety"); window.history.pushState(null, "", "/safety"); }} className="font-sans text-sm font-medium text-[#666551] hover:text-[#01725a] hover:underline transition-all opacity-80 hover:opacity-100 cursor-pointer">{t('landing.safetyGuidelines')}</a>
-                  <a onClick={() => { setCurrentView("help"); window.history.pushState(null, "", "/help"); }} className="font-sans text-sm font-medium text-[#666551] hover:text-[#01725a] hover:underline transition-all opacity-80 hover:opacity-100 cursor-pointer">{t('landing.helpCenter')}</a>
-                  <a onClick={() => { setCurrentView("contact"); window.history.pushState(null, "", "/contact"); }} className="font-sans text-sm font-medium text-[#666551] hover:text-[#01725a] hover:underline transition-all opacity-80 hover:opacity-100 cursor-pointer">{t('landing.contactUs')}</a>
+                  <a onClick={() => { setCurrentView("safety"); window.history.pushState(null, "", "/safety"); }} className="font-sans text-sm font-medium text-on-surface-variant hover:text-primary hover:underline transition-all opacity-80 hover:opacity-100 cursor-pointer">{t('landing.safetyGuidelines')}</a>
+                  <a onClick={() => { setCurrentView("help"); window.history.pushState(null, "", "/help"); }} className="font-sans text-sm font-medium text-on-surface-variant hover:text-primary hover:underline transition-all opacity-80 hover:opacity-100 cursor-pointer">{t('landing.helpCenter')}</a>
+                  <a onClick={() => { setCurrentView("contact"); window.history.pushState(null, "", "/contact"); }} className="font-sans text-sm font-medium text-on-surface-variant hover:text-primary hover:underline transition-all opacity-80 hover:opacity-100 cursor-pointer">{t('landing.contactUs')}</a>
                 </nav>
               </div>
             </div>
@@ -1595,7 +1595,7 @@ export default function App() {
           </div>
 
           {/* Login Card */}
-          <main className="bg-white border border-outline-variant/30 shadow-[0_8px_32px_0_rgba(1,114,90,0.05)] w-full max-w-[400px] rounded-xl p-8 relative z-10">
+          <main className="bg-surface-container-lowest border border-outline-variant/30 shadow-[0_8px_32px_0_rgba(1,114,90,0.05)] w-full max-w-96 rounded-xl p-8 relative z-10">
             {/* Header */}
             <div className="text-center mb-8">
               <h1 className="font-headline-lg text-4xl text-primary mb-3 cursor-pointer" onClick={() => setCurrentView("landing")}>FindTrack</h1>
@@ -1609,7 +1609,7 @@ export default function App() {
                 <label className="block font-label-md text-sm text-on-surface mb-1" htmlFor="email">{t('profile.emailAddress')}</label>
                 <div className="relative">
                   <input 
-                    className="w-full pr-10 pl-3 py-3 bg-surface-container-lowest border border-outline-variant rounded-lg font-body-md text-on-surface focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-colors" 
+                    className="shadow-sm w-full pr-10 pl-3 py-3 bg-surface-container-lowest border border-outline-variant rounded-xl font-body-md text-on-surface focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-colors" 
                     id="email" 
                     name="email" 
                     placeholder="you@example.com" 
@@ -1628,7 +1628,7 @@ export default function App() {
                 <label className="block font-label-md text-sm text-on-surface mb-1" htmlFor="password">Password</label>
                 <div className="relative">
                   <input 
-                    className="w-full pl-3 pr-16 py-3 bg-surface-container-lowest border border-outline-variant rounded-lg font-body-md text-on-surface focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-colors" 
+                    className="shadow-sm w-full pl-3 pr-16 py-3 bg-surface-container-lowest border border-outline-variant rounded-xl font-body-md text-on-surface focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-colors" 
                     id="password" 
                     name="password" 
                     placeholder="••••••••" 
@@ -1664,7 +1664,7 @@ export default function App() {
 
               {/* Submit Button */}
               <button 
-                className="w-full py-3 px-4 bg-primary text-on-primary rounded-lg font-body-lg text-lg font-medium hover:bg-primary-dim transition-colors shadow-sm flex items-center justify-center gap-3" 
+                className="w-full py-3 px-4 bg-primary text-on-primary rounded-xl font-body-lg text-lg font-medium hover:bg-primary-dim transition-colors shadow-sm flex items-center justify-center gap-3" 
                 type="submit"
               >{t('landing.login')}</button>
             </form>
@@ -1696,7 +1696,7 @@ export default function App() {
           </div>
 
           {/* Signup Card */}
-          <main className="bg-white border border-outline-variant/30 shadow-[0_8px_32px_0_rgba(1,114,90,0.05)] w-full max-w-[400px] rounded-xl p-8 relative z-10">
+          <main className="bg-surface-container-lowest border border-outline-variant/30 shadow-[0_8px_32px_0_rgba(1,114,90,0.05)] w-full max-w-96 rounded-xl p-8 relative z-10">
             {/* Header */}
             <div className="text-center mb-6">
               <h1 className="font-headline-lg text-4xl text-primary mb-3 cursor-pointer" onClick={() => setCurrentView("landing")}>FindTrack</h1>
@@ -1725,7 +1725,7 @@ export default function App() {
                     autoComplete="given-name"
                     value={signupFirst}
                     onChange={(e) => setSignupFirst(e.target.value)}
-                    className="block w-full rounded-lg border border-outline-variant/60 py-2.5 px-3 bg-surface-container-low shadow-sm placeholder:text-outline focus:border-primary focus:ring-1 focus:ring-primary outline-none font-body-md transition-shadow text-sm"
+                    className="block w-full rounded-xl border border-outline-variant/60 py-3 px-4 bg-surface-container-low shadow-sm placeholder:text-outline focus:border-primary focus:ring-1 focus:ring-primary outline-none font-body-md transition-shadow text-sm"
                   />
                 </div>
                 <div>
@@ -1738,7 +1738,7 @@ export default function App() {
                     autoComplete="family-name"
                     value={signupLast}
                     onChange={(e) => setSignupLast(e.target.value)}
-                    className="block w-full rounded-lg border border-outline-variant/60 py-2.5 px-3 bg-surface-container-low shadow-sm placeholder:text-outline focus:border-primary focus:ring-1 focus:ring-primary outline-none font-body-md transition-shadow text-sm"
+                    className="block w-full rounded-xl border border-outline-variant/60 py-3 px-4 bg-surface-container-low shadow-sm placeholder:text-outline focus:border-primary focus:ring-1 focus:ring-primary outline-none font-body-md transition-shadow text-sm"
                   />
                 </div>
               </div>
@@ -1753,7 +1753,7 @@ export default function App() {
                   autoComplete="email"
                   value={authEmail}
                   onChange={(e) => setAuthEmail(e.target.value)}
-                  className="block w-full rounded-lg border border-outline-variant/60 py-2.5 px-3 bg-surface-container-low shadow-sm placeholder:text-outline focus:border-primary focus:ring-1 focus:ring-primary outline-none font-body-md transition-shadow text-sm"
+                  className="block w-full rounded-xl border border-outline-variant/60 py-3 px-4 bg-surface-container-low shadow-sm placeholder:text-outline focus:border-primary focus:ring-1 focus:ring-primary outline-none font-body-md transition-shadow text-sm"
                 />
               </div>
 
@@ -1765,7 +1765,7 @@ export default function App() {
                   type="tel" 
                   value={signupContact}
                   onChange={(e) => setSignupContact(e.target.value)}
-                  className="block w-full rounded-lg border border-outline-variant/60 py-2.5 px-3 bg-surface-container-low shadow-sm placeholder:text-outline focus:border-primary focus:ring-1 focus:ring-primary outline-none font-body-md transition-shadow text-sm"
+                  className="block w-full rounded-xl border border-outline-variant/60 py-3 px-4 bg-surface-container-low shadow-sm placeholder:text-outline focus:border-primary focus:ring-1 focus:ring-primary outline-none font-body-md transition-shadow text-sm"
                 />
               </div>
 
@@ -1780,7 +1780,7 @@ export default function App() {
                     autoComplete="new-password"
                     value={authPassword}
                     onChange={(e) => setAuthPass(e.target.value)}
-                    className="block w-full rounded-lg border border-outline-variant/60 py-2.5 px-3 bg-surface-container-low shadow-sm placeholder:text-outline focus:border-primary focus:ring-1 focus:ring-primary outline-none font-body-md transition-shadow text-sm pr-10"
+                    className="block w-full rounded-xl border border-outline-variant/60 py-3 px-4 bg-surface-container-low shadow-sm placeholder:text-outline focus:border-primary focus:ring-1 focus:ring-primary outline-none font-body-md transition-shadow text-sm pr-10"
                   />
                   <button 
                     type="button" 
@@ -1813,7 +1813,7 @@ export default function App() {
                 <button 
                   type="submit" 
                   disabled={loadingAuth}
-                  className="flex w-full justify-center rounded-lg bg-primary px-4 py-3 font-label-md text-sm font-semibold text-on-primary shadow-sm hover:bg-primary-dim focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary transition-colors disabled:opacity-70 mt-2"
+                  className="flex w-full justify-center rounded-xl bg-primary px-4 py-3 font-label-md text-sm font-semibold text-on-primary shadow-sm hover:bg-primary-dim focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary transition-colors disabled:opacity-70 mt-2"
                 >
                   {loadingAuth ? "Creating Account..." : "Create Account"}
                 </button>
@@ -1845,7 +1845,7 @@ export default function App() {
 
           {/* Main Content */}
           <div className="flex-grow flex items-center justify-center p-4">
-            <div className="bg-surface w-full max-w-md rounded-2xl shadow-[0_8px_32px_rgba(1,114,90,0.06)] p-8 md:p-10 flex flex-col items-center text-center border border-outline-variant/30 animate-[fadeInUp_0.8s_ease_forwards]">
+            <div className="bg-surface w-full max-w-md rounded-xl shadow-[0_8px_32px_rgba(1,114,90,0.06)] p-8 md:p-10 flex flex-col items-center text-center border border-outline-variant/30 animate-[fadeInUp_0.8s_ease_forwards]">
               {/* Icon */}
               <div className="w-16 h-16 bg-primary-container rounded-full flex items-center justify-center mb-6 shadow-sm">
                 <span className="material-symbols-outlined text-3xl text-on-primary-container" style={{ fontVariationSettings: "'FILL' 1" }}>mark_email_read</span>
@@ -1982,7 +1982,7 @@ export default function App() {
                     setRefererBlockedDomain(window.location.hostname);
                     setShowRefererModal(true);
                   }}
-                  className="w-full flex items-center justify-center gap-2 p-3 bg-amber-50 hover:bg-amber-100 border border-amber-200 text-amber-900 rounded-xl text-xs transition-colors font-medium shadow-sm"
+                  className="w-full flex items-center justify-center gap-2 p-3 bg-tertiary-container/10 hover:bg-tertiary-container/20 border border-tertiary-container/50 text-on-tertiary-container rounded-xl text-xs transition-colors font-medium shadow-sm"
                 >
                   <span className="text-sm">❓</span>
                   <span>Link says "Expired or already used"? Click here!</span>
@@ -2030,7 +2030,7 @@ export default function App() {
           </div>
 
           <div className="w-full max-w-md px-4 z-20">
-            <div className="bg-surface rounded-2xl shadow-xl p-8 md:p-10 text-center flex flex-col items-center border border-surface-variant/50 animate-[fadeInUp_0.8s_ease_forwards]">
+            <div className="bg-surface rounded-xl shadow-xl p-8 md:p-10 text-center flex flex-col items-center border border-surface-variant/50 animate-[fadeInUp_0.8s_ease_forwards]">
               {/* Success Icon */}
               <div className="w-20 h-20 rounded-full bg-primary-container flex items-center justify-center mb-6 shadow-sm relative">
                 <div className="absolute inset-0 rounded-full bg-primary-container animate-ping opacity-25"></div>
@@ -2139,7 +2139,7 @@ export default function App() {
                   cursor: "pointer",
                   fontSize: "13px",
                 }}
-                className="hover:bg-white/20 transition-all"
+                className="hover:bg-surface-container-lowest/20 transition-all"
               >
                 ← Go Back
               </button>
@@ -2399,7 +2399,7 @@ export default function App() {
                   cursor: "pointer",
                   fontSize: "13px",
                 }}
-                className="hover:bg-white/20 transition-all"
+                className="hover:bg-surface-container-lowest/20 transition-all"
               >
                 ← Go Back
               </button>
@@ -2587,7 +2587,7 @@ export default function App() {
         <div style={{ minHeight: "100vh", background: "#f8fafc", fontFamily: "sans-serif" }}>
           <header style={{ padding: "20px 40px", display: "flex", justifyContent: "space-between", alignItems: "center", background: "#fff", borderBottom: "1px solid #e2e8f0" }}>
             <div style={{ fontWeight: "bold", fontSize: "24px", color: "#01725a", display: "flex", alignItems: "center", gap: "8px", cursor: "pointer" }} onClick={() => { setCurrentView("landing"); window.history.pushState(null, "", "/"); }}>
-              <MapPin className="h-6 w-6 text-[#01725a]"/>
+              <MapPin className="h-6 w-6 text-primary"/>
               FindTrack
             </div>
           </header>
@@ -2609,7 +2609,7 @@ export default function App() {
         <div style={{ minHeight: "100vh", background: "#f8fafc", fontFamily: "sans-serif" }}>
           <header style={{ padding: "20px 40px", display: "flex", justifyContent: "space-between", alignItems: "center", background: "#fff", borderBottom: "1px solid #e2e8f0" }}>
             <div style={{ fontWeight: "bold", fontSize: "24px", color: "#01725a", display: "flex", alignItems: "center", gap: "8px", cursor: "pointer" }} onClick={() => { setCurrentView("landing"); window.history.pushState(null, "", "/"); }}>
-              <MapPin className="h-6 w-6 text-[#01725a]"/>
+              <MapPin className="h-6 w-6 text-primary"/>
               FindTrack
             </div>
           </header>
@@ -2634,7 +2634,7 @@ export default function App() {
         <div style={{ minHeight: "100vh", background: "#f8fafc", fontFamily: "sans-serif" }}>
           <header style={{ padding: "20px 40px", display: "flex", justifyContent: "space-between", alignItems: "center", background: "#fff", borderBottom: "1px solid #e2e8f0" }}>
             <div style={{ fontWeight: "bold", fontSize: "24px", color: "#01725a", display: "flex", alignItems: "center", gap: "8px", cursor: "pointer" }} onClick={() => { setCurrentView("landing"); window.history.pushState(null, "", "/"); }}>
-              <MapPin className="h-6 w-6 text-[#01725a]"/>
+              <MapPin className="h-6 w-6 text-primary"/>
               FindTrack
             </div>
           </header>
@@ -2673,7 +2673,7 @@ export default function App() {
         <div style={{ minHeight: "100vh", background: "#f8fafc", fontFamily: "sans-serif" }}>
           <header style={{ padding: "20px 40px", display: "flex", justifyContent: "space-between", alignItems: "center", background: "#fff", borderBottom: "1px solid #e2e8f0" }}>
             <div style={{ fontWeight: "bold", fontSize: "24px", color: "#01725a", display: "flex", alignItems: "center", gap: "8px", cursor: "pointer" }} onClick={() => { setCurrentView("landing"); window.history.pushState(null, "", "/"); }}>
-              <MapPin className="h-6 w-6 text-[#01725a]"/>
+              <MapPin className="h-6 w-6 text-primary"/>
               FindTrack
             </div>
           </header>
@@ -2717,7 +2717,7 @@ export default function App() {
             <div className="pt-8 pb-8 px-8 shrink-0">
               <div className="flex justify-between items-start">
                 <div className="flex flex-col gap-4">
-                  <img src="/logo.png" alt="FindTrack Logo" className="w-20 h-20 object-contain bg-white rounded-xl p-3 shadow-sm my-2" onError={(e) => { e.currentTarget.style.display='none'; }} />
+                  <img src="/logo.png" alt="FindTrack Logo" className="w-20 h-20 object-contain bg-surface-container-lowest rounded-xl p-3 shadow-sm my-2" onError={(e) => { e.currentTarget.style.display='none'; }} />
                   <div className="mt-1">
                     <h1 className="text-3xl font-bold tracking-tight text-white font-poppins leading-none">
                       FindTrack
@@ -2726,7 +2726,7 @@ export default function App() {
                   </div>
                 </div>
                 <button 
-                  className="md:hidden text-white/70 hover:text-white p-1 rounded-lg bg-white/10" 
+                  className="md:hidden text-white/70 hover:text-white p-1 rounded-xl bg-surface-container-lowest/10" 
                   onClick={() => setSidebarOpen(false)}
                 >
                   <X className="h-5 w-5" />
@@ -2761,10 +2761,10 @@ export default function App() {
                           setActiveTab("about");
                           setSidebarOpen(false);
                         }}
-                        className={`w-full flex items-center px-4 min-h-[48px] rounded-xl transition-all duration-200 text-left gap-4 ${
+                        className={`w-full flex items-center px-4 min-h-12 rounded-xl transition-all duration-200 text-left gap-4 ${
                           isSelected
                             ? "bg-primary-container text-[#005d49] font-semibold shadow-sm"
-                            : "text-white/80 hover:text-white hover:bg-white/10"
+                            : "text-white/80 hover:text-white hover:bg-surface-container-lowest/10"
                         }`}
                       >
                         <item.icon className={`h-5 w-5 shrink-0 ${isSelected ? "text-[#005d49]" : "opacity-80"}`} />
@@ -2786,10 +2786,10 @@ export default function App() {
                       }
                       setSidebarOpen(false);
                     }}
-                    className={`w-full flex items-center px-4 min-h-[48px] rounded-xl transition-all duration-200 text-left gap-4 ${
+                    className={`w-full flex items-center px-4 min-h-12 rounded-xl transition-all duration-200 text-left gap-4 ${
                       isSelected
                         ? "bg-primary-container text-[#005d49] font-semibold shadow-sm" 
-                        : "text-white/80 hover:text-white hover:bg-white/10"
+                        : "text-white/80 hover:text-white hover:bg-surface-container-lowest/10"
                     }`}
                   >
                     <item.icon className={`h-5 w-5 shrink-0 ${isSelected ? "text-[#005d49]" : "opacity-80"}`} />
@@ -2804,7 +2804,7 @@ export default function App() {
               {profileName === "Guest" ? (
                 <button 
                   onClick={() => handleGuestBrowse()}
-                  className="w-full flex items-center justify-between px-4 py-3 rounded-xl transition-all duration-200 text-white/80 hover:text-white hover:bg-white/10 text-sm"
+                  className="w-full flex items-center justify-between px-4 py-3 rounded-xl transition-all duration-200 text-white/80 hover:text-white hover:bg-surface-container-lowest/10 text-sm"
                 >
                   <div className="flex items-center gap-3">
                     <LogOut className="h-5 w-5 opacity-80" />
@@ -2812,7 +2812,7 @@ export default function App() {
                   </div>
                 </button>
               ) : (
-                <div className="flex items-center justify-between gap-3 px-3 py-3 rounded-xl bg-white/5 border border-white/10">
+                <div className="flex items-center justify-between gap-3 px-3 py-3 rounded-xl bg-surface-container-lowest/5 border border-white/10">
                   <div className="flex items-center gap-3 min-w-0">
                     <div className="h-9 w-9 rounded-full bg-primary-container text-[#005d49] flex items-center justify-center font-bold text-sm shrink-0 uppercase">
                       {profileName.charAt(0)}
@@ -2824,7 +2824,7 @@ export default function App() {
                   </div>
                   <button 
                     onClick={handleLogoutAction}
-                    className="p-2 rounded-lg text-white/60 hover:text-white hover:bg-white/10 transition-colors shrink-0"
+                    className="p-2 rounded-xl text-white/60 hover:text-white hover:bg-surface-container-lowest/10 transition-colors shrink-0"
                     title="Logout"
                   >
                     <LogOut className="h-5 w-5" />
@@ -2891,28 +2891,28 @@ export default function App() {
               id="home"
               className={`${activeTab === "home" ? "flex" : "hidden"} max-w-5xl mx-auto h-full flex-col`}
             >
-              <h1 className="text-3xl md:text-4xl font-bold text-slate-900 mb-8 flex items-center gap-2">
+              <h1 className="text-3xl md:text-4xl font-bold text-on-surface mb-8 flex items-center gap-2">
                 {t(getGreetingKey())}
               </h1>
               
               {/* Stats row */}
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-                  <div className="bg-[#D3E8E5] p-5 rounded-2xl flex flex-col items-center justify-center text-center shadow-sm">
+                  <div className="bg-[#D3E8E5] p-5 rounded-xl flex flex-col items-center justify-center text-center shadow-sm">
                     <ShoppingBag className="w-8 h-8 text-[#1A7B72] mb-3" strokeWidth={1.5} />
                     <div className="text-sm font-medium text-[#15605A] leading-tight mb-1">{t('dashboard.itemsReported')}:</div>
                     <div className="text-3xl font-bold text-[#1A7B72]">{stats.lost + stats.found}</div>
                   </div>
-                  <div className="bg-[#E2F0D9] p-5 rounded-2xl flex flex-col items-center justify-center text-center shadow-sm">
+                  <div className="bg-[#E2F0D9] p-5 rounded-xl flex flex-col items-center justify-center text-center shadow-sm">
                     <Search className="w-8 h-8 text-[#1A7B72] mb-3" strokeWidth={1.5} />
                     <div className="text-sm font-medium text-[#15605A] leading-tight mb-1">{t('dashboard.itemsFound')}:</div>
                     <div className="text-3xl font-bold text-[#1A7B72]">{stats.found}</div>
                   </div>
-                  <div className="bg-[#D3E8E5] p-5 rounded-2xl flex flex-col items-center justify-center text-center shadow-sm">
+                  <div className="bg-[#D3E8E5] p-5 rounded-xl flex flex-col items-center justify-center text-center shadow-sm">
                     <Users className="w-8 h-8 text-[#1A7B72] mb-3" strokeWidth={1.5} />
                     <div className="text-sm font-medium text-[#15605A] leading-tight mb-1">{t('dashboard.communityMembers')}:</div>
                     <div className="text-3xl font-bold text-[#1A7B72]">{new Set(items.map(i => i.userId).filter(Boolean)).size || 1}</div>
                   </div>
-                  <div className="bg-[#D3E8E5] p-5 rounded-2xl flex flex-col items-center justify-center text-center shadow-sm">
+                  <div className="bg-[#D3E8E5] p-5 rounded-xl flex flex-col items-center justify-center text-center shadow-sm">
                     <CheckSquare className="w-8 h-8 text-[#1A7B72] mb-3" strokeWidth={1.5} />
                     <div className="text-sm font-medium text-[#15605A] leading-tight mb-1">{t('dashboard.recoveriesThisWeek')}:</div>
                     <div className="text-3xl font-bold text-[#1A7B72]">{stats.claimed}</div>
@@ -2920,25 +2920,25 @@ export default function App() {
               </div>
 
               {/* Content row */}
-              <div className="grid md:grid-cols-2 gap-6 mb-8 flex-1 min-h-[400px]">
+              <div className="grid md:grid-cols-2 gap-6 mb-8 flex-1 min-h-96">
                   {/* Recent Community Activity */}
-                  <div className="bg-white rounded-3xl p-6 shadow-sm border border-slate-100 flex flex-col h-full">
-                    <h2 className="text-xl font-bold text-slate-900 mb-6">{t('dashboard.recentCommunityActivity')}</h2>
+                  <div className="bg-surface-container-lowest rounded-3xl p-6 shadow-sm border border-outline-variant/50 flex flex-col h-full">
+                    <h2 className="text-xl font-bold text-on-surface mb-6">{t('dashboard.recentCommunityActivity')}</h2>
                     <div className="space-y-4 overflow-y-auto flex-1 pr-2">
                       {items.slice(0, 6).map((r) => (
                         <div key={r.id} className="text-sm border-b border-slate-50 pb-4 last:border-0">
-                          <span className="font-semibold text-slate-800">{r.type === 'lost' ? t('dashboard.lost') : t('dashboard.found')} {r.title}</span> {r.location ? `${t('dashboard.in', 'in')} ${r.location}` : ''} - 
-                          <span className="text-slate-500 ml-1">{t('dashboard.reportedBy', 'Reported by')} {r.contactName?.split(' ')[0] || t('dashboard.member', 'Member')} ({r.date ? new Date(r.date).toLocaleDateString(i18n.language) : t('search.recent', 'Recent')})</span>
+                          <span className="font-semibold text-on-surface">{r.type === 'lost' ? t('dashboard.lost') : t('dashboard.found')} {r.title}</span> {r.location ? `${t('dashboard.in', 'in')} ${r.location}` : ''} - 
+                          <span className="text-on-surface-variant ml-1">{t('dashboard.reportedBy', 'Reported by')} {r.contactName?.split(' ')[0] || t('dashboard.member', 'Member')} ({r.date ? new Date(r.date).toLocaleDateString(i18n.language) : t('search.recent', 'Recent')})</span>
                         </div>
                       ))}
-                      {items.length === 0 && <div className="text-slate-500 text-sm">{t('dashboard.noRecentActivity')}</div>}
+                      {items.length === 0 && <div className="text-on-surface-variant text-sm">{t('dashboard.noRecentActivity')}</div>}
                     </div>
                   </div>
                   
                   {/* Private Messages */}
-                  <div className="bg-white rounded-3xl p-6 shadow-sm border border-slate-100 flex flex-col h-full">
-                    <h2 className="text-xl font-bold text-slate-900 mb-6">{t('dashboard.privateMessages')}</h2>
-                    <div className="space-y-4 overflow-y-auto flex-1 pr-2 flex items-center justify-center flex-col text-slate-500">
+                  <div className="bg-surface-container-lowest rounded-3xl p-6 shadow-sm border border-outline-variant/50 flex flex-col h-full">
+                    <h2 className="text-xl font-bold text-on-surface mb-6">{t('dashboard.privateMessages')}</h2>
+                    <div className="space-y-4 overflow-y-auto flex-1 pr-2 flex items-center justify-center flex-col text-on-surface-variant">
                       <MessageSquare className="h-12 w-12 mb-3 text-slate-300" />
                       <p className="text-sm font-medium">{t('dashboard.noMessagesYet')}</p>
                       <p className="text-xs text-center mt-1">{t('dashboard.whenSomeoneContactsYouAboutYourReportedItemItWillAppearHere')}</p>
@@ -2947,7 +2947,7 @@ export default function App() {
               </div>
 
               {/* Footer Banner */}
-              <div className="mt-auto bg-[#1A7B72] text-white text-center py-5 px-6 rounded-2xl font-medium shadow-md">
+              <div className="mt-auto bg-[#1A7B72] text-white text-center py-5 px-6 rounded-xl font-medium shadow-md">
                 {t('dashboard.everyRecoveredItemStrengthensTheCommunity')}
               </div>
             </section>
@@ -2962,7 +2962,7 @@ export default function App() {
                   <p className="font-body-md text-on-surface-variant mt-2">{t('dashboard.fillInTheDetailsBelowOurSmartMatchingSystemWillHelpFindTheOwnerOrTheItem')}</p>
                 </header>
 
-                <div className="bg-surface-container-lowest rounded-2xl border border-outline-variant shadow-sm overflow-hidden">
+                <div className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-sm overflow-hidden">
                   {/* Stepper Header */}
                   <div className="flex border-b border-outline-variant bg-surface-variant/50">
                     <div className={`flex-1 py-4 px-6 text-center text-sm font-bold border-b-2 ${reportStep >= 1 ? 'border-primary text-primary' : 'border-transparent text-outline'}`}>
@@ -3111,7 +3111,7 @@ export default function App() {
                     <div className="relative z-10">
                       <h2 className="font-headline-lg text-3xl font-bold text-primary mb-2">{t('search.findLostItems')}</h2>
                       <p className="font-body-lg text-on-surface-variant mb-6">{t('search.searchThroughOurCommunityDatabaseToFindWhatYoureLookingFor')}</p>
-                      <div className="relative flex items-center w-full shadow-sm rounded-lg overflow-hidden border border-outline-variant focus-within:border-primary transition-colors bg-surface">
+                      <div className="relative flex items-center w-full shadow-sm rounded-xl overflow-hidden border border-outline-variant focus-within:border-primary transition-colors bg-surface">
                         <div className="pl-4 text-on-surface-variant">
                           <Search className="h-6 w-6" />
                         </div>
@@ -3198,7 +3198,7 @@ export default function App() {
                               setSelectedItemId(report.id);
                               setActiveTab("itemDetail");
                             }}
-                            className="bg-surface-container-lowest p-4 rounded-lg border border-outline-variant hover:border-primary cursor-pointer hover:shadow-md transition-all group"
+                            className="bg-surface-container-lowest p-4 rounded-xl border border-outline-variant hover:border-primary cursor-pointer hover:shadow-md transition-all group"
                           >
                             <div className="font-headline-md text-base font-semibold text-on-surface mb-1 group-hover:text-primary transition-colors line-clamp-1">{report.title}</div>
                             <div className="flex items-center text-sm text-on-surface-variant mb-2">
@@ -3252,7 +3252,7 @@ export default function App() {
                             r.claimed ? 'bg-primary-container text-on-primary-container' : 
                             r.type === 'found' ? 'bg-secondary-container text-on-secondary-container' : 'bg-error-container text-on-error-container'
                           }`}>
-                            {r.claimed ? <CheckCircle2 className="h-[14px] w-[14px]" /> : r.type === "found" ? <CheckCircle2 className="h-[14px] w-[14px]" /> : <Search className="h-[14px] w-[14px]" />}
+                            {r.claimed ? <CheckCircle2 className="h-3.5 w-3.5" /> : r.type === "found" ? <CheckCircle2 className="h-3.5 w-3.5" /> : <Search className="h-3.5 w-3.5" />}
                             {r.claimed ? t('search.claimed') : r.type === "found" ? t('search.found') : t('search.lost')}
                           </div>
                           <button
@@ -3262,7 +3262,7 @@ export default function App() {
                             }}
                             className={`absolute top-3 right-3 w-8 h-8 rounded-full flex items-center justify-center transition-colors ${pinned ? "bg-tertiary text-on-tertiary shadow-md" : "bg-surface/80 backdrop-blur-sm text-on-surface-variant hover:text-primary"}`}
                           >
-                            <MapPin className="h-[18px] w-[18px]" fill={pinned ? "currentColor" : "none"} />
+                            <MapPin className="h-4.5 w-4.5" fill={pinned ? "currentColor" : "none"} />
                           </button>
                         </div>
                         <div className="p-4 flex-1 flex flex-col">
@@ -3274,11 +3274,11 @@ export default function App() {
                           </p>
                           <div className="mt-auto space-y-2">
                             <div className="flex items-center text-xs text-on-surface-variant">
-                              <MapPin className="h-[14px] w-[14px] mr-1 text-primary shrink-0" />
+                              <MapPin className="h-3.5 w-3.5 mr-1 text-primary shrink-0" />
                               <span className="truncate">{r.location || t('search.unknownLocation', 'Unknown location')}</span>
                             </div>
                             <div className="flex items-center text-xs text-on-surface-variant">
-                              <Clock className="h-[14px] w-[14px] mr-1 text-primary shrink-0" />
+                              <Clock className="h-3.5 w-3.5 mr-1 text-primary shrink-0" />
                               <span>{r.date
                                 ? new Date(r.date).toLocaleDateString(i18n.language, {
                                     year: "numeric",
@@ -3302,7 +3302,7 @@ export default function App() {
                 </div>
 
                 {filteredSearchList.length === 0 && (
-                  <div className="py-16 flex flex-col items-center justify-center text-center border-2 border-dashed border-outline-variant rounded-2xl bg-surface-container-lowest">
+                  <div className="py-16 flex flex-col items-center justify-center text-center border-2 border-dashed border-outline-variant rounded-xl bg-surface-container-lowest">
                     <div className="w-16 h-16 bg-primary-container/30 rounded-full flex items-center justify-center mb-4 border border-primary-container">
                       <Search className="h-8 w-8 text-primary" />
                     </div>
@@ -3381,9 +3381,9 @@ export default function App() {
                           )}
                           {/* Carousel Dots Overlay */}
                           <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-2 z-10">
-                            <div className="w-2 h-2 rounded-full bg-white shadow-sm"></div>
-                            <div className="w-2 h-2 rounded-full bg-white/50 hover:bg-white/80 cursor-pointer shadow-sm"></div>
-                            <div className="w-2 h-2 rounded-full bg-white/50 hover:bg-white/80 cursor-pointer shadow-sm"></div>
+                            <div className="w-2 h-2 rounded-full bg-surface-container-lowest shadow-sm"></div>
+                            <div className="w-2 h-2 rounded-full bg-surface-container-lowest/50 hover:bg-surface-container-lowest/80 cursor-pointer shadow-sm"></div>
+                            <div className="w-2 h-2 rounded-full bg-surface-container-lowest/50 hover:bg-surface-container-lowest/80 cursor-pointer shadow-sm"></div>
                           </div>
                         </div>
 
@@ -3391,7 +3391,7 @@ export default function App() {
                         <div className="bg-surface-container-low rounded-xl p-4 sm:p-6 border border-primary-container relative overflow-hidden shadow-sm">
                           <div className="absolute inset-0 opacity-20 pointer-events-none"></div>
                           <div className="relative z-10 flex gap-4 items-start">
-                            <div className="flex-shrink-0 w-12 h-12 rounded-lg bg-primary-container flex items-center justify-center text-on-primary-container shadow-inner">
+                            <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-primary-container flex items-center justify-center text-on-primary-container shadow-inner">
                               <Bot className="h-7 w-7" />
                             </div>
                             <div className="flex-1">
@@ -3460,7 +3460,7 @@ export default function App() {
                             <p className="text-[12px] font-label-md text-on-surface-variant mb-2">
                               Description
                             </p>
-                            <p className="text-[14px] font-body-md text-on-surface bg-surface-container rounded-lg p-3 border border-outline-variant/30 leading-relaxed whitespace-pre-wrap">
+                            <p className="text-[14px] font-body-md text-on-surface bg-surface-container rounded-xl p-3 border border-outline-variant/30 leading-relaxed whitespace-pre-wrap">
                               {r.desc || r.description || "No description provided."}
                             </p>
                           </div>
@@ -3471,7 +3471,7 @@ export default function App() {
                           <h3 className="text-[24px] font-headline-md font-semibold text-on-surface border-b border-surface-variant pb-3">
                             Contact Credentials
                           </h3>
-                          <div className="flex items-center gap-4 bg-surface-container p-3 rounded-lg border border-outline-variant/30">
+                          <div className="flex items-center gap-4 bg-surface-container p-3 rounded-xl border border-outline-variant/30">
                             <div className="w-12 h-12 rounded-full bg-secondary-container flex items-center justify-center text-on-secondary-container text-[24px] font-bold">
                               {r.contactName ? r.contactName.charAt(0).toUpperCase() : "U"}
                             </div>
@@ -3505,7 +3505,7 @@ export default function App() {
 
                           <div className="space-y-3 pt-2">
                             {existingClaimForThisUser && (
-                              <div className={`p-3 rounded-lg border text-xs font-medium ${
+                              <div className={`p-3 rounded-xl border text-xs font-medium ${
                                 existingClaimForThisUser.status === 'approved' 
                                   ? 'bg-[#e6f4ea] border-[#34a853]/30 text-[#137333]' 
                                   : existingClaimForThisUser.status === 'rejected'
@@ -3532,7 +3532,7 @@ export default function App() {
                                   handleStartChat(r.userId, r.id);
                                 }
                               }}
-                              className="w-full py-3 bg-primary text-on-primary text-[12px] font-label-md font-bold rounded-lg hover:bg-primary-dim transition-colors shadow-sm flex items-center justify-center gap-2"
+                              className="w-full py-3 bg-primary text-on-primary text-[12px] font-label-md font-bold rounded-xl hover:bg-primary-dim transition-colors shadow-sm flex items-center justify-center gap-2"
                             >
                               <MessageSquare className="h-4 w-4" />
                               Contact Chat Room
@@ -3549,7 +3549,7 @@ export default function App() {
                                   }
                                 }}
                                 disabled={existingClaimForThisUser?.status === 'pending'}
-                                className="w-full py-3 bg-transparent border-2 border-secondary text-secondary hover:bg-secondary-container hover:text-on-secondary-container text-[12px] font-label-md font-bold rounded-lg transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
+                                className="w-full py-3 bg-transparent border-2 border-secondary text-secondary hover:bg-secondary-container hover:text-on-secondary-container text-[12px] font-label-md font-bold rounded-xl transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
                               >
                                 <Gavel className="h-4 w-4" />
                                 {existingClaimForThisUser?.status === 'pending' ? 'Claim Pending Review' : 'Log Ownership Claim'}
@@ -3560,7 +3560,7 @@ export default function App() {
                             {isOwner && (
                               <button 
                                 onClick={() => deleteItem(r.id)}
-                                className="w-full py-3 bg-transparent border-2 border-error text-error hover:bg-error-container hover:text-on-error-container text-[12px] font-label-md font-bold rounded-lg transition-colors flex items-center justify-center gap-2 mt-4"
+                                className="w-full py-3 bg-transparent border-2 border-error text-error hover:bg-error-container hover:text-on-error-container text-[12px] font-label-md font-bold rounded-xl transition-colors flex items-center justify-center gap-2 mt-4"
                               >
                                 <Trash2 className="h-4 w-4" />
                                 Delete Listing
@@ -3621,11 +3621,11 @@ export default function App() {
                               <img
                                 src={r.image || r.imageUrl}
                                 alt={r.title}
-                                className="w-full sm:w-40 h-40 object-cover rounded-lg border border-outline-variant/20 flex-shrink-0"
+                                className="w-full sm:w-40 h-40 object-cover rounded-xl border border-outline-variant/20 flex-shrink-0"
                                 referrerPolicy="no-referrer"
                               />
                             ) : (
-                              <div className="w-full sm:w-40 h-40 flex items-center justify-center bg-surface-variant rounded-lg border border-outline-variant/20 flex-shrink-0 text-outline">
+                              <div className="w-full sm:w-40 h-40 flex items-center justify-center bg-surface-variant rounded-xl border border-outline-variant/20 flex-shrink-0 text-outline">
                                 <Camera className="h-10 w-10 opacity-30" />
                               </div>
                             )}
@@ -3728,7 +3728,7 @@ export default function App() {
                   {/* Quick Stat / Summary Card */}
                   <div className={`${communityAlertsNotif ? "md:col-span-4" : "md:col-span-12"} bg-primary text-on-primary rounded-xl p-6 shadow-sm flex flex-col justify-between relative overflow-hidden`}>
                     <div className="absolute -right-4 -top-4 opacity-10">
-                      <Bell className="w-[120px] h-[120px]" />
+                      <Bell className="w-32 h-32" />
                     </div>
                     <div>
                       <h3 className="font-headline-md text-lg text-on-primary mb-1">{t('alerts.unreadAlerts')}</h3>
@@ -3788,7 +3788,7 @@ export default function App() {
                   })}
                   
                   {activeIncomingClaims.length === 0 && (
-                    <div className="col-span-full py-16 text-center border-2 border-dashed border-outline-variant rounded-2xl bg-surface-container-lowest">
+                    <div className="col-span-full py-16 text-center border-2 border-dashed border-outline-variant rounded-xl bg-surface-container-lowest">
                       <div className="w-16 h-16 bg-surface-container rounded-full flex items-center justify-center mx-auto mb-4 border border-outline-variant">
                         <Bell className="h-8 w-8 text-outline" />
                       </div>
@@ -3882,18 +3882,18 @@ export default function App() {
                           <div className="flex flex-col sm:flex-row gap-3 shrink-0 w-full lg:w-auto">
                             <button 
                               onClick={() => setActiveTab("levelRoadmap")}
-                              className="bg-primary text-on-primary hover:bg-primary-dim px-4 py-2 rounded-lg font-label-md text-sm transition-colors flex items-center justify-center gap-2 shadow-sm shrink-0 w-full sm:w-auto cursor-pointer"
+                              className="bg-primary text-on-primary hover:bg-primary-dim px-4 py-2 rounded-xl font-label-md text-sm transition-colors flex items-center justify-center gap-2 shadow-sm shrink-0 w-full sm:w-auto cursor-pointer"
                               style={{ minHeight: "44px" }}
                             >
-                              <Trophy className="h-[18px] w-[18px]" />
+                              <Trophy className="h-4.5 w-4.5" />
                               <span>View Level Roadmap</span>
                             </button>
                             <button 
                               onClick={() => document.getElementById("profName")?.focus()} 
-                              className="bg-surface-container-high border border-outline-variant text-on-surface hover:bg-surface-variant px-4 py-2 rounded-lg font-label-md text-sm transition-colors flex items-center justify-center gap-2 shadow-sm shrink-0 w-full sm:w-auto cursor-pointer"
+                              className="bg-surface-container-high border border-outline-variant text-on-surface hover:bg-surface-variant px-4 py-2 rounded-xl font-label-md text-sm transition-colors flex items-center justify-center gap-2 shadow-sm shrink-0 w-full sm:w-auto cursor-pointer"
                               style={{ minHeight: "44px" }}
                             >
-                              <Settings className="h-[18px] w-[18px]" />
+                              <Settings className="h-4.5 w-4.5" />
                               {t('profile.editProfile')}
                             </button>
                           </div>
@@ -3906,17 +3906,17 @@ export default function App() {
                   <div className="col-span-1 lg:col-span-4 flex flex-col gap-6">
                     <div className="bg-surface-container-lowest rounded-xl shadow-sm border border-surface-variant p-6 flex-1 hover:shadow-md transition-shadow">
                       <div className="flex items-center gap-3 mb-4 text-primary">
-                        <div className="bg-primary-container p-2 rounded-lg">
+                        <div className="bg-primary-container p-2 rounded-xl">
                           <Package className="h-5 w-5 text-on-primary-container" />
                         </div>
                         <h3 className="font-headline-md text-lg font-semibold">{t('profile.impactStats')}</h3>
                       </div>
                       <div className="grid grid-cols-2 gap-4 mt-6">
-                        <div className="bg-surface-container rounded-lg p-4 text-center">
+                        <div className="bg-surface-container rounded-xl p-4 text-center">
                           <span className="block font-headline-lg text-primary text-3xl mb-1">{items.filter(i => i.userId === auth.currentUser?.uid).length}</span>
                           <span className="font-label-md text-on-surface-variant uppercase tracking-wide text-[10px]">{t('profile.itemsReported')}</span>
                         </div>
-                        <div className="bg-surface-container rounded-lg p-4 text-center">
+                        <div className="bg-surface-container rounded-xl p-4 text-center">
                           <span className="block font-headline-lg text-secondary text-3xl mb-1">{items.filter(i => i.userId === auth.currentUser?.uid && i.claimed).length}</span>
                           <span className="font-label-md text-on-surface-variant uppercase tracking-wide text-[10px]">{t('profile.reunited')}</span>
                         </div>
@@ -3935,7 +3935,7 @@ export default function App() {
                           <label className="block font-label-md text-sm text-on-surface-variant mb-2" htmlFor="profName">{t('profile.displayName')}</label>
                           <div className="relative">
                             <input 
-                              className="pr-10 pl-3 w-full bg-surface-container-lowest border border-outline rounded-lg py-2.5 text-on-surface focus:ring-2 focus:ring-primary focus:border-primary transition-shadow font-body-md" 
+                              className="shadow-sm pr-10 pl-3 w-full bg-surface-container-lowest border border-outline rounded-xl py-3 text-on-surface focus:ring-2 focus:ring-primary focus:border-primary transition-shadow font-body-md" 
                               id="profName" 
                               type="text" 
                               value={profileName}
@@ -3950,7 +3950,7 @@ export default function App() {
                         <div className="md:col-span-2">
                           <label className="block font-label-md text-sm text-on-surface-variant mb-2" htmlFor="profBio">{t('profile.bio')}</label>
                           <textarea 
-                            className="w-full bg-surface-container-lowest border border-outline rounded-lg p-3 text-on-surface focus:ring-2 focus:ring-primary focus:border-primary transition-shadow font-body-md" 
+                            className="shadow-sm w-full bg-surface-container-lowest border border-outline rounded-xl p-3 text-on-surface focus:ring-2 focus:ring-primary focus:border-primary transition-shadow font-body-md" 
                             id="profBio" 
                             rows={3}
                             placeholder={t("generated.string_431")}
@@ -3963,7 +3963,7 @@ export default function App() {
                           <label className="block font-label-md text-sm text-on-surface-variant mb-2" htmlFor="profEmail">{t('profile.emailAddress')}</label>
                           <div className="relative">
                             <input 
-                              className="pr-10 pl-3 w-full bg-surface-container-lowest border border-outline rounded-lg py-2.5 text-on-surface opacity-70 cursor-not-allowed font-body-md" 
+                              className="pr-10 pl-3 w-full bg-surface-container-lowest border border-outline rounded-xl py-2.5 text-on-surface opacity-70 cursor-not-allowed font-body-md" 
                               id="profEmail" 
                               type="email" 
                               value={profileEmail || "No email"}
@@ -3983,7 +3983,7 @@ export default function App() {
                           <label className="block font-label-md text-sm text-on-surface-variant mb-2" htmlFor="profPhone">{t('profile.phoneNumber')}</label>
                           <div className="relative">
                             <input 
-                              className="pr-8 pl-3 w-full bg-surface-container-lowest border border-outline rounded-lg py-2.5 text-on-surface focus:ring-2 focus:ring-primary focus:border-primary transition-shadow font-body-md" 
+                              className="shadow-sm pr-8 pl-3 w-full bg-surface-container-lowest border border-outline rounded-xl py-3 text-on-surface focus:ring-2 focus:ring-primary focus:border-primary transition-shadow font-body-md" 
                               id="profPhone" 
                               type="tel" 
                               value={profileContact}
@@ -3999,7 +3999,7 @@ export default function App() {
                           <label className="block font-label-md text-sm text-on-surface-variant mb-2" htmlFor="profLoc">{t('profile.primaryLocation')}</label>
                           <div className="relative">
                             <input 
-                              className="pr-10 pl-3 w-full bg-surface-container-lowest border border-outline rounded-lg py-2.5 text-on-surface focus:ring-2 focus:ring-primary focus:border-primary transition-shadow font-body-md" 
+                              className="shadow-sm pr-10 pl-3 w-full bg-surface-container-lowest border border-outline rounded-xl py-3 text-on-surface focus:ring-2 focus:ring-primary focus:border-primary transition-shadow font-body-md" 
                               id="profLoc" 
                               type="text" 
                               value={profileLocation}
@@ -4014,7 +4014,7 @@ export default function App() {
                       
                       <div className="flex justify-end pt-4">
                         <button 
-                          className="bg-primary hover:bg-primary-dim text-on-primary font-label-md text-sm py-2.5 px-6 rounded-lg shadow-sm transition-colors" 
+                          className="bg-primary hover:bg-primary-dim text-on-primary font-label-md text-sm py-2.5 px-6 rounded-xl shadow-sm transition-colors" 
                           type="submit"
                         >{t('profile.saveChanges')}</button>
                       </div>
@@ -4027,7 +4027,7 @@ export default function App() {
                       {/* Notifications */}
                       <div className="p-6 md:p-8">
                         <div className="flex items-center gap-3 mb-6 text-on-surface">
-                          <div className="bg-secondary-container p-2 rounded-lg">
+                          <div className="bg-secondary-container p-2 rounded-xl">
                             <Bell className="h-5 w-5 text-on-secondary-container" />
                           </div>
                           <h3 className="font-headline-md text-lg font-semibold">{t('profile.notificationPreferences')}</h3>
@@ -4059,7 +4059,7 @@ export default function App() {
                                 }}
                                 className="sr-only peer" 
                               />
-                              <div className="w-11 h-6 bg-surface-variant peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-primary rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                              <div className="w-11 h-6 bg-surface-variant peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-primary rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-surface-container-lowest after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
                             </div>
                           </label>
                           <label className="flex items-center justify-between cursor-pointer group">
@@ -4088,7 +4088,7 @@ export default function App() {
                                 }}
                                 className="sr-only peer" 
                               />
-                              <div className="w-11 h-6 bg-surface-variant peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-primary rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                              <div className="w-11 h-6 bg-surface-variant peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-primary rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-surface-container-lowest after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
                             </div>
                           </label>
                         </div>
@@ -4097,13 +4097,13 @@ export default function App() {
                       {/* Security */}
                       <div className="p-6 md:p-8">
                         <div className="flex items-center gap-3 mb-6 text-on-surface">
-                          <div className="bg-surface-variant p-2 rounded-lg">
+                          <div className="bg-surface-variant p-2 rounded-xl">
                             <Lock className="h-5 w-5 text-on-surface-variant" />
                           </div>
                           <h3 className="font-headline-md text-lg font-semibold">{t('profile.security')}</h3>
                         </div>
                         <div className="space-y-4">
-                          <button onClick={async () => { if (auth.currentUser?.email) { try { const { sendPasswordResetEmail } = await import("firebase/auth"); await sendPasswordResetEmail(auth, auth.currentUser.email); triggerToast("Password reset email sent", "success"); } catch (e) { triggerToast("Failed to send reset email", "error"); } } else { triggerToast("No email associated with account", "error"); } }} className="w-full flex items-center justify-between p-4 rounded-lg border border-outline-variant hover:bg-surface-variant transition-colors group">
+                          <button onClick={async () => { if (auth.currentUser?.email) { try { const { sendPasswordResetEmail } = await import("firebase/auth"); await sendPasswordResetEmail(auth, auth.currentUser.email); triggerToast("Password reset email sent", "success"); } catch (e) { triggerToast("Failed to send reset email", "error"); } } else { triggerToast("No email associated with account", "error"); } }} className="w-full flex items-center justify-between p-4 rounded-xl border border-outline-variant hover:bg-surface-variant transition-colors group">
                             <div className="flex items-center gap-3 text-left">
                               <Key className="h-5 w-5 text-on-surface-variant" />
                               <div>
@@ -4156,7 +4156,7 @@ export default function App() {
                   </div>
                   <button 
                     onClick={() => setActiveTab("report")}
-                    className="flex items-center gap-2 px-4 py-2 font-label-md font-bold bg-primary text-on-primary rounded-lg shadow-sm hover:bg-primary-dim transition-colors"
+                    className="flex items-center gap-2 px-4 py-2 font-label-md font-bold bg-primary text-on-primary rounded-xl shadow-sm hover:bg-primary-dim transition-colors"
                   >
                     <PlusCircle className="h-4 w-4" /> {t('generated.string_272', 'Report New')}
                   </button>
@@ -4190,17 +4190,17 @@ export default function App() {
                             <div className="flex items-center space-x-2">
                               {r.claimed ? (
                                 <span className="bg-secondary-container text-on-secondary-container px-2 py-1 rounded-full font-label-md text-[10px] uppercase tracking-wider flex items-center space-x-1">
-                                  <CheckCircle2 className="h-[14px] w-[14px]" />
+                                  <CheckCircle2 className="h-3.5 w-3.5" />
                                   <span>{t('generated.string_275', 'Match Found')}</span>
                                 </span>
                               ) : r.type === "found" ? (
                                 <span className="bg-primary-container text-on-primary-container px-2 py-1 rounded-full font-label-md text-[10px] uppercase tracking-wider flex items-center space-x-1">
-                                  <Hand className="h-[14px] w-[14px]" />
+                                  <Hand className="h-3.5 w-3.5" />
                                   <span>{t('generated.string_276', 'Found')}</span>
                                 </span>
                               ) : (
                                 <span className="bg-tertiary-container text-on-tertiary-container px-2 py-1 rounded-full font-label-md text-[10px] uppercase tracking-wider flex items-center space-x-1">
-                                  <Search className="h-[14px] w-[14px] animate-pulse" />
+                                  <Search className="h-3.5 w-3.5 animate-pulse" />
                                   <span>{t('generated.string_277', 'Searching')}</span>
                                 </span>
                               )}
@@ -4223,7 +4223,7 @@ export default function App() {
                               setActiveTab("itemDetail");
                             }}
                           >
-                            <div className="w-24 h-24 rounded-lg overflow-hidden flex-shrink-0 bg-surface-container flex items-center justify-center text-outline-variant">
+                            <div className="w-24 h-24 rounded-xl overflow-hidden flex-shrink-0 bg-surface-container flex items-center justify-center text-outline-variant">
                               {r.image || r.imageUrl ? (
                                 <img src={r.image || r.imageUrl} alt="" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" referrerPolicy="no-referrer" />
                               ) : (
@@ -4244,8 +4244,8 @@ export default function App() {
                           <div className="pt-4 border-t border-outline-variant flex space-x-3 mt-auto">
                             {r.claimed ? (
                               <>
-                                <button className="flex-1 bg-primary text-on-primary py-2 rounded-lg font-label-md text-sm hover:bg-primary-dim transition-colors flex items-center justify-center space-x-2">
-                                  <MessageSquare className="h-[18px] w-[18px]" />
+                                <button className="flex-1 bg-primary text-on-primary py-2 rounded-xl font-label-md text-sm hover:bg-primary-dim transition-colors flex items-center justify-center space-x-2">
+                                  <MessageSquare className="h-4.5 w-4.5" />
                                   <span>{t('generated.string_278', 'Message Finder')}</span>
                                 </button>
                               </>
@@ -4256,9 +4256,9 @@ export default function App() {
                                     setSelectedItemId(r.id);
                                     setActiveTab("itemDetail");
                                   }}
-                                  className="flex-1 border border-primary text-primary py-2 rounded-lg font-label-md text-sm hover:bg-surface-container transition-colors flex items-center justify-center space-x-2"
+                                  className="flex-1 border border-primary text-primary py-2 rounded-xl font-label-md text-sm hover:bg-surface-container transition-colors flex items-center justify-center space-x-2"
                                 >
-                                  <Eye className="h-[18px] w-[18px]" />
+                                  <Eye className="h-4.5 w-4.5" />
                                   <span>{t('search.viewDetails')}</span>
                                 </button>
                               </>
@@ -4269,13 +4269,13 @@ export default function App() {
                     })}
                   
                   {items.filter((item) => item.userId === auth.currentUser?.uid).length === 0 && (
-                    <div className="col-span-full py-16 text-center border-2 border-dashed border-outline-variant rounded-2xl bg-surface-container-lowest">
+                    <div className="col-span-full py-16 text-center border-2 border-dashed border-outline-variant rounded-xl bg-surface-container-lowest">
                       <Inbox className="h-12 w-12 text-outline mx-auto mb-4" />
                       <h3 className="font-headline-md text-lg font-bold text-on-surface mb-2">{t('generated.string_279', 'No items yet')}</h3>
                       <p className="font-body-md text-on-surface-variant mb-6">{t('generated.string_280', "You haven't reported any lost or found items.")}</p>
                       <button 
                         onClick={() => setActiveTab("report")}
-                        className="inline-flex items-center gap-2 px-6 py-2.5 font-label-md font-bold bg-primary text-on-primary rounded-lg shadow-sm hover:bg-primary-dim transition-colors"
+                        className="inline-flex items-center gap-2 px-6 py-2.5 font-label-md font-bold bg-primary text-on-primary rounded-xl shadow-sm hover:bg-primary-dim transition-colors"
                       >
                         <PlusCircle className="h-4 w-4" /> {t('dashboard.reportAnItem', 'Report an Item')}
                       </button>
@@ -4308,12 +4308,12 @@ export default function App() {
                     <p className="font-body-lg text-on-surface-variant max-w-2xl">{t('generated.string_281', 'Keep track of important community reports. Items you pin will appear here for quick access until they are resolved or you unpin them.')}</p>
                   </div>
                   <div className="flex gap-2">
-                    <button className="px-4 py-2 bg-surface-container rounded-lg font-label-md text-sm text-on-surface flex items-center gap-2 hover:bg-surface-container-high transition-colors border border-outline-variant">
-                      <Filter className="h-[18px] w-[18px]" />
+                    <button className="px-4 py-2 bg-surface-container rounded-xl font-label-md text-sm text-on-surface flex items-center gap-2 hover:bg-surface-container-high transition-colors border border-outline-variant">
+                      <Filter className="h-4.5 w-4.5" />
                       {t('search.filter', 'Filter')}
                     </button>
-                    <button className="px-4 py-2 bg-surface-container rounded-lg font-label-md text-sm text-on-surface flex items-center gap-2 hover:bg-surface-container-high transition-colors border border-outline-variant">
-                      <ArrowDownUp className="h-[18px] w-[18px]" />
+                    <button className="px-4 py-2 bg-surface-container rounded-xl font-label-md text-sm text-on-surface flex items-center gap-2 hover:bg-surface-container-high transition-colors border border-outline-variant">
+                      <ArrowDownUp className="h-4.5 w-4.5" />
                       {t('generated.string_282', 'Sort')}
                     </button>
                   </div>
@@ -4363,7 +4363,7 @@ export default function App() {
                                 {isLarge && <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>}
                               </>
                             ) : (
-                              <div className="w-full h-full border-2 border-dashed border-outline-variant flex flex-col items-center justify-center text-outline-variant p-4 m-4 rounded-lg bg-surface-container-lowest">
+                              <div className="w-full h-full border-2 border-dashed border-outline-variant flex flex-col items-center justify-center text-outline-variant p-4 m-4 rounded-xl bg-surface-container-lowest">
                                 <ImageIcon className="h-10 w-10 mb-2 opacity-50" />
                                 <span className="font-label-md text-xs text-center opacity-70">{t('generated.string_401', 'No Image Available')}</span>
                               </div>
@@ -4372,7 +4372,7 @@ export default function App() {
                             {isLarge && (r.image || r.imageUrl) && (
                               <div className="absolute bottom-4 left-4 right-4 text-white">
                                 <div className="flex items-center gap-2 mb-1 text-sm opacity-90">
-                                  <MapPin className="h-[16px] w-[16px]" />
+                                  <MapPin className="h-4 w-4" />
                                   <span>{r.location || t('generated.string_284', 'Unknown')}</span>
                                 </div>
                                 <h3 className="font-headline-md text-2xl font-bold leading-tight line-clamp-1">{r.title}</h3>
@@ -4387,7 +4387,7 @@ export default function App() {
                             
                             {(!isLarge || (!r.image && !r.imageUrl)) && (
                               <div className="flex items-center gap-1 text-on-surface-variant text-sm mb-3">
-                                <MapPin className="h-[14px] w-[14px] text-primary" />
+                                <MapPin className="h-3.5 w-3.5 text-primary" />
                                 <span className="truncate">{r.location || t('generated.string_284', 'Unknown')}</span>
                               </div>
                             )}
@@ -4421,7 +4421,7 @@ export default function App() {
                     })}
                   
                   {items.filter((item) => pinnedIds.includes(item.id)).length === 0 && (
-                    <div className="col-span-full py-16 text-center border-2 border-dashed border-outline-variant rounded-2xl bg-surface-container-lowest">
+                    <div className="col-span-full py-16 text-center border-2 border-dashed border-outline-variant rounded-xl bg-surface-container-lowest">
                       <div className="w-16 h-16 bg-surface-container rounded-full flex items-center justify-center mx-auto mb-4 border border-outline-variant">
                         <MapPin className="h-8 w-8 text-outline" />
                       </div>
@@ -4429,7 +4429,7 @@ export default function App() {
                       <p className="font-body-md text-on-surface-variant mb-6">{t('generated.string_289', "You haven't bookmarked any items yet.")}</p>
                       <button 
                         onClick={() => setActiveTab("search")}
-                        className="inline-flex items-center gap-2 px-6 py-2.5 font-label-md font-bold bg-primary text-on-primary rounded-lg shadow-sm hover:bg-primary-dim transition-colors"
+                        className="inline-flex items-center gap-2 px-6 py-2.5 font-label-md font-bold bg-primary text-on-primary rounded-xl shadow-sm hover:bg-primary-dim transition-colors"
                       >
                         <Search className="h-4 w-4" /> {t('generated.string_290', 'Browse Items')}
                       </button>
@@ -4461,10 +4461,10 @@ export default function App() {
                     }}
                   >
                     <div className="absolute -right-10 -bottom-10 opacity-5 group-hover:opacity-10 transition-opacity duration-500 pointer-events-none">
-                      <Smartphone className="w-[300px] h-[300px] text-primary" />
+                      <Smartphone className="w-72 h-72 text-primary" />
                     </div>
                     <div className="relative z-10 flex justify-between items-start">
-                      <div className="bg-primary-container p-3 rounded-lg inline-flex">
+                      <div className="bg-primary-container p-3 rounded-xl inline-flex">
                         <Smartphone className="text-on-primary-container h-8 w-8" />
                       </div>
                       <span className="bg-surface-variant text-on-surface-variant font-label-md text-xs px-3 py-1 rounded-full border border-outline-variant/20">
@@ -4486,10 +4486,10 @@ export default function App() {
                     }}
                   >
                     <div className="absolute -right-4 -bottom-4 opacity-5 group-hover:opacity-10 transition-opacity duration-500 pointer-events-none">
-                      <Package className="w-[150px] h-[150px] text-tertiary" />
+                      <Package className="w-36 h-36 text-tertiary" />
                     </div>
                     <div className="relative z-10 flex justify-between items-start">
-                      <div className="bg-tertiary-container p-2 rounded-lg inline-flex">
+                      <div className="bg-tertiary-container p-2 rounded-xl inline-flex">
                         <Package className="text-on-tertiary-container h-6 w-6" />
                       </div>
                       <span className="bg-surface-variant text-on-surface-variant font-label-md text-[10px] px-2 py-1 rounded-full">
@@ -4511,10 +4511,10 @@ export default function App() {
                     }}
                   >
                     <div className="absolute -right-4 -bottom-4 opacity-5 group-hover:opacity-10 transition-opacity duration-500 pointer-events-none">
-                      <Heart className="w-[150px] h-[150px] text-error" />
+                      <Heart className="w-36 h-36 text-error" />
                     </div>
                     <div className="relative z-10 flex justify-between items-start">
-                      <div className="bg-[#ffdcdc] p-2 rounded-lg inline-flex">
+                      <div className="bg-[#ffdcdc] p-2 rounded-xl inline-flex">
                         <Heart className="text-error h-6 w-6" fill="currentColor" />
                       </div>
                       <span className="bg-surface-variant text-on-surface-variant font-label-md text-[10px] px-2 py-1 rounded-full">
@@ -4537,7 +4537,7 @@ export default function App() {
                   >
                     <div className="absolute top-0 right-0 w-full h-full opacity-[0.03] group-hover:opacity-[0.05] transition-opacity duration-500 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-primary via-transparent to-transparent pointer-events-none"></div>
                     <div className="relative z-10 flex justify-between items-start mb-4">
-                      <div className="bg-secondary-container p-3 rounded-lg inline-flex">
+                      <div className="bg-secondary-container p-3 rounded-xl inline-flex">
                         <FileText className="text-on-secondary-container h-8 w-8" />
                       </div>
                       <span className="bg-surface-variant text-on-surface-variant font-label-md text-[10px] px-2 py-1 rounded-full">
@@ -4564,7 +4564,7 @@ export default function App() {
                     }}
                   >
                     <div className="relative z-10 flex justify-between items-start">
-                      <div className="bg-surface-variant p-2 rounded-lg inline-flex">
+                      <div className="bg-surface-variant p-2 rounded-xl inline-flex">
                         <Tag className="text-on-surface h-6 w-6" />
                       </div>
                       <span className="bg-surface-variant text-on-surface-variant font-label-md text-[10px] px-2 py-1 rounded-full">
@@ -4585,7 +4585,7 @@ export default function App() {
                     }}
                   >
                     <div className="relative z-10 flex justify-between items-start">
-                      <div className="bg-surface-variant p-2 rounded-lg inline-flex">
+                      <div className="bg-surface-variant p-2 rounded-xl inline-flex">
                         <Clock className="text-on-surface h-6 w-6" />
                       </div>
                       <span className="bg-surface-variant text-on-surface-variant font-label-md text-[10px] px-2 py-1 rounded-full">
@@ -4606,7 +4606,7 @@ export default function App() {
                     }}
                   >
                     <div className="relative z-10 flex justify-between items-start">
-                      <div className="bg-surface-variant p-2 rounded-lg inline-flex">
+                      <div className="bg-surface-variant p-2 rounded-xl inline-flex">
                         <Key className="text-on-surface h-6 w-6" />
                       </div>
                       <span className="bg-surface-variant text-on-surface-variant font-label-md text-[10px] px-2 py-1 rounded-full">
@@ -4626,80 +4626,80 @@ export default function App() {
               className={`panel ${activeTab === "analytics" ? "active" : ""}`}
             >
               {/* Header */}
-              <div className="flex flex-col gap-1 mb-6 border-b border-gray-100 pb-4">
-                <h2 className="text-2xl font-bold tracking-tight text-[#01725a] font-sans flex items-center gap-2">
-                  <BarChart2 className="h-6 w-6 text-[#01725a]" /> {t('generated.string_304', 'Analytics Dashboard')}
+              <div className="flex flex-col gap-1 mb-6 border-b border-outline-variant/50 pb-4">
+                <h2 className="text-2xl font-bold tracking-tight text-primary font-sans flex items-center gap-2">
+                  <BarChart2 className="h-6 w-6 text-primary" /> {t('generated.string_304', 'Analytics Dashboard')}
                 </h2>
-                <p className="text-sm text-gray-500">
+                <p className="text-sm text-on-surface-variant">
                   {t('generated.string_305', 'Real-time visual metrics and recovery performance of reported items from Firestore.')}
                 </p>
               </div>
 
               {/* Bento Grid Stats */}
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-                <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all duration-200 flex flex-col justify-between">
+                <div className="bg-surface-container-lowest p-5 rounded-xl border border-outline-variant/50 shadow-sm hover:shadow-md transition-all duration-200 flex flex-col justify-between">
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">{t('generated.string_306', 'Active Lost Reports')}</span>
-                    <span className="p-2 rounded-xl bg-red-50 text-red-500">
+                    <span className="text-xs font-semibold text-on-surface-variant uppercase tracking-wider">{t('generated.string_306', 'Active Lost Reports')}</span>
+                    <span className="p-2 rounded-xl bg-red-50 text-error">
                       <Archive className="h-4 w-4" />
                     </span>
                   </div>
                   <div>
-                    <div className="text-3xl font-extrabold text-gray-800 tracking-tight font-sans">
+                    <div className="text-3xl font-extrabold text-on-surface tracking-tight font-sans">
                       {stats.lost}
                     </div>
-                    <p className="text-xs text-gray-400 mt-1 flex items-center gap-1">
-                      <span className="font-semibold text-red-500">{t('generated.string_307', 'Currently active')}</span> {t('generated.string_308', 'lost items')}
+                    <p className="text-xs text-on-surface-variant mt-1 flex items-center gap-1">
+                      <span className="font-semibold text-error">{t('generated.string_307', 'Currently active')}</span> {t('generated.string_308', 'lost items')}
                     </p>
                   </div>
                 </div>
 
-                <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all duration-200 flex flex-col justify-between">
+                <div className="bg-surface-container-lowest p-5 rounded-xl border border-outline-variant/50 shadow-sm hover:shadow-md transition-all duration-200 flex flex-col justify-between">
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">{t('generated.string_309', 'Active Found Reports')}</span>
-                    <span className="p-2 rounded-xl bg-sky-50 text-sky-500">
+                    <span className="text-xs font-semibold text-on-surface-variant uppercase tracking-wider">{t('generated.string_309', 'Active Found Reports')}</span>
+                    <span className="p-2 rounded-xl bg-sky-50 text-primary">
                       <Search className="h-4 w-4" />
                     </span>
                   </div>
                   <div>
-                    <div className="text-3xl font-extrabold text-gray-800 tracking-tight font-sans">
+                    <div className="text-3xl font-extrabold text-on-surface tracking-tight font-sans">
                       {stats.found}
                     </div>
-                    <p className="text-xs text-gray-400 mt-1 flex items-center gap-1">
-                      <span className="font-semibold text-sky-500">{t('generated.string_310', 'Awaiting claim')}</span> {t('generated.string_311', 'validation')}
+                    <p className="text-xs text-on-surface-variant mt-1 flex items-center gap-1">
+                      <span className="font-semibold text-primary">{t('generated.string_310', 'Awaiting claim')}</span> {t('generated.string_311', 'validation')}
                     </p>
                   </div>
                 </div>
 
-                <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all duration-200 flex flex-col justify-between">
+                <div className="bg-surface-container-lowest p-5 rounded-xl border border-outline-variant/50 shadow-sm hover:shadow-md transition-all duration-200 flex flex-col justify-between">
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">{t('generated.string_312', 'Resolved Cases')}</span>
-                    <span className="p-2 rounded-xl bg-[#9af4d6]/50 text-[#00654f]">
+                    <span className="text-xs font-semibold text-on-surface-variant uppercase tracking-wider">{t('generated.string_312', 'Resolved Cases')}</span>
+                    <span className="p-2 rounded-xl bg-[#9af4d6]/50 text-primary-dim">
                       <CheckCircle2 className="h-4 w-4" />
                     </span>
                   </div>
                   <div>
-                    <div className="text-3xl font-extrabold text-gray-800 tracking-tight font-sans">
+                    <div className="text-3xl font-extrabold text-on-surface tracking-tight font-sans">
                       {stats.claimed}
                     </div>
-                    <p className="text-xs text-gray-400 mt-1 flex items-center gap-1">
+                    <p className="text-xs text-on-surface-variant mt-1 flex items-center gap-1">
                       <span className="font-semibold text-emerald-600">{t('profile.reunited')}</span> {t('generated.string_313', 'with rightful owners')}
                     </p>
                   </div>
                 </div>
 
-                <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all duration-200 flex flex-col justify-between">
+                <div className="bg-surface-container-lowest p-5 rounded-xl border border-outline-variant/50 shadow-sm hover:shadow-md transition-all duration-200 flex flex-col justify-between">
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">{t('generated.string_314', 'Success Rate')}</span>
-                    <span className="p-2 rounded-xl bg-amber-50 text-amber-500">
+                    <span className="text-xs font-semibold text-on-surface-variant uppercase tracking-wider">{t('generated.string_314', 'Success Rate')}</span>
+                    <span className="p-2 rounded-xl bg-tertiary-container/10 text-tertiary-container">
                       <TrendingUp className="h-4 w-4" />
                     </span>
                   </div>
                   <div>
-                    <div className="text-3xl font-extrabold text-gray-800 tracking-tight font-sans">
+                    <div className="text-3xl font-extrabold text-on-surface tracking-tight font-sans">
                       {items.length > 0 ? Math.round((stats.claimed / items.length) * 100) : 0}%
                     </div>
-                    <p className="text-xs text-gray-400 mt-1 flex items-center gap-1">
+                    <p className="text-xs text-on-surface-variant mt-1 flex items-center gap-1">
                       <span className="font-semibold text-amber-600">
                         {items.length > 0 && Math.round((stats.claimed / items.length) * 100) >= 50 ? t('analytics.highPerformance', 'High performance') : t('analytics.steadyGrowth', 'Steady growth')}
                       </span>{" "}
@@ -4712,30 +4712,30 @@ export default function App() {
               {/* Dynamic Charts Section */}
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
                 {/* Chart 1: Recovery Trends (Col-span 2) */}
-                <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm lg:col-span-2">
+                <div className="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant/50 shadow-sm lg:col-span-2">
                   <div className="flex items-center justify-between mb-4">
                     <div>
-                      <h3 className="font-bold text-gray-800 text-sm tracking-tight font-sans uppercase">{t('generated.string_317', 'Recovery Trends')}</h3>
-                      <p className="text-xs text-gray-400">{t('generated.string_318', 'Monthly breakdown of reported vs resolved items')}</p>
+                      <h3 className="font-bold text-on-surface text-sm tracking-tight font-sans uppercase">{t('generated.string_317', 'Recovery Trends')}</h3>
+                      <p className="text-xs text-on-surface-variant">{t('generated.string_318', 'Monthly breakdown of reported vs resolved items')}</p>
                     </div>
                     {/* Legend */}
                     <div className="flex items-center gap-3 text-xs font-medium">
                       <div className="flex items-center gap-1.5">
                         <span className="w-2.5 h-2.5 bg-[#9af4d6] rounded"></span>
-                        <span className="text-gray-500">{t('generated.string_319', 'Reported')}</span>
+                        <span className="text-on-surface-variant">{t('generated.string_319', 'Reported')}</span>
                       </div>
                       <div className="flex items-center gap-1.5">
-                        <span className="w-2.5 h-2.5 bg-[#01725a] rounded"></span>
-                        <span className="text-gray-500">{t('search.resolved', 'Resolved')}</span>
+                        <span className="w-2.5 h-2.5 bg-primary rounded"></span>
+                        <span className="text-on-surface-variant">{t('search.resolved', 'Resolved')}</span>
                       </div>
                     </div>
                   </div>
 
                   {/* SVG Bar Chart */}
                   <div className="w-full h-64 flex flex-col mt-4">
-                    <div className="flex-1 flex items-end gap-2 sm:gap-4 relative pt-6 border-b border-gray-100 pb-2 h-48">
+                    <div className="flex-1 flex items-end gap-2 sm:gap-4 relative pt-6 border-b border-outline-variant/50 pb-2 h-48">
                       {/* Y-Axis Labels */}
-                      <div className="absolute left-0 top-0 bottom-6 w-8 flex flex-col justify-between text-[10px] text-gray-400 font-medium select-none pointer-events-none">
+                      <div className="absolute left-0 top-0 bottom-6 w-8 flex flex-col justify-between text-[10px] text-on-surface-variant font-medium select-none pointer-events-none">
                         <span>{maxChartValue}</span>
                         <span>{Math.round(maxChartValue * 0.75)}</span>
                         <span>{Math.round(maxChartValue * 0.5)}</span>
@@ -4747,11 +4747,11 @@ export default function App() {
                       <div className="flex-1 flex items-end justify-between ml-10 h-full relative">
                         {/* Horizontal Grid lines */}
                         <div className="absolute inset-0 flex flex-col justify-between pointer-events-none pb-6">
-                          <div className="w-full border-t border-gray-50"></div>
-                          <div className="w-full border-t border-gray-50"></div>
-                          <div className="w-full border-t border-gray-50"></div>
-                          <div className="w-full border-t border-gray-50"></div>
-                          <div className="w-full border-t border-gray-50"></div>
+                          <div className="w-full border-t border-surface-variant"></div>
+                          <div className="w-full border-t border-surface-variant"></div>
+                          <div className="w-full border-t border-surface-variant"></div>
+                          <div className="w-full border-t border-surface-variant"></div>
+                          <div className="w-full border-t border-surface-variant"></div>
                         </div>
 
                         {/* Month Bars */}
@@ -4767,21 +4767,21 @@ export default function App() {
                                   className="w-3 sm:w-5 bg-[#9af4d6] rounded-t-sm relative hover:bg-[#83ebd0] transition-all duration-300 shadow-sm"
                                   style={{ height: `${Math.max(reportedHeight, 2)}%` }}
                                 >
-                                  <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-gray-800 text-white text-[10px] font-bold px-2 py-1 rounded shadow-md opacity-0 group-hover:opacity-100 transition-opacity z-20 whitespace-nowrap pointer-events-none">
+                                  <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-on-surface text-white text-[10px] font-bold px-2 py-1 rounded shadow-md opacity-0 group-hover:opacity-100 transition-opacity z-20 whitespace-nowrap pointer-events-none">
                                     {t('generated.string_319', 'Reported')}: {m.reported}
                                   </div>
                                 </div>
                                 {/* Resolved Bar */}
                                 <div
-                                  className="w-3 sm:w-5 bg-[#01725a] rounded-t-sm relative hover:bg-[#00654f] transition-all duration-300 shadow-sm"
+                                  className="w-3 sm:w-5 bg-primary rounded-t-sm relative hover:bg-primary-dim transition-all duration-300 shadow-sm"
                                   style={{ height: `${Math.max(resolvedHeight, 2)}%` }}
                                 >
-                                  <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-gray-800 text-white text-[10px] font-bold px-2 py-1 rounded shadow-md opacity-0 group-hover:opacity-100 transition-opacity z-20 whitespace-nowrap pointer-events-none">
+                                  <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-on-surface text-white text-[10px] font-bold px-2 py-1 rounded shadow-md opacity-0 group-hover:opacity-100 transition-opacity z-20 whitespace-nowrap pointer-events-none">
                                     {t('search.resolved', 'Resolved')}: {m.resolved}
                                   </div>
                                 </div>
                               </div>
-                              <span className="text-[10px] font-medium text-gray-400">{m.name}</span>
+                              <span className="text-[10px] font-medium text-on-surface-variant">{m.name}</span>
                             </div>
                           );
                         })}
@@ -4791,10 +4791,10 @@ export default function App() {
                 </div>
 
                 {/* Chart 2: Categories (Col-span 1) */}
-                <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm flex flex-col">
+                <div className="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant/50 shadow-sm flex flex-col">
                   <div>
-                    <h3 className="font-bold text-gray-800 text-sm tracking-tight font-sans uppercase mb-1">{t('generated.string_321', 'Categories')}</h3>
-                    <p className="text-xs text-gray-400 mb-4">{t('generated.string_322', 'Distribution by matched keywords')}</p>
+                    <h3 className="font-bold text-on-surface text-sm tracking-tight font-sans uppercase mb-1">{t('generated.string_321', 'Categories')}</h3>
+                    <p className="text-xs text-on-surface-variant mb-4">{t('generated.string_322', 'Distribution by matched keywords')}</p>
                   </div>
 
                   {/* SVG Donut */}
@@ -4803,9 +4803,9 @@ export default function App() {
                       const activeCategories = categoryStats.filter((c) => c.count > 0);
                       if (activeCategories.length === 0) {
                         return (
-                          <div className="flex flex-col items-center justify-center h-48 text-gray-300">
+                          <div className="flex flex-col items-center justify-center h-48 text-outline-variant">
                             <span className="text-4xl mb-2">📊</span>
-                            <p className="text-xs text-gray-400">{t('generated.string_323', 'No reported data yet')}</p>
+                            <p className="text-xs text-on-surface-variant">{t('generated.string_323', 'No reported data yet')}</p>
                           </div>
                         );
                       }
@@ -4850,8 +4850,8 @@ export default function App() {
                             })}
                           </svg>
                           <div className="absolute inset-0 flex flex-col items-center justify-center">
-                            <span className="text-2xl font-extrabold text-gray-800 font-sans">{items.length}</span>
-                            <span className="text-[9px] text-gray-400 font-bold uppercase tracking-wider">{t('generated.string_324', 'Reports')}</span>
+                            <span className="text-2xl font-extrabold text-on-surface font-sans">{items.length}</span>
+                            <span className="text-[9px] text-on-surface-variant font-bold uppercase tracking-wider">{t('generated.string_324', 'Reports')}</span>
                           </div>
                         </div>
                       );
@@ -4862,12 +4862,12 @@ export default function App() {
                       {categoryStats.map((cat) => {
                         if (cat.count === 0) return null;
                         return (
-                          <div key={cat.name} className="flex items-center justify-between text-gray-500">
+                          <div key={cat.name} className="flex items-center justify-between text-on-surface-variant">
                             <div className="flex items-center gap-1.5 min-w-0">
                               <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: cat.color }}></span>
                               <span className="truncate">{cat.name}</span>
                             </div>
-                            <span className="font-semibold text-gray-700 ml-1 shrink-0">{cat.percentage}% ({cat.count})</span>
+                            <span className="font-semibold text-on-surface ml-1 shrink-0">{cat.percentage}% ({cat.count})</span>
                           </div>
                         );
                       })}
@@ -4877,21 +4877,21 @@ export default function App() {
               </div>
 
               {/* Data Table: Top Performing Areas */}
-              <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+              <div className="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant/50 shadow-sm overflow-hidden">
                 <div className="flex items-center justify-between mb-4">
                   <div>
-                    <h3 className="font-bold text-gray-800 text-sm tracking-tight font-sans uppercase">{t('generated.string_325', 'Top Performing Areas')}</h3>
-                    <p className="text-xs text-gray-400">{t('generated.string_326', 'Locations sorted by total database activity')}</p>
+                    <h3 className="font-bold text-on-surface text-sm tracking-tight font-sans uppercase">{t('generated.string_325', 'Top Performing Areas')}</h3>
+                    <p className="text-xs text-on-surface-variant">{t('generated.string_326', 'Locations sorted by total database activity')}</p>
                   </div>
-                  <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-[#9af4d6]/50 text-[#00654f]">
+                  <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-[#9af4d6]/50 text-primary-dim">
                     {t('generated.string_327', 'Live')}
                   </span>
                 </div>
 
                 <div className="overflow-x-auto">
-                  <table className="w-full text-left text-xs text-gray-500 border-collapse">
+                  <table className="w-full text-left text-xs text-on-surface-variant border-collapse">
                     <thead>
-                      <tr className="border-b border-gray-100 text-[10px] text-gray-400 uppercase font-semibold">
+                      <tr className="border-b border-outline-variant/50 text-[10px] text-on-surface-variant uppercase font-semibold">
                         <th className="py-2.5 pb-2">{t('generated.string_328', 'Area / Location')}</th>
                         <th className="py-2.5 pb-2 text-center">{t('generated.string_329', 'Total Reported')}</th>
                         <th className="py-2.5 pb-2 text-center">{t('generated.string_330', 'Recovered / Claimed')}</th>
@@ -4902,24 +4902,24 @@ export default function App() {
                     <tbody>
                       {locationStats.length === 0 ? (
                         <tr>
-                          <td colSpan={5} className="py-8 text-center text-gray-400">
+                          <td colSpan={5} className="py-8 text-center text-on-surface-variant">
                             {t('generated.string_332', 'No locations reported yet. Submit items on the Report tab to populate statistics!')}
                           </td>
                         </tr>
                       ) : (
                         locationStats.map((loc, idx) => (
-                          <tr key={idx} className="border-b border-gray-50 hover:bg-gray-50/50 transition-colors">
-                            <td className="py-3 font-semibold text-gray-700 flex items-center gap-2">
-                              <MapPin className="h-3.5 w-3.5 text-gray-400" />
+                          <tr key={idx} className="border-b border-surface-variant hover:bg-surface-container/50 transition-colors">
+                            <td className="py-3 font-semibold text-on-surface flex items-center gap-2">
+                              <MapPin className="h-3.5 w-3.5 text-on-surface-variant" />
                               {loc.name}
                             </td>
-                            <td className="py-3 text-center text-gray-600 font-medium">{loc.total}</td>
-                            <td className="py-3 text-center text-gray-600 font-medium">{loc.resolved}</td>
+                            <td className="py-3 text-center text-on-surface-variant font-medium">{loc.total}</td>
+                            <td className="py-3 text-center text-on-surface-variant font-medium">{loc.resolved}</td>
                             <td className="py-3 text-center">
-                              <div className="inline-flex items-center gap-1.5 font-bold text-gray-800">
-                                <div className="w-12 bg-gray-100 rounded-full h-1.5 overflow-hidden">
+                              <div className="inline-flex items-center gap-1.5 font-bold text-on-surface">
+                                <div className="w-12 bg-surface-variant rounded-full h-1.5 overflow-hidden">
                                   <div
-                                    className="bg-[#01725a] h-full rounded-full"
+                                    className="bg-primary h-full rounded-full"
                                     style={{ width: `${loc.rate}%` }}
                                   ></div>
                                 </div>
@@ -4946,42 +4946,42 @@ export default function App() {
               className={`panel ${activeTab === "tips" ? "active" : ""}`}
             >
               <div className="section-title">
-                <Navigation className="h-5 w-5 inline mr-1 text-sky-500" /> {t('generated.string_333', 'Lost Item Recovery Guide')}
+                <Navigation className="h-5 w-5 inline mr-1 text-primary" /> {t('generated.string_333', 'Lost Item Recovery Guide')}
               </div>
               <p className="section-subtitle">
                 {t('generated.string_334', 'Helpful tips to increase your chances of finding lost items')}
               </p>
               <div className="tips-grid">
                 <div className="tip-card">
-                  <Search className="h-5 w-5 text-sky-500 inline mr-1" />{" "}
+                  <Search className="h-5 w-5 text-primary inline mr-1" />{" "}
                   <strong>{t('generated.string_335', 'Retrace Recent Locations')}</strong>
                   <br />
                   <br />
                   {t('generated.string_336', 'Carefully revisit the places you recently visited to help locate missing items.')}
                 </div>
                 <div className="tip-card">
-                  <MapPin className="h-5 w-5 text-red-500 inline mr-1" />{" "}
+                  <MapPin className="h-5 w-5 text-error inline mr-1" />{" "}
                   <strong>{t('generated.string_337', 'Check Nearby Areas')}</strong>
                   <br />
                   <br />
                   {t('generated.string_338', 'Inspect public spaces, offices, transportation stops, shops, and common areas.')}
                 </div>
                 <div className="tip-card">
-                  <Smartphone className="h-5 w-5 text-indigo-500 inline mr-1" />{" "}
+                  <Smartphone className="h-5 w-5 text-primary-dim inline mr-1" />{" "}
                   <strong>{t('generated.string_339', 'Use Digital Tools')}</strong>
                   <br />
                   <br />
                   {t('generated.string_340', 'Post on forums, use FindTrack, check social media groups.')}
                 </div>
                 <div className="tip-card">
-                  <CheckCircle2 className="h-5 w-5 text-green-500 inline mr-1" />{" "}
+                  <CheckCircle2 className="h-5 w-5 text-primary inline mr-1" />{" "}
                   <strong>{t('generated.string_341', 'Act Quickly')}</strong>
                   <br />
                   <br />
                   {t('generated.string_342', 'Report and search within 2 hours for best results.')}
                 </div>
                 <div className="tip-card">
-                  <Camera className="h-5 w-5 text-amber-500 inline mr-1" />{" "}
+                  <Camera className="h-5 w-5 text-tertiary-container inline mr-1" />{" "}
                   <strong>{t('generated.string_343', 'Add Photos')}</strong>
                   <br />
                   <br />
@@ -4995,7 +4995,7 @@ export default function App() {
                   {t('generated.string_346', 'Receive updates and notifications about matched or recovered items.')}
                 </div>
                 <div className="tip-card">
-                  <PenTool className="h-5 w-5 text-slate-500 inline mr-1" />{" "}
+                  <PenTool className="h-5 w-5 text-on-surface-variant inline mr-1" />{" "}
                   <strong>{t('generated.string_347', 'Submit Detailed Reports')}</strong>
                   <br />
                   <br />
@@ -5009,7 +5009,7 @@ export default function App() {
               className={`panel ${activeTab === "packaging" ? "active" : ""}`}
             >
               <div className="section-title">
-                <Package className="h-5 w-5 inline mr-1 text-sky-500" />{" "}
+                <Package className="h-5 w-5 inline mr-1 text-primary" />{" "}
                 {t('generated.string_349', 'Packaging & Handling Tips')}
               </div>
               <p className="section-subtitle">
@@ -5017,28 +5017,28 @@ export default function App() {
               </p>
               <div className="tips-grid">
                 <div className="tip-card">
-                  <ShieldCheck className="h-5 w-5 text-teal-500 inline mr-1" />{" "}
+                  <ShieldCheck className="h-5 w-5 text-primary inline mr-1" />{" "}
                   <strong>{t('generated.string_351', 'Protect Fragile Items')}</strong>
                   <br />
                   <br />
                   {t('generated.string_352', 'Use bubble wrap or padding for delicate objects.')}
                 </div>
                 <div className="tip-card">
-                  <Package className="h-5 w-5 text-blue-500 inline mr-1" />{" "}
+                  <Package className="h-5 w-5 text-secondary inline mr-1" />{" "}
                   <strong>{t('generated.string_353', 'Seal Securely')}</strong>
                   <br />
                   <br />
                   {t('generated.string_354', 'Ensure items are properly contained before storage.')}
                 </div>
                 <div className="tip-card">
-                  <Home className="h-5 w-5 text-indigo-500 inline mr-1" />{" "}
+                  <Home className="h-5 w-5 text-primary-dim inline mr-1" />{" "}
                   <strong>{t('generated.string_355', 'Classify Correctly')}</strong>
                   <br />
                   <br />
                   {t('generated.string_356', 'Hand keys and sensitive IDs straight to the Library security safe desk.')}
                 </div>
                 <div className="tip-card">
-                  <CheckCircle2 className="h-5 w-5 text-green-500 inline mr-1" />{" "}
+                  <CheckCircle2 className="h-5 w-5 text-primary inline mr-1" />{" "}
                   <strong>{t('generated.string_357', 'Update Status')}</strong>
                   <br />
                   <br />
@@ -5066,7 +5066,7 @@ export default function App() {
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
                   <div className="lg:col-span-8 space-y-8">
                     {/* FAQ */}
-                    <div className="bg-surface-container-lowest rounded-2xl border border-outline-variant p-6 md:p-8">
+                    <div className="bg-surface-container-lowest rounded-xl border border-outline-variant p-6 md:p-8">
                       <h3 className="font-headline-md text-xl font-bold text-on-surface mb-6 flex items-center gap-2">
                         <Info className="h-6 w-6 text-primary" /> {t('about.faq', 'Frequently Asked Questions')}
                       </h3>
@@ -5088,7 +5088,7 @@ export default function App() {
                     </div>
 
                     {/* Guidelines */}
-                    <div className="bg-surface-container-lowest rounded-2xl border border-outline-variant p-6 md:p-8">
+                    <div className="bg-surface-container-lowest rounded-xl border border-outline-variant p-6 md:p-8">
                       <h3 className="font-headline-md text-xl font-bold text-on-surface mb-6 flex items-center gap-2">
                         <ShieldCheck className="h-6 w-6 text-primary" /> {t('about.communityGuidelines', 'Community Guidelines')}
                       </h3>
@@ -5102,23 +5102,23 @@ export default function App() {
 
                   <div className="lg:col-span-4 space-y-6">
                     {/* Contact Support */}
-                    <div className="bg-primary text-on-primary rounded-2xl p-6 md:p-8 text-center relative overflow-hidden">
+                    <div className="bg-primary text-on-primary rounded-xl p-6 md:p-8 text-center relative overflow-hidden">
                       <div className="relative z-10">
-                        <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <div className="w-16 h-16 bg-surface-container-lowest/20 rounded-full flex items-center justify-center mx-auto mb-4">
                           <Mail className="h-8 w-8" />
                         </div>
                         <h3 className="font-headline-md text-xl font-bold mb-2">{t('about.needMoreHelp', 'Need More Help?')}</h3>
                         <p className="text-sm text-on-primary/90 mb-6">{t('about.needMoreHelpDesc', 'Our support team is ready to assist you with any issues or disputes.')}</p>
-                        <a href="mailto:novapulsarsupport@gmail.com" className="inline-block w-full py-3 bg-white text-primary font-bold rounded-xl hover:bg-surface-variant transition-colors shadow-sm">
+                        <a href="mailto:novapulsarsupport@gmail.com" className="inline-block w-full py-3 bg-surface-container-lowest text-primary font-bold rounded-xl hover:bg-surface-variant transition-colors shadow-sm">
                           {t('about.contactSupport', 'Contact Support')}
                         </a>
                       </div>
-                      <div className="absolute -top-12 -right-12 w-32 h-32 bg-white/10 rounded-full blur-2xl"></div>
-                      <div className="absolute -bottom-12 -left-12 w-32 h-32 bg-white/10 rounded-full blur-2xl"></div>
+                      <div className="absolute -top-12 -right-12 w-32 h-32 bg-surface-container-lowest/10 rounded-full blur-2xl"></div>
+                      <div className="absolute -bottom-12 -left-12 w-32 h-32 bg-surface-container-lowest/10 rounded-full blur-2xl"></div>
                     </div>
 
                     {/* App Info */}
-                    <div className="bg-surface-container-lowest rounded-2xl border border-outline-variant p-6 text-center">
+                    <div className="bg-surface-container-lowest rounded-xl border border-outline-variant p-6 text-center">
                       <div className="w-12 h-12 bg-surface-variant rounded-xl flex items-center justify-center mx-auto mb-3">
                         <span className="text-xl">✨</span>
                       </div>
@@ -5307,7 +5307,7 @@ export default function App() {
               setShowGuestModal(false);
           }}
         >
-          <div className="relative z-10 w-full max-w-md bg-surface-container-lowest rounded-[24px] shadow-lg shadow-primary/5 flex flex-col items-center p-xl text-center border border-surface-variant overflow-hidden">
+          <div className="relative z-10 w-full max-w-md bg-surface-container-lowest rounded-[24px] shadow-lg shadow-primary/5 flex flex-col items-center p-8 text-center border border-surface-variant overflow-hidden">
             {/* Decorative Top Gradient (Subtle) */}
             <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-primary-container via-primary to-primary-container opacity-30"></div>
             
@@ -5318,7 +5318,7 @@ export default function App() {
             
             {/* Headlines & Text */}
             <h2 className="font-headline-md text-headline-md text-on-surface mb-sm tracking-tight">Login Required</h2>
-            <p className="font-body-lg text-body-lg text-on-surface-variant mb-xl px-4 md:px-2 max-w-[280px] md:max-w-none">
+            <p className="font-body-lg text-body-lg text-on-surface-variant mb-xl px-4 md:px-2 max-w-72 md:max-w-none">
               Please login or sign up to unlock the full features of FindTrack!
             </p>
             
@@ -5329,17 +5329,17 @@ export default function App() {
                   setShowGuestModal(false);
                   setCurrentView("login");
                 }}
-                className="w-full bg-primary text-on-primary font-label-md text-label-md py-3 px-6 rounded-lg shadow-md hover:bg-primary-dim transition-all duration-200 flex items-center justify-center gap-2"
+                className="w-full bg-primary text-on-primary font-label-md text-label-md py-3 px-6 rounded-xl shadow-md hover:bg-primary-dim transition-all duration-200 flex items-center justify-center gap-2"
               >
-                <LogIn className="h-[18px] w-[18px]" strokeWidth={2} />{t('landing.login')}</button>
+                <LogIn className="h-4.5 w-4.5" strokeWidth={2} />{t('landing.login')}</button>
               <button 
                 onClick={() => {
                   setShowGuestModal(false);
                   setCurrentView("signup");
                 }}
-                className="w-full bg-transparent text-secondary border border-secondary font-label-md text-label-md py-3 px-6 rounded-lg hover:bg-surface-variant transition-all duration-200 flex items-center justify-center gap-2"
+                className="w-full bg-transparent text-secondary border border-secondary font-label-md text-label-md py-3 px-6 rounded-xl hover:bg-surface-variant transition-all duration-200 flex items-center justify-center gap-2"
               >
-                <UserPlus className="h-[18px] w-[18px]" strokeWidth={2} />
+                <UserPlus className="h-4.5 w-4.5" strokeWidth={2} />
                 Sign Up
               </button>
             </div>
@@ -5357,27 +5357,27 @@ export default function App() {
 
       {/* ── REFERER DOMAIN BLOCKED EXPLANATION MODAL ── */}
       {showRefererModal && (
-        <div className="fixed inset-0 z-[1001] bg-[#fffbff]/60 backdrop-blur-md flex flex-col items-center justify-center p-4">
-          <div className="relative z-10 w-full max-w-lg bg-white rounded-[24px] shadow-xl shadow-teal-700/5 flex flex-col p-8 text-center border border-[#ebe9cf] overflow-hidden">
+        <div className="fixed inset-0 z-[1001] bg-surface/60 backdrop-blur-md flex flex-col items-center justify-center p-4">
+          <div className="relative z-10 w-full max-w-lg bg-surface-container-lowest rounded-[24px] shadow-xl shadow-primary-dim/5 flex flex-col p-8 text-center border border-surface-variant overflow-hidden">
             <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-[#9af4d6] via-[#01725a] to-[#9af4d6] opacity-30"></div>
             
-            <div className="w-20 h-20 rounded-full bg-amber-50 border border-amber-100 flex items-center justify-center mx-auto mb-6 shadow-sm">
+            <div className="w-20 h-20 rounded-full bg-tertiary-container/10 border border-tertiary-container/30 flex items-center justify-center mx-auto mb-6 shadow-sm">
               <span className="text-[40px]">⚠️</span>
             </div>
             
-            <h2 className="font-semibold text-[24px] text-gray-900 mb-3 tracking-tight">Domain Security Authorization Required</h2>
+            <h2 className="font-semibold text-[24px] text-on-surface mb-3 tracking-tight">Domain Security Authorization Required</h2>
             
-            <div className="flex-1 overflow-y-auto space-y-4 text-left text-sm text-gray-600 mb-6 max-h-[50vh] px-2">
-              <p className="font-medium text-gray-900 text-center">
-                You are visiting FindTrack from a custom domain: <code className="bg-amber-50 text-amber-800 px-1.5 py-0.5 rounded border border-amber-200/50 font-mono">{refererBlockedDomain || window.location.hostname}</code>
+            <div className="flex-1 overflow-y-auto space-y-4 text-left text-sm text-on-surface-variant mb-6 max-h-[50vh] px-2">
+              <p className="font-medium text-on-surface text-center">
+                You are visiting FindTrack from a custom domain: <code className="bg-tertiary-container/10 text-tertiary px-1.5 py-0.5 rounded border border-tertiary-container/50/50 font-mono">{refererBlockedDomain || window.location.hostname}</code>
               </p>
               
-              <div className="bg-teal-50 border border-teal-100 p-4 rounded-xl text-teal-900">
+              <div className="bg-primary-container/20 border border-primary-container p-4 rounded-xl text-on-primary-container">
                 <p className="font-medium mb-1 flex items-center gap-2">💡 Quick Fix for Users / Testers:</p>
                 <p>If you are a user trying to test FindTrack, please use the official sandbox domain of the app which is pre-authorized and works perfectly:</p>
                 <a 
                   href="https://ais-pre-ugza3g3lajlvapecr5xph7-125820164386.asia-east1.run.app" 
-                  className="font-semibold underline block mt-2 hover:text-teal-700 font-mono break-all text-center"
+                  className="font-semibold underline block mt-2 hover:text-primary-dim font-mono break-all text-center"
                   target="_blank"
                   rel="noopener noreferrer"
                 >
@@ -5386,8 +5386,8 @@ export default function App() {
               </div>
 
               <div className="space-y-4">
-                <div className="bg-amber-50 border border-amber-200 p-4 rounded-xl text-amber-900 text-xs">
-                  <p className="font-bold text-sm mb-1.5 flex items-center gap-1.5 text-amber-950">
+                <div className="bg-tertiary-container/10 border border-tertiary-container/50 p-4 rounded-xl text-on-tertiary-container text-xs">
+                  <p className="font-bold text-sm mb-1.5 flex items-center gap-1.5 text-on-tertiary-container">
                     <span>📧</span> Fix "Link expired" email verification error:
                   </p>
                   <p className="mb-2 leading-relaxed">
@@ -5395,10 +5395,10 @@ export default function App() {
                   </p>
                   <p className="mb-1 leading-relaxed">To resolve this:</p>
                   <ol className="list-decimal pl-4 space-y-1">
-                    <li>Go to the <a href="https://console.cloud.google.com/apis/credentials" target="_blank" rel="noopener noreferrer" className="underline font-bold hover:text-amber-950">Google Cloud Credentials Console</a>.</li>
+                    <li>Go to the <a href="https://console.cloud.google.com/apis/credentials" target="_blank" rel="noopener noreferrer" className="underline font-bold hover:text-on-tertiary-container">Google Cloud Credentials Console</a>.</li>
                     <li>Click your <strong>Browser/Web API Key</strong> to edit its settings.</li>
                     <li>In the <strong>HTTP Referrers (Website restrictions)</strong> list, you must add these three entries:
-                      <ul className="list-disc pl-4 mt-1 space-y-0.5 font-mono text-[11px] bg-amber-100/50 p-2 rounded">
+                      <ul className="list-disc pl-4 mt-1 space-y-0.5 font-mono text-[11px] bg-tertiary-container/20/50 p-2 rounded">
                         <li><code>https://findtrack-17dee.firebaseapp.com/*</code></li>
                         <li><code>https://findtrack-17dee.web.app/*</code></li>
                         <li><code>https://{window.location.hostname}/*</code></li>
@@ -5408,13 +5408,13 @@ export default function App() {
                 </div>
 
                 <div>
-                  <p className="font-semibold text-gray-900">🛠️ General Domain Setup (For Signup Block):</p>
-                  <p className="text-xs text-gray-500 mb-2">If you cannot register or login because the domain is blocked:</p>
+                  <p className="font-semibold text-on-surface">🛠️ General Domain Setup (For Signup Block):</p>
+                  <p className="text-xs text-on-surface-variant mb-2">If you cannot register or login because the domain is blocked:</p>
                   <ol className="list-decimal pl-5 space-y-2 text-xs">
-                    <li>Go to the <strong><a href="https://console.firebase.google.com/" target="_blank" rel="noopener noreferrer" className="text-teal-600 font-semibold underline hover:text-teal-800">Firebase Console</a></strong> and select your project.</li>
+                    <li>Go to the <strong><a href="https://console.firebase.google.com/" target="_blank" rel="noopener noreferrer" className="text-primary font-semibold underline hover:text-on-primary-container">Firebase Console</a></strong> and select your project.</li>
                     <li>In the sidebar, go to <strong>Authentication</strong>, then click the <strong>Settings</strong> tab.</li>
                     <li>In the left settings list, click <strong>Authorized Domains</strong>.</li>
-                    <li>Click <strong>Add domain</strong> and enter: <code className="bg-gray-100 px-1.5 py-0.5 rounded font-mono">{refererBlockedDomain || window.location.hostname}</code></li>
+                    <li>Click <strong>Add domain</strong> and enter: <code className="bg-surface-variant px-1.5 py-0.5 rounded font-mono">{refererBlockedDomain || window.location.hostname}</code></li>
                   </ol>
                 </div>
               </div>
@@ -5423,7 +5423,7 @@ export default function App() {
             <div className="w-full flex flex-col gap-3">
               <button 
                 onClick={() => setShowRefererModal(false)}
-                className="w-full bg-[#01725a] text-white font-medium text-[14px] py-3 px-6 rounded-lg shadow-md hover:bg-[#00654f] transition-all duration-200 flex items-center justify-center gap-2"
+                className="w-full sm:w-auto bg-primary text-white px-6 py-3 rounded-xl font-bold shadow-md hover:bg-primary-dim transition-colors flex items-center justify-center gap-2"
               >
                 Close & Got It
               </button>

@@ -186,7 +186,7 @@ export default function ChatInterface({
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: 15 }}
         transition={{ duration: 0.2 }}
-        className="fixed inset-x-0 bottom-[64px] top-[56px] bg-slate-50 flex flex-col z-40 shadow-2xl"
+        className="fixed inset-x-0 bottom-[64px] top-[56px] bg-surface-container flex flex-col z-40 shadow-2xl"
         id="chat-system-overlay"
       >
         {/* Chat Header */}
@@ -204,20 +204,20 @@ export default function ChatInterface({
         </div>
 
         {/* Active Conversation Feed */}
-        <div className="flex-1 overflow-y-auto bg-slate-50/50 p-4 space-y-4">
+        <div className="flex-1 overflow-y-auto bg-surface-container/50 p-4 space-y-4">
           {loading ? (
-            <div className="flex h-full flex-col items-center justify-center space-y-2 text-slate-400">
-              <Loader2 className="h-8 w-8 animate-spin text-teal-600" />
+            <div className="flex h-full flex-col items-center justify-center space-y-2 text-on-surface-variant">
+              <Loader2 className="h-8 w-8 animate-spin text-primary" />
               <span className="font-sans text-xs">{t('chat.loadingLogs', 'Loading secure message logs...')}</span>
             </div>
           ) : messages.length === 0 ? (
             <div className="flex h-full flex-col items-center justify-center text-center p-6 space-y-3">
-              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-teal-50 text-teal-600">
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary-container/20 text-primary">
                 <MessageSquare className="h-6 w-6" />
               </div>
               <div>
-                <h4 className="font-sans font-bold text-slate-800 text-sm">{t('dashboard.noMessagesYet')}</h4>
-                <p className="font-sans text-xs text-slate-500 max-w-xs mt-1">
+                <h4 className="font-sans font-bold text-on-surface text-sm">{t('dashboard.noMessagesYet')}</h4>
+                <p className="font-sans text-xs text-on-surface-variant max-w-xs mt-1">
                   {t('chat.introduceYourself', 'Introduce yourself! Mention how or where you can sync up to return this item.')}
                 </p>
               </div>
@@ -233,17 +233,17 @@ export default function ChatInterface({
                   <div className="max-w-[80%] flex flex-col space-y-1">
                     {/* Message Bubble */}
                     <div 
-                      className={`px-4 py-2.5 rounded-2xl text-xs font-sans shadow-xs break-words ${
+                      className={`px-4 py-2.5 rounded-xl text-xs font-sans shadow-xs break-words ${
                         isMe 
-                          ? 'bg-indigo-600 text-white rounded-tr-none' 
-                          : 'bg-white border border-slate-200 text-slate-800 rounded-tl-none'
+                          ? 'bg-primary-container/10 text-white rounded-tr-none' 
+                          : 'bg-surface-container-lowest border border-outline-variant text-on-surface rounded-tl-none'
                       }`}
                     >
                       {msgRef.text}
                     </div>
                     
                     {/* Time indicators */}
-                    <span className={`font-mono text-[9px] text-slate-400 flex items-center space-x-1 ${
+                    <span className={`font-mono text-[9px] text-on-surface-variant flex items-center space-x-1 ${
                       isMe ? 'justify-end' : 'justify-start'
                     }`}>
                       <Clock className="h-2.5 w-2.5 opacity-60" />
@@ -258,7 +258,7 @@ export default function ChatInterface({
         </div>
 
         {/* Secure Baseline Form Input Tray Area */}
-        <div className="p-3 bg-white border-t border-slate-100 shadow-xl shrink-0">
+        <div className="p-3 bg-surface-container-lowest border-t border-outline-variant/50 shadow-xl shrink-0">
           <form 
             onSubmit={handleSendMessage}
             className="flex items-center gap-2 max-w-md mx-auto"
@@ -268,7 +268,7 @@ export default function ChatInterface({
               value={inputText}
               onChange={(e) => setInputText(e.target.value)}
               placeholder={t('chat.placeholder', 'Type secure handoff messages...')}
-              className="flex-1 px-4 py-2.5 rounded-2xl bg-slate-50 border border-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-teal-600 focus:bg-white transition"
+              className="flex-1 px-4 py-2.5 rounded-xl bg-surface-container border border-outline-variant text-xs focus:outline-none focus:ring-2 focus:ring-teal-600 focus:bg-surface-container-lowest transition"
             />
             <button
               type="submit"
@@ -343,7 +343,7 @@ export function ChatInboxList({
 
   if (!currentUserUid) {
     return (
-      <div className="p-4 text-center text-slate-500 font-sans text-xs">
+      <div className="p-4 text-center text-on-surface-variant font-sans text-xs">
         {t('chat.pleaseSignIn', 'Please sign in to read your direct messages.')}
       </div>
     );
@@ -351,8 +351,8 @@ export function ChatInboxList({
 
   if (loading) {
     return (
-      <div className="p-8 flex flex-col items-center justify-center space-y-2 text-slate-400">
-        <Loader2 className="h-6 w-6 animate-spin text-teal-600" />
+      <div className="p-8 flex flex-col items-center justify-center space-y-2 text-on-surface-variant">
+        <Loader2 className="h-6 w-6 animate-spin text-primary" />
         <span className="font-sans text-[11px]">{t('chat.syncing', 'Syncing direct messages...')}</span>
       </div>
     );
@@ -360,10 +360,10 @@ export function ChatInboxList({
 
   if (chats.length === 0) {
     return (
-      <div className="p-6 text-center border-2 border-dashed border-slate-100 rounded-xl bg-slate-50/20">
+      <div className="p-6 text-center border-2 border-dashed border-outline-variant/50 rounded-xl bg-surface-container/20">
         <MessageSquare className="mx-auto h-7 w-7 text-slate-300 mb-2" />
-        <h5 className="font-sans font-bold text-slate-700 text-xs text-center">{t('chat.noActiveChats', 'No Active Chats')}</h5>
-        <p className="font-sans text-[11px] text-slate-400 mt-1 max-w-sm mx-auto leading-relaxed">
+        <h5 className="font-sans font-bold text-on-surface text-xs text-center">{t('chat.noActiveChats', 'No Active Chats')}</h5>
+        <p className="font-sans text-[11px] text-on-surface-variant mt-1 max-w-sm mx-auto leading-relaxed">
           {t('chat.noActiveChatsDesc', 'Open a lost or found item details page and tap "Message Finder" to connect instantly and privately.')}
         </p>
       </div>
@@ -385,10 +385,10 @@ export function ChatInboxList({
           <div
             key={chat.chatId}
             onClick={() => onSelectChat(chat.chatId)}
-            className={`group relative flex items-start justify-between p-3.5 rounded-2xl border transition-all duration-200 cursor-pointer ${
+            className={`group relative flex items-start justify-between p-3.5 rounded-xl border transition-all duration-200 cursor-pointer ${
               isActive 
-                ? 'bg-teal-50/50 border-teal-200 shadow-sm ring-1 ring-teal-500/10' 
-                : 'bg-white border-slate-100 hover:bg-slate-50/40 hover:border-slate-200 hover:shadow-xs'
+                ? 'bg-primary-container/20/50 border-teal-200 shadow-sm ring-1 ring-teal-500/10' 
+                : 'bg-surface-container-lowest border-outline-variant/50 hover:bg-surface-container/40 hover:border-outline-variant hover:shadow-xs'
             }`}
           >
             <div className="flex items-start space-x-3 min-w-0 flex-1">
@@ -396,20 +396,20 @@ export function ChatInboxList({
               <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl font-bold font-sans text-xs ${
                 isActive 
                   ? 'bg-teal-600 text-white' 
-                  : 'bg-indigo-50 border border-indigo-100 text-indigo-600'
+                  : 'bg-primary-container/10 border border-primary/30 text-primary'
               }`}>
                 {chat.itemTitle ? chat.itemTitle.charAt(0).toUpperCase() : 'C'}
               </div>
 
               {/* Chat details summary */}
               <div className="text-left min-w-0 flex-1">
-                <p className="font-sans text-[11px] text-slate-400 font-medium">
+                <p className="font-sans text-[11px] text-on-surface-variant font-medium">
                   {chat.itemTitle ? `${t('chat.about', 'About')} "${chat.itemTitle}"` : t('chat.directMessaging', 'Direct Messaging')}
                 </p>
-                <h4 className="font-sans font-bold text-slate-800 text-xs mt-0.5 truncate leading-snug">
+                <h4 className="font-sans font-bold text-on-surface text-xs mt-0.5 truncate leading-snug">
                   {t('chat.participant', 'Discussion Participant')} {chat.participants.find(p => p !== currentUserUid)?.substring(0, 5)}
                 </h4>
-                <p className="font-sans text-[11px] text-slate-500 mt-1 truncate leading-normal">
+                <p className="font-sans text-[11px] text-on-surface-variant mt-1 truncate leading-normal">
                   {chat.lastMessage || t('chat.logsStarted', 'Message logs started...')}
                 </p>
               </div>
@@ -417,8 +417,8 @@ export function ChatInboxList({
 
             {/* Timestamps and open arrows */}
             <div className="flex flex-col items-end justify-between self-stretch shrink-0 ml-3">
-              <span className="font-mono text-[9px] text-slate-400 font-semibold">{formattedDate}</span>
-              <span className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 text-teal-600">
+              <span className="font-mono text-[9px] text-on-surface-variant font-semibold">{formattedDate}</span>
+              <span className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 text-primary">
                 <ExternalLink className="h-3 w-3" />
               </span>
             </div>

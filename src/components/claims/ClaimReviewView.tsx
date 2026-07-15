@@ -54,7 +54,7 @@ export const ClaimReviewView: React.FC<Props> = ({ claim, item, onClose, trigger
   };
 
   return (
-    <div className="max-w-3xl mx-auto w-full bg-surface-container-lowest rounded-2xl shadow-sm border border-outline-variant p-6 md:p-8 animate-in fade-in duration-300">
+    <div className="max-w-3xl mx-auto w-full bg-surface-container-lowest rounded-xl shadow-sm border border-outline-variant p-6 md:p-8 animate-in fade-in duration-300">
       <button 
         onClick={onClose}
         className="flex items-center gap-2 text-on-surface-variant hover:text-on-surface transition-colors font-label-md text-sm mb-6"
@@ -78,7 +78,7 @@ export const ClaimReviewView: React.FC<Props> = ({ claim, item, onClose, trigger
           <ShieldCheck className="h-4 w-4" />
           Verification Question
         </h3>
-        <p className="text-lg font-body-lg text-on-surface italic bg-surface-container-highest/50 p-4 rounded-lg">
+        <p className="text-lg font-body-lg text-on-surface italic bg-surface-container-highest/50 p-4 rounded-xl">
           "{claim.securityQuestion}"
         </p>
       </div>
@@ -98,20 +98,20 @@ export const ClaimReviewView: React.FC<Props> = ({ claim, item, onClose, trigger
           <button
             onClick={handleApprove}
             disabled={isProcessing}
-            className="flex-1 bg-primary text-on-primary py-3 rounded-lg font-label-md hover:bg-primary-dim transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
+            className="flex-1 bg-primary text-on-primary py-3 rounded-xl font-label-md hover:bg-primary-dim transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
           >
             <CheckCircle2 className="w-5 h-5" /> Approve Claim
           </button>
           <button
             onClick={handleReject}
             disabled={isProcessing}
-            className="flex-1 bg-error text-on-error py-3 rounded-lg font-label-md hover:bg-error-container hover:text-on-error-container transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
+            className="flex-1 bg-error text-on-error py-3 rounded-xl font-label-md hover:bg-error-container hover:text-on-error-container transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
           >
             <XCircle className="w-5 h-5" /> Reject Claim
           </button>
         </div>
       ) : (
-        <div className="p-4 bg-surface-variant rounded-lg text-center font-label-md text-on-surface-variant">
+        <div className="p-4 bg-surface-variant rounded-xl text-center font-label-md text-on-surface-variant">
           This claim has already been {claim.status}.
         </div>
       )}

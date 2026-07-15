@@ -47,9 +47,9 @@ export const ReportDetailsStep: React.FC<Props> = ({
 
   return (
     <div className="space-y-6">
-      <div className="bg-amber-50/50 rounded-xl p-6 border border-amber-200/50">
+      <div className="bg-tertiary-container/10/50 rounded-xl p-6 border border-tertiary-container/50/50">
         <div className="flex items-center gap-3 mb-6">
-          <div className="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center text-amber-700">
+          <div className="w-10 h-10 rounded-full bg-tertiary-container/20 flex items-center justify-center text-amber-700">
             <Tag className="h-5 w-5" />
           </div>
           <div>
@@ -64,7 +64,7 @@ export const ReportDetailsStep: React.FC<Props> = ({
             <select
               value={reportCategory}
               onChange={(e) => setReportCategory(e.target.value as Category)}
-              className="w-full bg-[#fdfbf7] border border-amber-200/60 rounded-xl px-4 py-3 focus:ring-2 focus:ring-amber-500/30 outline-none text-on-surface font-body-md"
+              className="w-full bg-[#fdfbf7] border border-tertiary-container/50/60 rounded-xl px-4 py-3 focus:ring-2 focus:ring-amber-500/30 outline-none text-on-surface font-body-md"
             >
               {categories.map((c) => (
                 <option key={c.value} value={c.value}>{c.label}</option>
@@ -79,7 +79,7 @@ export const ReportDetailsStep: React.FC<Props> = ({
               onChange={(e) => setReportDesc(e.target.value)}
               rows={4}
               placeholder="Describe the item in detail (brand, marks, contents)..."
-              className="w-full bg-[#fdfbf7] border border-amber-200/60 rounded-xl px-4 py-3 focus:ring-2 focus:ring-amber-500/30 outline-none resize-none text-on-surface font-body-md"
+              className="w-full bg-[#fdfbf7] border border-tertiary-container/50/60 rounded-xl px-4 py-3 focus:ring-2 focus:ring-amber-500/30 outline-none resize-none text-on-surface font-body-md"
             ></textarea>
           </div>
 
@@ -93,7 +93,7 @@ export const ReportDetailsStep: React.FC<Props> = ({
                 value={reportColor}
                 onChange={(e) => setReportColor(e.target.value)}
                 placeholder="e.g. Black, Red"
-                className="w-full bg-[#fdfbf7] border border-amber-200/60 rounded-xl px-4 py-3 focus:ring-2 focus:ring-amber-500/30 outline-none text-on-surface font-body-md"
+                className="w-full bg-[#fdfbf7] border border-tertiary-container/50/60 rounded-xl px-4 py-3 focus:ring-2 focus:ring-amber-500/30 outline-none text-on-surface font-body-md"
               />
             </div>
 
@@ -105,7 +105,7 @@ export const ReportDetailsStep: React.FC<Props> = ({
                 type="date"
                 value={reportDate}
                 onChange={(e) => setReportDate(e.target.value)}
-                className="w-full bg-[#fdfbf7] border border-amber-200/60 rounded-xl px-4 py-3 focus:ring-2 focus:ring-amber-500/30 outline-none text-on-surface font-body-md"
+                className="w-full bg-[#fdfbf7] border border-tertiary-container/50/60 rounded-xl px-4 py-3 focus:ring-2 focus:ring-amber-500/30 outline-none text-on-surface font-body-md"
               />
             </div>
           </div>
@@ -114,7 +114,7 @@ export const ReportDetailsStep: React.FC<Props> = ({
             <label className="block font-label-md font-bold text-on-surface flex items-center gap-2">
               <Camera className="h-4 w-4 text-on-surface-variant" /> Upload Image
             </label>
-            <div className="border-2 border-dashed border-amber-200/80 bg-[#fdfbf7] rounded-xl p-8 text-center hover:bg-amber-50/50 transition-colors cursor-pointer relative">
+            <div className="border-2 border-dashed border-tertiary-container/50/80 bg-[#fdfbf7] rounded-xl p-8 text-center hover:bg-tertiary-container/10/50 transition-colors cursor-pointer relative">
               <input
                 type="file"
                 accept="image/*"
@@ -131,14 +131,14 @@ export const ReportDetailsStep: React.FC<Props> = ({
               />
               {reportImage ? (
                 <div className="flex flex-col items-center">
-                  <div className="w-24 h-24 rounded-lg overflow-hidden mb-3 border border-outline-variant">
+                  <div className="w-24 h-24 rounded-xl overflow-hidden mb-3 border border-outline-variant">
                     <img src={reportImage} alt="Preview" className="w-full h-full object-cover" />
                   </div>
                   <span className="text-sm font-label-md text-primary">{t('report.changeImage', 'Tap to change image')}</span>
                 </div>
               ) : (
                 <div className="flex flex-col items-center justify-center py-4">
-                  <div className="w-12 h-12 rounded-full bg-amber-100 flex items-center justify-center mb-3">
+                  <div className="w-12 h-12 rounded-full bg-tertiary-container/20 flex items-center justify-center mb-3">
                     <Camera className="h-6 w-6 text-amber-600" />
                   </div>
                   <span className="font-label-md font-bold text-on-surface mb-1">{t('report.tapToUpload', 'Tap to upload photo')}</span>

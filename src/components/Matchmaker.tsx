@@ -93,46 +93,46 @@ export default function Matchmaker({ item, allOppositeItems, onResolveItem, user
   const isOwner = item.userId === userUid;
 
   return (
-    <div className="rounded-xl border border-indigo-100 bg-indigo-50/30 p-4" id="matchmaker-section">
+    <div className="rounded-xl border border-primary/30 bg-primary-container/10 p-4" id="matchmaker-section">
       <div className="flex items-center justify-between gap-3 mb-3">
         <div className="flex items-center space-x-2">
-          <BrainCircuit className="h-5 w-5 text-indigo-600" />
-          <h4 className="font-sans text-sm font-bold text-slate-900">{t('itemDetail.geminiAiMatchmaker')}</h4>
+          <BrainCircuit className="h-5 w-5 text-primary" />
+          <h4 className="font-sans text-sm font-bold text-on-surface">{t('itemDetail.geminiAiMatchmaker')}</h4>
         </div>
 
         <button
           onClick={triggerAIMatch}
           disabled={loading || allOppositeItems.length === 0}
           title={t('itemDetail.recalculateMatches')}
-          className="rounded-lg p-1.5 text-indigo-600 hover:bg-indigo-50 disabled:opacity-40 transition-all shrink-0"
+          className="rounded-xl p-1.5 text-primary hover:bg-primary-container/10 disabled:opacity-40 transition-all shrink-0"
         >
           <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
         </button>
       </div>
 
-      <p className="font-sans text-xs text-slate-500 mb-4 leading-relaxed">
+      <p className="font-sans text-xs text-on-surface-variant mb-4 leading-relaxed">
         {t('itemDetail.cognitiveComparisonExplanation')}
       </p>
 
       {loading ? (
         <div className="flex flex-col items-center justify-center py-8 space-y-2">
-          <Sparkles className="h-6 w-6 text-indigo-500 animate-spin" />
-          <p className="font-sans text-xs font-medium text-indigo-600">{t('itemDetail.generatingCognitiveSimilarity')}</p>
+          <Sparkles className="h-6 w-6 text-primary-dim animate-spin" />
+          <p className="font-sans text-xs font-medium text-primary">{t('itemDetail.generatingCognitiveSimilarity')}</p>
         </div>
       ) : error ? (
-        <div className="flex items-start bg-red-50/85 p-3 rounded-lg border border-red-100 text-red-700 font-sans text-xs space-x-2">
-          <AlertCircle className="h-4 w-4 text-red-500 shrink-0" />
+        <div className="flex items-start bg-red-50/85 p-3 rounded-xl border border-red-100 text-red-700 font-sans text-xs space-x-2">
+          <AlertCircle className="h-4 w-4 text-error shrink-0" />
           <span>{error}</span>
         </div>
       ) : allOppositeItems.length === 0 ? (
-        <div className="flex items-center bg-slate-50 p-3 rounded-lg border border-slate-200 text-slate-500 font-sans text-xs space-x-2">
-          <AlertCircle className="h-4 w-4 text-slate-400 shrink-0" />
+        <div className="flex items-center bg-surface-container p-3 rounded-xl border border-outline-variant text-on-surface-variant font-sans text-xs space-x-2">
+          <AlertCircle className="h-4 w-4 text-on-surface-variant shrink-0" />
           <span>{t('itemDetail.noOppositeElements')}</span>
         </div>
       ) : renderMatches.length === 0 ? (
-        <div className="text-center py-6 border border-dashed border-slate-200 rounded-lg bg-white">
+        <div className="text-center py-6 border border-dashed border-outline-variant rounded-xl bg-surface-container-lowest">
           <Sparkles className="h-5 w-5 text-slate-300 mx-auto mb-1.5" />
-          <p className="font-sans text-xs text-slate-400">{t('itemDetail.noConfidences')}</p>
+          <p className="font-sans text-xs text-on-surface-variant">{t('itemDetail.noConfidences')}</p>
         </div>
       ) : (
         <div className="space-y-3">
@@ -140,13 +140,13 @@ export default function Matchmaker({ item, allOppositeItems, onResolveItem, user
             {renderMatches.map(match => {
               const scoreColor = 
                 match.confidenceScore >= 80 ? 'text-emerald-600 bg-emerald-50 border-emerald-100' :
-                match.confidenceScore >= 60 ? 'text-amber-600 bg-amber-50 border-amber-100' :
-                'text-indigo-600 bg-indigo-50 border-indigo-100';
+                match.confidenceScore >= 60 ? 'text-amber-600 bg-tertiary-container/10 border-tertiary-container/30' :
+                'text-primary bg-primary-container/10 border-primary/30';
 
               const progressColor = 
                 match.confidenceScore >= 80 ? 'bg-emerald-500' :
                 match.confidenceScore >= 60 ? 'bg-amber-400' :
-                'bg-indigo-500';
+                'bg-primary-container/10';
 
               return (
                 <motion.div
@@ -154,15 +154,15 @@ export default function Matchmaker({ item, allOppositeItems, onResolveItem, user
                   initial={{ opacity: 0, x: -10 }}
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: 10 }}
-                  className="rounded-lg border border-slate-200 bg-white p-3 shadow-sm hover:border-indigo-300 transition-all"
+                  className="rounded-xl border border-outline-variant bg-surface-container-lowest p-3 shadow-sm hover:border-primary/30 transition-all"
                   id={`ai-match-card-${match.item.id}`}
                 >
                   <div className="flex items-start justify-between gap-3 mb-2">
                     <div className="min-w-0">
-                      <h5 className="font-sans text-xs font-bold text-slate-900 group-hover:text-indigo-600 truncate">
+                      <h5 className="font-sans text-xs font-bold text-on-surface group-hover:text-primary truncate">
                         {match.item.title}
                       </h5>
-                      <span className="font-mono text-[9px] text-indigo-600 uppercase font-bold">
+                      <span className="font-mono text-[9px] text-primary uppercase font-bold">
                         {match.item.category} • {match.item.location}
                       </span>
                     </div>
@@ -172,7 +172,7 @@ export default function Matchmaker({ item, allOppositeItems, onResolveItem, user
                     </span>
                   </div>
 
-                  <p className="font-sans text-xs text-slate-600 bg-slate-50 p-2 rounded border border-slate-100 italic leading-relaxed mb-3">
+                  <p className="font-sans text-xs text-on-surface-variant bg-surface-container p-2 rounded border border-outline-variant/50 italic leading-relaxed mb-3">
                     {match.matchReason}
                   </p>
 

@@ -147,15 +147,15 @@ export default function SubmissionForm({ onSubmit, onClose, defaultContactName =
   };
 
   return (
-    <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-xl" id="submission-form">
-      <div className="flex items-center justify-between gap-4 border-b border-slate-100 pb-4 mb-5">
+    <div className="bg-surface-container-lowest rounded-xl border border-outline-variant p-6 shadow-xl" id="submission-form">
+      <div className="flex items-center justify-between gap-4 border-b border-outline-variant/50 pb-4 mb-5">
         <div>
           <h2 className="font-sans text-lg font-bold text-slate-1000">{t('generated.string_509')}</h2>
-          <p className="font-sans text-xs text-slate-500">Add an item to the registry database helper system.</p>
+          <p className="font-sans text-xs text-on-surface-variant">Add an item to the registry database helper system.</p>
         </div>
         <button
           onClick={onClose}
-          className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-50 hover:text-slate-600 transition"
+          className="rounded-xl p-1.5 text-on-surface-variant hover:bg-surface-container hover:text-on-surface-variant transition"
         >
           <span className="sr-only">Close</span>
           &times;
@@ -165,17 +165,17 @@ export default function SubmissionForm({ onSubmit, onClose, defaultContactName =
       <form onSubmit={handleSubmit} className="space-y-5">
         {/* Type Toggle Lost / Found */}
         <div id="type-selector">
-          <label className="block text-xs font-bold font-sans text-slate-700 uppercase tracking-wider mb-2">
+          <label className="block text-xs font-bold font-sans text-on-surface uppercase tracking-wider mb-2">
             Is this item Lost or Found?
           </label>
           <div className="grid grid-cols-2 gap-3">
             <button
               type="button"
               onClick={() => setType('lost')}
-              className={`flex items-center justify-center py-2.5 rounded-lg font-sans text-xs font-bold border transition ${
+              className={`flex items-center justify-center py-2.5 rounded-xl font-sans text-xs font-bold border transition ${
                 type === 'lost'
-                  ? 'bg-rose-50 border-rose-300 text-rose-700 ring-2 ring-rose-100'
-                  : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
+                  ? 'bg-error-container/20 border-rose-300 text-error ring-2 ring-rose-100'
+                  : 'bg-surface-container-lowest border-outline-variant text-on-surface-variant hover:bg-surface-container'
               }`}
             >
               {t('report.lostItem')}
@@ -183,10 +183,10 @@ export default function SubmissionForm({ onSubmit, onClose, defaultContactName =
             <button
               type="button"
               onClick={() => setType('found')}
-              className={`flex items-center justify-center py-2.5 rounded-lg font-sans text-xs font-bold border transition ${
+              className={`flex items-center justify-center py-2.5 rounded-xl font-sans text-xs font-bold border transition ${
                 type === 'found'
                   ? 'bg-emerald-50 border-emerald-300 text-emerald-800 ring-2 ring-emerald-100'
-                  : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
+                  : 'bg-surface-container-lowest border-outline-variant text-on-surface-variant hover:bg-surface-container'
               }`}
             >
               {t('report.foundItem')}
@@ -195,48 +195,48 @@ export default function SubmissionForm({ onSubmit, onClose, defaultContactName =
         </div>
 
         {/* AI Photo Scan Section */}
-        <div className="relative rounded-xl border border-dashed border-indigo-200 bg-indigo-50/20 p-4" id="ai-photo-scanner">
+        <div className="relative rounded-xl border border-dashed border-primary/30 bg-primary-container/10 p-4" id="ai-photo-scanner">
           <div className="flex items-start justify-between gap-3/2 mb-3">
             <div className="flex items-center space-x-2">
-              <Sparkles className="h-4 w-4 text-indigo-600 animate-pulse" />
-              <h4 className="font-sans text-xs font-bold text-slate-900 leading-tight">
+              <Sparkles className="h-4 w-4 text-primary animate-pulse" />
+              <h4 className="font-sans text-xs font-bold text-on-surface leading-tight">
                 Gemini AI Image Autofill (Saves Time)
               </h4>
             </div>
 
             {scanningImage && (
-              <span className="flex items-center space-x-1.5 font-sans text-[10px] font-bold text-indigo-600">
+              <span className="flex items-center space-x-1.5 font-sans text-[10px] font-bold text-primary">
                 <Loader2 className="h-3 w-3 animate-spin" />
                 <span>Scanning pixels...</span>
               </span>
             )}
           </div>
 
-          <p className="font-sans text-[11px] text-slate-500 mb-3 leading-relaxed">
+          <p className="font-sans text-[11px] text-on-surface-variant mb-3 leading-relaxed">
             Upload an image of the item. Gemini will automatically write a title, categorize it, and compose description features for you!
           </p>
 
           <div
             onClick={() => fileInputRef.current?.click()}
-            className="flex flex-col items-center justify-center cursor-pointer py-4 px-2 hover:bg-indigo-50/50 rounded-lg border border-slate-200 bg-white transition"
+            className="flex flex-col items-center justify-center cursor-pointer py-4 px-2 hover:bg-primary-container/10 rounded-xl border border-outline-variant bg-surface-container-lowest transition"
           >
             {imageUrl ? (
               <div className="flex items-center space-x-3 w-full px-3">
                 <img
                   src={imageUrl}
                   alt="Submission preview"
-                  className="h-14 w-14 object-cover rounded-md border border-slate-200"
+                  className="h-14 w-14 object-cover rounded-md border border-outline-variant"
                 />
                 <div className="flex-1 min-w-0 text-left">
-                  <p className="font-sans text-xs font-bold text-indigo-600 truncate">Photo Attachment Uploaded</p>
-                  <p className="font-sans text-[10px] text-slate-400">Click to change or replace photo</p>
+                  <p className="font-sans text-xs font-bold text-primary truncate">Photo Attachment Uploaded</p>
+                  <p className="font-sans text-[10px] text-on-surface-variant">Click to change or replace photo</p>
                 </div>
               </div>
             ) : (
               <>
-                <Upload className="h-6 w-6 text-indigo-500 mb-1" />
-                <span className="font-sans text-xs font-semibold text-slate-700">Click to upload photo</span>
-                <span className="font-sans text-[9px] text-slate-400 mt-0.5">PNG, JPG up to 8MB</span>
+                <Upload className="h-6 w-6 text-primary-dim mb-1" />
+                <span className="font-sans text-xs font-semibold text-on-surface">Click to upload photo</span>
+                <span className="font-sans text-[9px] text-on-surface-variant mt-0.5">PNG, JPG up to 8MB</span>
               </>
             )}
             <input
@@ -260,26 +260,26 @@ export default function SubmissionForm({ onSubmit, onClose, defaultContactName =
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div id="form-field-title">
             <label className="block text-xs font-bold font-sans text-slate-750 uppercase tracking-wider mb-1.5">
-              Title <span className="text-red-500">*</span>
+              Title <span className="text-error">*</span>
             </label>
             <input
               type="text"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder={t('generated.string_532')}
-              className="w-full rounded-lg border border-slate-250 bg-white px-3.5 py-2 font-sans text-xs font-medium text-slate-900 focus:border-indigo-500 focus:outline-none"
+              className="shadow-sm w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-3 font-sans text-xs font-medium text-on-surface focus:border-primary/30 focus:outline-none"
               required
             />
           </div>
 
           <div id="form-field-category">
             <label className="block text-xs font-bold font-sans text-slate-750 uppercase tracking-wider mb-1.5">
-              Category <span className="text-red-500">*</span>
+              Category <span className="text-error">*</span>
             </label>
             <select
               value={category}
               onChange={(e) => setCategory(e.target.value as Category)}
-              className="w-full rounded-lg border border-slate-250 bg-white px-3.5 py-2 font-sans text-xs font-semibold text-slate-900 focus:border-indigo-500 focus:outline-none capitalize"
+              className="shadow-sm w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-3 font-sans text-xs font-semibold text-on-surface focus:border-primary/30 focus:outline-none capitalize"
             >
               {CATEGORIES.map((cat) => (
                 <option key={cat} value={cat}>
@@ -291,27 +291,27 @@ export default function SubmissionForm({ onSubmit, onClose, defaultContactName =
 
           <div id="form-field-location">
             <label className="block text-xs font-bold font-sans text-slate-750 uppercase tracking-wider mb-1.5">
-              Location lost/found <span className="text-red-500">*</span>
+              Location lost/found <span className="text-error">*</span>
             </label>
             <input
               type="text"
               value={location}
               onChange={(e) => setLocation(e.target.value)}
               placeholder={t('generated.string_533')}
-              className="w-full rounded-lg border border-slate-250 bg-white px-3.5 py-2 font-sans text-xs font-medium text-slate-900 focus:border-indigo-500 focus:outline-none"
+              className="shadow-sm w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-3 font-sans text-xs font-medium text-on-surface focus:border-primary/30 focus:outline-none"
               required
             />
           </div>
 
           <div id="form-field-date">
             <label className="block text-xs font-bold font-sans text-slate-750 uppercase tracking-wider mb-1.5">
-              Date & Time Event <span className="text-red-500">*</span>
+              Date & Time Event <span className="text-error">*</span>
             </label>
             <input
               type="datetime-local"
               value={date}
               onChange={(e) => setDate(e.target.value)}
-              className="w-full rounded-lg border border-slate-250 bg-white px-3.5 py-2 font-sans text-xs font-semibold text-slate-900 focus:border-indigo-500 focus:outline-none"
+              className="shadow-sm w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-3 font-sans text-xs font-semibold text-on-surface focus:border-primary/30 focus:outline-none"
               required
             />
           </div>
@@ -319,19 +319,19 @@ export default function SubmissionForm({ onSubmit, onClose, defaultContactName =
 
         <div id="form-field-description">
           <label className="block text-xs font-bold font-sans text-slate-755 uppercase tracking-wider mb-1.5">
-            Detailed Description <span className="text-red-500">*</span>
+            Detailed Description <span className="text-error">*</span>
           </label>
           <textarea
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             rows={3}
             placeholder={t('generated.string_534')}
-            className="w-full rounded-lg border border-slate-250 bg-white px-3.5 py-2 font-sans text-xs font-medium text-slate-900 focus:border-indigo-500 focus:outline-none leading-relaxed"
+            className="shadow-sm w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-3 font-sans text-xs font-medium text-on-surface focus:border-primary/30 focus:outline-none leading-relaxed"
             required
           />
         </div>
 
-        <div id="form-field-security-question" className="bg-slate-50 border border-slate-200/60 rounded-xl p-4">
+        <div id="form-field-security-question" className="bg-surface-container border border-outline-variant/60 rounded-xl p-4">
           <label className="block text-xs font-bold font-sans text-slate-750 uppercase tracking-wider mb-1.5 flex items-center gap-1">
             <span><Key className="h-4 w-4 inline mr-1" /> "Prove It" Security Verification Question (Optional)</span>
           </label>
@@ -341,19 +341,19 @@ export default function SubmissionForm({ onSubmit, onClose, defaultContactName =
               value={securityQuestion}
               onChange={(e) => setSecurityQuestion(e.target.value)}
               placeholder={t('generated.string_535')}
-              className={`w-full rounded-lg border px-3.5 py-2 font-sans text-xs font-medium text-slate-900 focus:outline-none transition-colors ${
+              className={`w-full rounded-xl border px-4 py-3 font-sans text-xs font-medium text-on-surface focus:outline-none transition-colors ${
                 securityQuestion.trim().length >= 4 
                   ? 'border-emerald-500 bg-emerald-50 focus:border-emerald-500 pr-10' 
-                  : 'border-slate-250 bg-white focus:border-indigo-500'
+                  : 'border-outline-variant bg-surface-container-lowest focus:border-primary/30'
               }`}
             />
             {securityQuestion.trim().length >= 4 && (
-              <div className="absolute right-3 top-1/2 -translate-y-1/2 text-emerald-500 font-bold pointer-events-none">
+              <div className="absolute right-3 top-1/2 -translate-y-1/2 text-primary font-bold pointer-events-none">
                 ✓
               </div>
             )}
           </div>
-          <p className="font-sans text-[10px] text-slate-500 mt-1.5 leading-relaxed">
+          <p className="font-sans text-[10px] text-on-surface-variant mt-1.5 leading-relaxed">
             Prevent fraudulent claims. If another user claims this item, they will be prompted to answer this verification question first.
           </p>
         </div>
@@ -361,28 +361,28 @@ export default function SubmissionForm({ onSubmit, onClose, defaultContactName =
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div id="form-field-contact-name">
             <label className="block text-xs font-bold font-sans text-slate-750 uppercase tracking-wider mb-1.5">
-              Your name <span className="text-red-500">*</span>
+              Your name <span className="text-error">*</span>
             </label>
             <input
               type="text"
               value={contactName}
               onChange={(e) => setContactName(e.target.value)}
               placeholder={t('generated.string_536')}
-              className="w-full rounded-lg border border-slate-250 bg-white px-3.5 py-2 font-sans text-xs font-medium text-slate-900 focus:border-indigo-500 focus:outline-none"
+              className="shadow-sm w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-3 font-sans text-xs font-medium text-on-surface focus:border-primary/30 focus:outline-none"
               required
             />
           </div>
 
           <div id="form-field-contact-info">
             <label className="block text-xs font-bold font-sans text-slate-750 uppercase tracking-wider mb-1.5">
-              Contact Email / Phone <span className="text-red-500">*</span>
+              Contact Email / Phone <span className="text-error">*</span>
             </label>
             <input
               type="text"
               value={contactInfo}
               onChange={(e) => setContactInfo(e.target.value)}
               placeholder={t('generated.string_537')}
-              className="w-full rounded-lg border border-slate-250 bg-white px-3.5 py-2 font-sans text-xs font-medium text-slate-900 focus:border-indigo-500 focus:outline-none"
+              className="shadow-sm w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-3 font-sans text-xs font-medium text-on-surface focus:border-primary/30 focus:outline-none"
               required
             />
           </div>
@@ -390,25 +390,25 @@ export default function SubmissionForm({ onSubmit, onClose, defaultContactName =
 
         {/* Global form issues feedback */}
         {formError && (
-          <div className="flex items-center text-xs text-rose-700 bg-rose-50 border border-rose-100 rounded-lg p-3 space-x-2">
-            <AlertCircle className="h-4 w-4 text-rose-500 shrink-0" />
+          <div className="flex items-center text-xs text-error bg-error-container/20 border border-error/30 rounded-xl p-3 space-x-2">
+            <AlertCircle className="h-4 w-4 text-error shrink-0" />
             <span>{formError}</span>
           </div>
         )}
 
         {/* Footer controls */}
-        <div className="flex justify-end space-x-3 border-t border-slate-100 pt-4 mt-2">
+        <div className="flex justify-end space-x-3 border-t border-outline-variant/50 pt-4 mt-2">
           <button
             type="button"
             onClick={onClose}
-            className="rounded-lg border border-slate-200 px-4 py-2 font-sans text-xs font-bold text-slate-700 hover:bg-slate-50 transition"
+            className="rounded-xl border border-outline-variant px-4 py-2 font-sans text-xs font-bold text-on-surface hover:bg-surface-container transition"
           >
             Cancel
           </button>
           <button
             type="submit"
             disabled={submitting || scanningImage}
-            className="inline-flex items-center space-x-1.5 rounded-lg bg-indigo-600 px-4 py-2 font-sans text-xs font-bold text-white shadow-sm hover:bg-indigo-500 transition disabled:opacity-50"
+            className="inline-flex items-center space-x-1.5 rounded-xl bg-primary-container/10 px-4 py-2 font-sans text-xs font-bold text-white shadow-sm hover:bg-primary-container/10 transition disabled:opacity-50"
           >
             {submitting ? (
               <>

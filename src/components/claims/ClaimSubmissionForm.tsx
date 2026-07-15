@@ -62,7 +62,7 @@ export const ClaimSubmissionForm: React.FC<Props> = ({
 
   if (isSuccess) {
     return (
-      <div className="bg-surface-container-lowest rounded-2xl border border-outline-variant/50 p-8 text-center flex flex-col items-center justify-center animate-in fade-in duration-500">
+      <div className="bg-surface-container-lowest rounded-xl border border-outline-variant/50 p-8 text-center flex flex-col items-center justify-center animate-in fade-in duration-500">
         <div className="w-16 h-16 bg-primary-container rounded-full flex items-center justify-center text-primary mb-4">
           <CheckCircle2 className="w-8 h-8" />
         </div>
@@ -93,14 +93,14 @@ export const ClaimSubmissionForm: React.FC<Props> = ({
       {/* Question & Form (Left Column) */}
       <div className="lg:col-span-8">
         {/* Active Question Display */}
-        <div className="bg-surface-container-lowest rounded-2xl border-2 border-primary/20 p-6 mb-6 relative overflow-hidden">
+        <div className="bg-surface-container-lowest rounded-xl border-2 border-primary/20 p-6 mb-6 relative overflow-hidden">
           <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-bl-full pointer-events-none -mr-4 -mt-4"></div>
           <div className="relative z-10">
             <h3 className="text-[12px] font-label-md text-primary tracking-widest uppercase mb-3 flex items-center gap-2">
               <ShieldCheck className="h-4 w-4" />
               Verification Question
             </h3>
-            <p className="text-[16px] font-body-lg text-on-surface italic bg-surface-container-highest/50 p-4 rounded-lg border border-outline-variant/20">
+            <p className="text-[16px] font-body-lg text-on-surface italic bg-surface-container-highest/50 p-4 rounded-xl border border-outline-variant/20">
               "{securityQuestion || 'Describe this item in enough detail to prove ownership (e.g. scratches, contents, background).'}"
             </p>
           </div>
@@ -122,7 +122,7 @@ export const ClaimSubmissionForm: React.FC<Props> = ({
           </div>
 
           {/* Helper Text */}
-          <div className="flex items-start gap-3 p-3 bg-secondary-fixed/30 rounded-lg border border-secondary-fixed-dim/50">
+          <div className="flex items-start gap-3 p-3 bg-secondary-fixed/30 rounded-xl border border-secondary-fixed-dim/50">
             <Info className="h-5 w-5 text-secondary-dim shrink-0 mt-0.5" />
             <p className="text-[14px] font-body-md text-on-secondary-container leading-relaxed">
               The finder will inspect this proof and action your contact credentials request. <span className="font-medium text-error-dim">False claims may result in account suspension.</span>
@@ -135,14 +135,14 @@ export const ClaimSubmissionForm: React.FC<Props> = ({
               type="button"
               onClick={onCancel}
               disabled={isSubmitting}
-              className="px-6 py-2.5 text-[12px] font-label-md text-on-surface-variant hover:text-on-surface hover:bg-surface-container rounded-lg transition-colors disabled:opacity-50"
+              className="px-6 py-2.5 text-[12px] font-label-md text-on-surface-variant hover:text-on-surface hover:bg-surface-container rounded-xl transition-colors disabled:opacity-50"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={isSubmitting}
-              className="flex items-center gap-2 bg-primary text-on-primary px-8 py-2.5 rounded-lg text-[12px] font-label-md hover:bg-primary-dim hover:shadow-md transition-all active:scale-95 group disabled:opacity-50"
+              className="flex items-center gap-2 bg-primary text-on-primary px-8 py-2.5 rounded-xl text-[12px] font-label-md hover:bg-primary-dim hover:shadow-md transition-all active:scale-95 group disabled:opacity-50"
             >
               {isSubmitting ? 'Submitting...' : 'Submit Claim'}
               {!isSubmitting && <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />}

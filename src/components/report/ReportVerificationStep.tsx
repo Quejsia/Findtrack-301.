@@ -33,7 +33,7 @@ export const ReportVerificationStep: React.FC<Props> = ({
         </div>
 
         <div className="space-y-4 relative z-10">
-          <div className="p-4 bg-secondary-container/30 text-on-secondary-container rounded-lg text-sm border border-secondary-container/50 flex items-start gap-3">
+          <div className="p-4 bg-secondary-container/30 text-on-secondary-container rounded-xl text-sm border border-secondary-container/50 flex items-start gap-3">
             <Info className="h-5 w-5 shrink-0 mt-0.5 text-secondary" />
             <p className="leading-relaxed">
               Ask a question only the true owner would know. This question will be displayed to anyone who attempts to claim this item.

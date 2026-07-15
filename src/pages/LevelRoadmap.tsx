@@ -63,8 +63,8 @@ export const LevelRoadmap: React.FC<LevelRoadmapProps> = ({
     { level: 1, name: t("level.rank1", "Novice Finder"), minPoints: 0, maxPoints: 44, badgeColor: "bg-surface-variant border-outline-variant", icon: Star, description: t("level.rank1Desc", "Start your journey. Keep an eye out for missing belongings in your community.") },
     { level: 2, name: t("level.rank2", "Vigilant Citizen"), minPoints: 45, maxPoints: 119, badgeColor: "bg-primary-container border-primary", icon: ShieldCheck, description: t("level.rank2Desc", "Active community reporter. Your reports help restore security and peace of mind.") },
     { level: 3, name: t("level.rank3", "Community Guardian"), minPoints: 120, maxPoints: 249, badgeColor: "bg-secondary-container border-secondary", icon: Heart, description: t("level.rank3Desc", "A pillar of Bayanihan. Generous with effort, you help bridge connections.") },
-    { level: 4, name: t("level.rank4", "Beacon of Hope"), minPoints: 250, maxPoints: 499, badgeColor: "bg-[#fab83f]/20 border-[#fab83f]/60", icon: Sparkles, description: t("level.rank4Desc", "Extremely reliable. Recognized for your quick eyes and numerous successful returns.") },
-    { level: 5, name: t("level.rank5", "FindTrack Legend"), minPoints: 500, maxPoints: Infinity, badgeColor: "bg-amber-100 border-amber-500", icon: Trophy, description: t("level.rank5Desc", "The ultimate community hero. Revered by the entire community for your integrity.") }
+    { level: 4, name: t("level.rank4", "Beacon of Hope"), minPoints: 250, maxPoints: 499, badgeColor: "bg-tertiary-container/20 border-[#fab83f]/60", icon: Sparkles, description: t("level.rank4Desc", "Extremely reliable. Recognized for your quick eyes and numerous successful returns.") },
+    { level: 5, name: t("level.rank5", "FindTrack Legend"), minPoints: 500, maxPoints: Infinity, badgeColor: "bg-tertiary-container/20 border-amber-500", icon: Trophy, description: t("level.rank5Desc", "The ultimate community hero. Revered by the entire community for your integrity.") }
   ], [t]);
 
   // Subscribe to real-time users collection in Firestore
@@ -143,7 +143,7 @@ export const LevelRoadmap: React.FC<LevelRoadmapProps> = ({
       criteria: t("level.ach2Crit", "Reunite 1 item"),
       unlocked: userReunitedCount >= 1,
       icon: Heart,
-      color: "text-red-500 bg-red-50 border-red-200"
+      color: "text-error bg-red-50 border-red-200"
     },
     {
       id: "bayanihan_champion",
@@ -161,7 +161,7 @@ export const LevelRoadmap: React.FC<LevelRoadmapProps> = ({
       criteria: t("level.ach4Crit", "Reunite 3 items"),
       unlocked: userReunitedCount >= 3,
       icon: Trophy,
-      color: "text-amber-600 bg-amber-50 border-amber-200"
+      color: "text-amber-600 bg-tertiary-container/10 border-tertiary-container/50"
     },
     {
       id: "profile_ready",
@@ -246,7 +246,7 @@ export const LevelRoadmap: React.FC<LevelRoadmapProps> = ({
       <div className="flex items-center justify-between border-b border-surface-variant pb-4">
         <button 
           onClick={onBack}
-          className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-on-surface hover:bg-surface-variant transition-colors font-label-md text-sm cursor-pointer"
+          className="flex items-center gap-2 px-3 py-1.5 rounded-xl text-on-surface hover:bg-surface-variant transition-colors font-label-md text-sm cursor-pointer"
           style={{ minHeight: "44px" }}
         >
           <ArrowLeft className="h-5 w-5" />
@@ -256,7 +256,7 @@ export const LevelRoadmap: React.FC<LevelRoadmapProps> = ({
       </div>
 
       {/* Hero Impact Badge Header */}
-      <div className="bg-surface-container-lowest rounded-2xl shadow-sm border border-surface-variant overflow-hidden relative">
+      <div className="bg-surface-container-lowest rounded-xl shadow-sm border border-surface-variant overflow-hidden relative">
         <div className="absolute inset-0 bg-gradient-to-br from-primary-container/15 to-transparent pointer-events-none"></div>
         <div className="p-6 md:p-8 flex flex-col md:flex-row items-center gap-8 relative z-10">
           {/* Large Interactive Badge */}
@@ -329,7 +329,7 @@ export const LevelRoadmap: React.FC<LevelRoadmapProps> = ({
                 >
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
-                      <div className={`p-2.5 rounded-lg border ${ach.color}`}>
+                      <div className={`p-2.5 rounded-xl border ${ach.color}`}>
                         <AchIcon className="h-5 w-5" />
                       </div>
                       {ach.unlocked ? (
@@ -373,7 +373,7 @@ export const LevelRoadmap: React.FC<LevelRoadmapProps> = ({
                 return (
                   <div 
                     key={lvl.level} 
-                    className={`flex items-start gap-4 p-3 rounded-lg transition-colors ${
+                    className={`flex items-start gap-4 p-3 rounded-xl transition-colors ${
                       isCurrent 
                         ? "bg-primary-container/10 border border-primary/20" 
                         : isPassed 
@@ -469,7 +469,7 @@ export const LevelRoadmap: React.FC<LevelRoadmapProps> = ({
                           {user.name} {user.isCurrentUser && <span className="text-[10px] bg-primary text-on-primary px-1.5 py-0.5 rounded-full ml-1 font-bold">YOU</span>}
                         </p>
                         <p className="text-[10px] text-on-surface-variant flex items-center gap-1 mt-0.5">
-                          <Star className="h-3 w-3 text-amber-500" fill="currentColor" /> Level {user.level} Rank
+                          <Star className="h-3 w-3 text-tertiary-container" fill="currentColor" /> Level {user.level} Rank
                         </p>
                       </div>
                     </div>

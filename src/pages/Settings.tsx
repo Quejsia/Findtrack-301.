@@ -46,7 +46,7 @@ export const SettingsPage: React.FC = () => {
       <div className="p-6 max-w-3xl space-y-8">
         
         {/* Language Section */}
-        <section className="bg-surface rounded-2xl border border-outline-variant/30 overflow-hidden shadow-sm">
+        <section className="bg-surface rounded-xl border border-outline-variant/30 overflow-hidden shadow-sm">
           <div className="p-5 border-b border-outline-variant/20 bg-surface-container-lowest flex items-start gap-4">
             <div className="p-2.5 bg-tertiary-container/30 rounded-xl text-tertiary">
               <Globe className="h-5 w-5" />
