@@ -1440,7 +1440,7 @@ export default function App() {
 
           <main className="flex-1">
             {/* Hero Section */}
-            <section className="relative min-h-[921px] flex items-center justify-center overflow-hidden">
+            <section className="relative min-h-[921px] flex items-center justify-center overflow-hidden bg-surface">
               <div className="absolute inset-0 z-0">
                 <img className="w-full h-full object-cover object-center" alt="Hero background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCDC3YRMFuO-lEwm9bKTIguR-1belAnXoHIgeigQ3q4SUYgObcsSiNUjHnpR_ZfqvyDsqJKY7pe4fPQ9fAxiXPLcUxQOJOcX6tgsnNpBIFjznIY1JDEnT0amN_j0g91NAtN4xOqL_xe6gYYA1U5PBGH18oRD2F1fn_Z1eAqQ2CYzkwKBwB-0d16PaU0F6IfiXoXHmT6Txuseum5Be0PuKe26wtdeMNMjFB0UJczwaKK0iUeWAfbVmcG-yd4WQJ83LfWGXw7GPVkDQ"/>
                 <div className="absolute inset-0 bg-surface/30 backdrop-blur-[2px]"></div>
@@ -1473,7 +1473,7 @@ export default function App() {
             </section>
 
             {/* Value Propositions (Bento Grid) */}
-            <section className="py-24 bg-[#ffffff]">
+            <section className="py-24 bg-surface">
               <div className="max-w-7xl mx-auto px-4 md:px-8">
                 <div className="text-center mb-16">
                   <h2 className="font-sans text-3xl md:text-4xl font-bold text-primary-dim mb-2">Three Pillars of Recovery</h2>
