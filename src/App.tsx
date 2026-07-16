@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import SettingsPage from './pages/Settings';
 import { LevelRoadmap } from "./pages/LevelRoadmap";
+import Home from './pages/Home';
 import { Trophy, Coffee as CoffeeIcon } from "lucide-react";
 import {
   User,
@@ -49,7 +50,7 @@ import {
   Lightbulb,
   Key,
   Smartphone,
-  Home,
+  Home as HomeIcon,
   Package,
   Bell,
   User as UserIcon,
@@ -131,16 +132,6 @@ const ONBOARD_STEPS = [
 
 export default function App() {
   const { t, i18n } = useTranslation();
-  const getGreetingKey = () => {
-    const hour = new Date().getHours();
-    if (hour >= 5 && hour < 12) {
-      return 'greeting.morning';
-    } else if (hour >= 12 && hour < 18) {
-      return 'greeting.afternoon';
-    } else {
-      return 'greeting.evening';
-    }
-  };
 
   // Navigation layout state: 'landing' | 'login' | 'signup' | 'dashboard' | 'verify-email' | 'privacy' | 'terms' | 'verification-success'
   const [currentView, setCurrentView] = useState<
@@ -1535,16 +1526,21 @@ export default function App() {
                         <div className="font-sans text-sm font-medium text-on-surface-variant">Successful Recoveries</div>
                       </div>
                     </div>
-                    {/* Testimonial Card (Placeholder for content team) */}
-                    <div className="bg-surface-container-lowest rounded-xl p-6 border border-[#bcbaa2]/30 shadow-sm relative opacity-70">
-                      <Quote className="absolute top-4 right-4 text-[#bcbaa2]/30 w-10 h-10" />
-                      <p className="font-sans text-base text-on-surface mb-4 italic relative z-10">[Content Team: Insert real community testimonial here]</p>
+                    {/* Testimonial Card - Community Recovery Story Empty State / CTA */}
+                    <div className="bg-surface-container-lowest rounded-xl p-6 border border-[#bcbaa2]/30 shadow-sm relative hover:shadow-md transition-shadow">
+                      <Quote className="absolute top-4 right-4 text-primary/10 w-10 h-10" />
+                      <p className="font-sans text-sm text-on-surface-variant mb-4 leading-relaxed relative z-10">
+                        Have you successfully returned or recovered an item on FindTrack? Be the first to share your recovery story with the community and inspire others!
+                      </p>
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-slate-200 overflow-hidden">
+                        <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-sm">
+                          FT
                         </div>
                         <div>
-                          <div className="font-sans text-sm text-on-surface font-bold">[User Name]</div>
-                          <div className="font-sans text-[10px] font-medium text-on-surface-variant">Community Hero</div>
+                          <div className="font-sans text-xs text-on-surface font-bold">Share Your Story</div>
+                          <div className="font-sans text-[10px] font-medium text-primary hover:underline cursor-pointer">
+                            Email support@findtrack.ph
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -2737,7 +2733,7 @@ export default function App() {
             {/* Navigation Items */}
             <nav className="flex-1 overflow-y-auto space-y-1.5 px-4 py-4">
               {[
-                { id: "home", label: t('sidebar.home'), icon: Home },
+                { id: "home", label: t('sidebar.home'), icon: HomeIcon },
                 { id: "report", label: t('sidebar.reportItem'), icon: PlusCircle },
                 { id: "search", label: t('sidebar.search'), icon: Search },
                 { id: "notifications", label: t('sidebar.alerts'), icon: Bell },
@@ -2891,65 +2887,14 @@ export default function App() {
               id="home"
               className={`${activeTab === "home" ? "flex" : "hidden"} max-w-5xl mx-auto h-full flex-col`}
             >
-              <h1 className="text-3xl md:text-4xl font-bold text-on-surface mb-8 flex items-center gap-2">
-                {t(getGreetingKey())}
-              </h1>
-              
-              {/* Stats row */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-                  <div className="bg-[#D3E8E5] p-5 rounded-xl flex flex-col items-center justify-center text-center shadow-sm">
-                    <ShoppingBag className="w-8 h-8 text-[#1A7B72] mb-3" strokeWidth={1.5} />
-                    <div className="text-sm font-medium text-[#15605A] leading-tight mb-1">{t('dashboard.itemsReported')}:</div>
-                    <div className="text-3xl font-bold text-[#1A7B72]">{stats.lost + stats.found}</div>
-                  </div>
-                  <div className="bg-[#E2F0D9] p-5 rounded-xl flex flex-col items-center justify-center text-center shadow-sm">
-                    <Search className="w-8 h-8 text-[#1A7B72] mb-3" strokeWidth={1.5} />
-                    <div className="text-sm font-medium text-[#15605A] leading-tight mb-1">{t('dashboard.itemsFound')}:</div>
-                    <div className="text-3xl font-bold text-[#1A7B72]">{stats.found}</div>
-                  </div>
-                  <div className="bg-[#D3E8E5] p-5 rounded-xl flex flex-col items-center justify-center text-center shadow-sm">
-                    <Users className="w-8 h-8 text-[#1A7B72] mb-3" strokeWidth={1.5} />
-                    <div className="text-sm font-medium text-[#15605A] leading-tight mb-1">{t('dashboard.communityMembers')}:</div>
-                    <div className="text-3xl font-bold text-[#1A7B72]">{new Set(items.map(i => i.userId).filter(Boolean)).size || 1}</div>
-                  </div>
-                  <div className="bg-[#D3E8E5] p-5 rounded-xl flex flex-col items-center justify-center text-center shadow-sm">
-                    <CheckSquare className="w-8 h-8 text-[#1A7B72] mb-3" strokeWidth={1.5} />
-                    <div className="text-sm font-medium text-[#15605A] leading-tight mb-1">{t('dashboard.recoveriesThisWeek')}:</div>
-                    <div className="text-3xl font-bold text-[#1A7B72]">{stats.claimed}</div>
-                  </div>
-              </div>
-
-              {/* Content row */}
-              <div className="grid md:grid-cols-2 gap-6 mb-8 flex-1 min-h-96">
-                  {/* Recent Community Activity */}
-                  <div className="bg-surface-container-lowest rounded-3xl p-6 shadow-sm border border-outline-variant/50 flex flex-col h-full">
-                    <h2 className="text-xl font-bold text-on-surface mb-6">{t('dashboard.recentCommunityActivity')}</h2>
-                    <div className="space-y-4 overflow-y-auto flex-1 pr-2">
-                      {items.slice(0, 6).map((r) => (
-                        <div key={r.id} className="text-sm border-b border-slate-50 pb-4 last:border-0">
-                          <span className="font-semibold text-on-surface">{r.type === 'lost' ? t('dashboard.lost') : t('dashboard.found')} {r.title}</span> {r.location ? `${t('dashboard.in', 'in')} ${r.location}` : ''} - 
-                          <span className="text-on-surface-variant ml-1">{t('dashboard.reportedBy', 'Reported by')} {r.contactName?.split(' ')[0] || t('dashboard.member', 'Member')} ({r.date ? new Date(r.date).toLocaleDateString(i18n.language) : t('search.recent', 'Recent')})</span>
-                        </div>
-                      ))}
-                      {items.length === 0 && <div className="text-on-surface-variant text-sm">{t('dashboard.noRecentActivity')}</div>}
-                    </div>
-                  </div>
-                  
-                  {/* Private Messages */}
-                  <div className="bg-surface-container-lowest rounded-3xl p-6 shadow-sm border border-outline-variant/50 flex flex-col h-full">
-                    <h2 className="text-xl font-bold text-on-surface mb-6">{t('dashboard.privateMessages')}</h2>
-                    <div className="space-y-4 overflow-y-auto flex-1 pr-2 flex items-center justify-center flex-col text-on-surface-variant">
-                      <MessageSquare className="h-12 w-12 mb-3 text-slate-300" />
-                      <p className="text-sm font-medium">{t('dashboard.noMessagesYet')}</p>
-                      <p className="text-xs text-center mt-1">{t('dashboard.whenSomeoneContactsYouAboutYourReportedItemItWillAppearHere')}</p>
-                    </div>
-                  </div>
-              </div>
-
-              {/* Footer Banner */}
-              <div className="mt-auto bg-[#1A7B72] text-white text-center py-5 px-6 rounded-xl font-medium shadow-md">
-                {t('dashboard.everyRecoveredItemStrengthensTheCommunity')}
-              </div>
+              <Home
+                items={items}
+                stats={stats}
+                profileName={profileName}
+                setActiveTab={setActiveTab}
+                setCategoryKeywords={setCategoryKeywords}
+                setShowGuestModal={setShowGuestModal}
+              />
             </section>
             {/* PANEL: REPORT SUBMISSION */}
             <section
