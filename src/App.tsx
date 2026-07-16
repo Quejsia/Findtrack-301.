@@ -4976,7 +4976,7 @@ export default function App() {
                   {t('generated.string_354', 'Ensure items are properly contained before storage.')}
                 </div>
                 <div className="tip-card">
-                  <Home className="h-5 w-5 text-primary-dim inline mr-1" />{" "}
+                  <HomeIcon className="h-5 w-5 text-primary-dim inline mr-1" />{" "}
                   <strong>{t('generated.string_355', 'Classify Correctly')}</strong>
                   <br />
                   <br />
@@ -5093,7 +5093,7 @@ export default function App() {
               }`}
             >
               <div className={`p-1.5 rounded-xl transition-all duration-200 ${activeTab === 'home' ? 'bg-primary-container text-primary shadow-sm' : ''}`}>
-                <Home className="h-6 w-6" />
+                <HomeIcon className="h-6 w-6" />
               </div>
               <span className="text-[11px] font-semibold tracking-wide font-dmsans">{t('sidebar.home')}</span>
             </button>
