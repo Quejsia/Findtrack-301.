@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { db } from '../firebase';
-import { collection, query, where, onSnapshot, updateDoc, doc } from 'firebase/firestore';
+import { collection, query, where, onSnapshot, updateDoc, doc, serverTimestamp } from 'firebase/firestore';
 import { Claim } from '../types';
 
 export function useIncomingClaims(userId: string | undefined) {
@@ -60,7 +60,8 @@ export function useMyClaims(userId: string | undefined) {
 export async function markClaimAsRead(claimId: string) {
   try {
     await updateDoc(doc(db, "claims", claimId), {
-      isReadByFinder: true
+      isReadByFinder: true,
+      updatedAt: serverTimestamp()
     });
   } catch (error) {
     console.error("Failed to mark claim as read", error);

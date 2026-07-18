@@ -43,13 +43,9 @@ service cloud.firestore {
         && data.contactName is string && data.contactName.size() <= 100
         && data.contactInfo is string && data.contactInfo.size() <= 200
         && data.date is string && data.date.size() <= 100
-        // FIX: was 500000 (500KB) which is far too large for a URL field and had no
-        // other rate limiting attached to it — a plausible storage-cost abuse vector.
         && data.get('imageUrl', '') is string && data.get('imageUrl', '').size() <= 500
         && data.get('verificationQuestion', '') is string
         && data.get('verificationQuestion', '').size() <= 500
-        // FIX: 'securityQuestion' was allowed in the update field allowlist but was
-        // never validated here, so it had no type or size limit at all.
         && data.get('securityQuestion', '') is string
         && data.get('securityQuestion', '').size() <= 500;
     }
@@ -81,23 +77,20 @@ service cloud.firestore {
         && data.text is string && data.text.size() <= 2000;
     }
 
-    // NEW: Validates claim properties — the original rules had no schema
-    // validation on claims at all, unlike items/matches/chats.
+    // Validates claim properties
     function isValidClaim(data) {
       return data.id is string && isValidId(data.id)
         && data.itemId is string && isValidId(data.itemId)
         && data.claimerId is string
         && data.finderId is string
         && (data.status == 'pending' || data.status == 'approved' || data.status == 'declined')
-        && data.get('message', '') is string && data.get('message', '').size() <= 1000;
+        && data.get('providedAnswer', '') is string && data.get('providedAnswer', '').size() <= 200;
     }
 
     // --- Items Collection Rules ---
     match /items/{itemId} {
-      // Allow all registered active users to view listings to find matches
       allow read, list: if isSignedIn();
 
-      // Creating a new item
       allow create: if isSignedIn()
         && isEmailVerified()
         && isValidId(itemId)
@@ -107,7 +100,6 @@ service cloud.firestore {
         && incoming().createdAt == request.time
         && incoming().updatedAt == request.time;
 
-      // Updating item details
       allow update: if isSignedIn()
         && isEmailVerified()
         && isValidId(itemId)
@@ -117,11 +109,9 @@ service cloud.firestore {
         && incoming().updatedAt == request.time
         && isValidItem(incoming())
         && (
-          // Limit actual client modifications to expected functional fields
-          incoming().diff(existing()).affectedKeys().hasOnly(['title', 'description', 'category', 'location', 'status', 'contactName', 'contactInfo', 'date', 'imageUrl', 'updatedAt', 'verificationQuestion', 'securityQuestion'])
+          incoming().diff(existing()).affectedKeys().hasOnly(['title', 'description', 'category', 'location', 'status', 'contactName', 'contactInfo', 'date', 'imageUrl', 'updatedAt', 'verificationQuestion', 'securityQuestion', 'claimed'])
         );
 
-      // Deleting item entries
       allow delete: if isSignedIn()
         && isEmailVerified()
         && existing().userId == request.auth.uid;
@@ -129,14 +119,8 @@ service cloud.firestore {
 
     // --- Private Item Secrets Rules ---
     match /itemSecrets/{itemId} {
-      // Clients can NEVER read secret answers directly. Only verified via secure admin SDK.
       allow read: if false;
 
-      // Allow creating secret verification answers
-      // FIX: previously only checked incoming().userId == request.auth.uid, with no
-      // check that this user actually owns the matching item. Since itemSecrets/{itemId}
-      // is keyed by itemId, if the real owner hadn't created their secret doc yet, anyone
-      // else could create it first and hijack the verification question for that item.
       allow create: if isSignedIn()
         && isEmailVerified()
         && isValidId(itemId)
@@ -146,7 +130,6 @@ service cloud.firestore {
         && incoming().securityAnswer is string
         && incoming().securityAnswer.size() <= 200;
 
-      // Allow updating secret verification answers
       allow update: if isSignedIn()
         && isEmailVerified()
         && isValidId(itemId)
@@ -157,7 +140,6 @@ service cloud.firestore {
         && incoming().securityAnswer is string
         && incoming().securityAnswer.size() <= 200;
 
-      // Allow deleting secret verification answers
       allow delete: if isSignedIn()
         && isEmailVerified()
         && existing().userId == request.auth.uid;
@@ -173,9 +155,6 @@ service cloud.firestore {
           get(/databases/$(database)/documents/items/$(existing().itemId)).data.userId == request.auth.uid
         );
 
-      // FIX: added isValidClaim() schema check and createdAt/updatedAt enforcement,
-      // matching the rigor applied to items/matches/chats. Previously this only
-      // checked claimerId, so a caller could write arbitrary extra fields/types.
       allow create: if isSignedIn()
         && isEmailVerified()
         && isValidId(claimId)
@@ -194,15 +173,16 @@ service cloud.firestore {
           get(/databases/$(database)/documents/items/$(existing().itemId)).data.userId == request.auth.uid
         )
         && incoming().updatedAt == request.time
-        && incoming().diff(existing()).affectedKeys().hasOnly(['status', 'updatedAt'])
-        && (incoming().status == 'approved' || incoming().status == 'declined');
+        && (
+          (incoming().diff(existing()).affectedKeys().hasOnly(['isReadByFinder', 'updatedAt']) && incoming().status == existing().status) ||
+          (incoming().diff(existing()).affectedKeys().hasOnly(['status', 'updatedAt']) && (incoming().status == 'approved' || incoming().status == 'declined'))
+        );
     }
 
     // --- Matches Collection Rules ---
     match /matches/{matchId} {
       allow list: if false;
 
-      // Single match retrieval
       allow get: if isSignedIn()
         && isEmailVerified()
         && (
@@ -210,7 +190,6 @@ service cloud.firestore {
           get(/databases/$(database)/documents/items/$(existing().foundItemId)).data.userId == request.auth.uid
         );
 
-      // Registering a potential matched connection
       allow create: if isSignedIn()
         && isEmailVerified()
         && isValidId(matchId)
@@ -223,7 +202,6 @@ service cloud.firestore {
         && incoming().createdAt == request.time
         && incoming().updatedAt == request.time;
 
-      // Accepting or rejecting a match
       allow update: if isSignedIn()
         && isEmailVerified()
         && isValidId(matchId)
@@ -285,12 +263,6 @@ service cloud.firestore {
     }
 
     // --- Users Collection Rules ---
-    // FIX: previously "allow read: if isSignedIn();" let ANY authenticated user
-    // read ANY other user's full document. Now restricted to the owner. If your
-    // UI needs to show other users' display names (e.g. on item cards or in chat),
-    // move that public-safe subset of fields into a separate `publicProfiles/{userId}`
-    // document that's readable by any signed-in user, and keep this `users` doc
-    // for private data (email, phone, etc.) only.
     match /users/{userId} {
       allow read: if isSignedIn() && request.auth.uid == userId;
       allow write, update, delete: if isSignedIn() && request.auth.uid == userId;

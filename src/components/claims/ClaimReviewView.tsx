@@ -25,7 +25,8 @@ export const ClaimReviewView: React.FC<Props> = ({ claim, item, onClose, trigger
       if (claim.itemId) {
         await updateDoc(doc(db, "items", claim.itemId), {
           status: "resolved",
-          claimed: true
+          claimed: true,
+          updatedAt: serverTimestamp()
         });
       }
       triggerToast("✅ Ownership claim approved! Credentials unlocked.", "success");
@@ -41,7 +42,7 @@ export const ClaimReviewView: React.FC<Props> = ({ claim, item, onClose, trigger
     setIsProcessing(true);
     try {
       await updateDoc(doc(db, "claims", claim.id), {
-        status: "rejected",
+        status: "declined",
         updatedAt: serverTimestamp(),
       });
       triggerToast("❌ Claim response declined.", "error");
